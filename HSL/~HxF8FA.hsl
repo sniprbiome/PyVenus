@@ -1,0 +1,14 @@
+#pragma once
+
+#ifndef INCLUDED_FROM_METHOD
+	#ifndef HSL_RUNTIME
+		device ML_STAR;
+	#endif
+#endif
+
+namespace channels1ml {
+   function _aspirate(device ML_STAR) {
+      
+   }
+}
+// $$author=DKBEWO$$valid=0$$time=2021-02-08 18:46$$checksum=996c9078$$length=083$$

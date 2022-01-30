@@ -1,0 +1,10 @@
+class DeckLayout:
+    class __Sequences:
+        def __init__(self):
+            {% for s in sequences -%}
+                self.{{ s }} = "ML_STAR.{{ s }}"
+            {% endfor %}
+
+    def __init__(self):
+        self.layout_file = r"{{ layout_file }}"
+        self.sequences = self.__Sequences()

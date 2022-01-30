@@ -1,0 +1,1 @@
+dispense_modes = ('Dispense Jet', 'Dispense Surface', 'Dispense Jet Part', 'Dispense Jet Empty', 'Dispense Surface Part', 'Dispense Surface Empty')
