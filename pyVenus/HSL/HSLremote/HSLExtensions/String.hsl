@@ -1,0 +1,439 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with string functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2010.11.04   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_STRING__
+#define __HSLEXTENSIONS_STRING__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+#ifndef __HSLStrLib_hsl__
+   #include "HSLStrLib.hsl"
+#endif
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //============================== String ==============================
+   namespace String
+   {
+      //---------------------------------------------------------
+      // Splits a string into substrings (array of strings)
+      // The input string is split on character(s) given by <strDelimiter>.
+      //
+      // [in] i_strValue       - The string that has to be splitted.
+      // [in] i_strDelimiter    - the separator
+      // [in] i_bTrimWhitespaces    - if 'true' then leading and trailing whitespaces will be removed
+      // [Return] array (stringlist) which contains the splitted string
+      //---------------------------------------------------------
+      function Split(variable i_strValue,
+                           variable i_strDelimiter,
+                           variable i_blnTrimWhitespaces) variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strRemaining;
+         variable intIndex;
+         variable strCurrent;
+         variable arrValues[];
+
+         //init
+         arrValues.SetSize(0);
+         strRemaining = i_strValue;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strValue", i_strValue);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDelimiter", i_strDelimiter);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_blnTrimWhitespaces", i_blnTrimWhitespaces);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strValue) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strValue);
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrValues);
+            return(arrValues);
+         }
+         if(HSLExtensions::Framework::Types::IsString(i_strDelimiter) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDelimiter);
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrValues);
+            return(arrValues);
+         }
+         if(HSLExtensions::Framework::Types::IsBoolean(i_blnTrimWhitespaces) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Boolean, i_blnTrimWhitespaces);
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrValues);
+            return(arrValues);
+         }
+
+         //empty string?
+         if(StrGetLength(i_strValue) == 0)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrValues);
+            return(arrValues);
+         }
+
+         //empty delimiter?
+         if(StrGetLength(i_strDelimiter) == 0)
+         {
+            if(i_blnTrimWhitespaces == hslTrue)
+            {
+               StrTrimLeft(strRemaining, "");
+               StrTrimRight(strRemaining, "");
+            }
+
+            arrValues.AddAsLast(strRemaining);
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrValues);
+            return(arrValues);
+         }
+
+         //loop over string
+         while(hslTrue)
+         {
+            //search next delimiter
+            intIndex = StrFind(strRemaining, i_strDelimiter);
+
+            //split
+            if(intIndex != -1)
+            {  
+               strCurrent = StrLeft(strRemaining, intIndex);
+               strRemaining = StrRight(strRemaining, StrGetLength(strRemaining) - StrGetLength(i_strDelimiter) - intIndex);
+               
+               if(i_blnTrimWhitespaces == hslTrue)
+               {
+                  StrTrimLeft(strCurrent, "");
+                  StrTrimRight(strCurrent, "");
+               }
+
+               arrValues.AddAsLast(strCurrent);
+            }
+            //dont split but save remaining
+            else
+            {
+               if(i_blnTrimWhitespaces == hslTrue)
+               {
+                  StrTrimLeft(strRemaining, "");
+                  StrTrimRight(strRemaining, "");
+               }
+
+               arrValues.AddAsLast(strRemaining);
+               break;
+            }
+         }
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrValues);
+         return(arrValues);
+      }
+
+      //---------------------------------------------------------
+      // Trims leading and trailing whitespace characters from the string
+      // NOTE: if the input parameter is not a string the functions returns an empty string
+      // 
+      // [in] i_strValue        - The string to trim
+      // [out] string
+      //---------------------------------------------------------
+      function Trim(variable i_strValue) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strOut;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strValue", i_strValue);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strValue) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strValue);
+            return("");
+         }
+         
+         //trim
+         strOut = i_strValue;
+         StrTrimLeft(strOut, "");
+         StrTrimRight(strOut, "");
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strOut);
+
+         return(strOut);
+      }
+      
+      //---------------------------------------------------------
+      // Converts the string into an array with the regarding characters
+      // NOTE: if the input parameter is not a string the functions returns an empty array
+      //
+      // [in] i_strValue        - The string to convert
+      // [out] array of characters (strings with length '1')
+      //---------------------------------------------------------
+      function ConvertToCharArray(variable i_strValue) variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+         variable arrChars[];
+         variable intSize;
+         variable i;
+         variable strActualChar;
+         variable strRemainingString;
+
+         //init
+         arrChars.SetSize(0);
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strValue", i_strValue);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strValue) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strValue);
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrChars);
+            return(arrChars);
+         }
+         
+         //convert
+         intSize = StrGetLength(i_strValue);
+         strRemainingString = i_strValue;
+         
+         for(i=0; i<intSize; i++)
+         {
+            strActualChar = StrLeft(strRemainingString, 1);
+            strRemainingString = StrRight(strRemainingString, intSize - i - 1);
+
+            arrChars.AddAsLast(strActualChar);
+         }
+
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrChars);
+         return(arrChars);
+      }
+
+      //---------------------------------------------------------
+      // Converts the string into an array with the regarding ascii codes
+      // NOTE: if the input parameter is not a string the functions returns an empty array
+      //
+      // [in] i_strValue        - The string to convert
+      // [out] array of ascii codes (integer)
+      //---------------------------------------------------------
+      function ConvertToAsciiArray(variable i_strValue) variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+         variable arrAscii[];
+         variable intSize;
+         variable i;
+         variable strActualChar;
+         variable strRemainingString;
+
+         //init
+         arrAscii.SetSize(0);
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strValue", i_strValue);
+
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strValue) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strValue);
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrAscii);
+            return(arrAscii);
+         }
+         
+         //convert
+         intSize = StrGetLength(i_strValue);
+         strRemainingString = i_strValue;
+         
+         for(i=0; i<intSize; i++)
+         {
+            strActualChar = StrLeft(strRemainingString, 1);
+            strRemainingString = StrRight(strRemainingString, intSize - i - 1);
+
+            arrAscii.AddAsLast(StrStrToAscii(strActualChar));
+         }
+
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrAscii);
+         return(arrAscii);
+      }
+
+      //---------------------------------------------------------
+      // Converts an array with ascii codes to a string
+      // NOTE: if the input parameter is not a array with ascii codes functions returns an empty string
+      //
+      // Parameters:
+      // 
+      // [in] i_strValue        - array with ascii values (integer)
+      // [out] string
+      //---------------------------------------------------------
+      function FromAsciiArray(variable i_arrAsciiValues[]) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strOut;
+         variable intSize;
+         variable i;
+         variable strCurrentChar;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrAsciiValues", i_arrAsciiValues);
+         
+         //init
+         strOut = "";
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsIntegerArray(i_arrAsciiValues) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "The array contains values of a wrong type.");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strOut);
+            return(strOut);
+         }
+         
+         //convert
+         intSize = i_arrAsciiValues.GetSize();
+         
+         for(i=0; i<intSize; i++)
+         {
+            strCurrentChar = StrAsciiToStr(i_arrAsciiValues[i]);  //return -1 on error
+
+            if(HSLExtensions::Framework::Types::IsInteger(strCurrentChar) == hslTrue)
+            {
+               HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "The array contains values of a wrong type.");
+
+               strOut = "";
+               HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strOut);
+               return(strOut);
+            }
+            
+            strOut = strOut + strCurrentChar;
+         }
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strOut);
+         return(strOut);
+      }
+
+      //---------------------------------------------------------
+      // Joins an array with strings to one string
+      // NOTE: if the input parameter is not a array with strings the functions returns an empty string
+      //
+      // Parameters:
+      // 
+      // [in] i_arrValues        - array with strings
+      // [out] string
+      //---------------------------------------------------------
+      function Join(variable i_arrValues[]) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strOut;
+         variable intSize;
+         variable i;
+         
+         //init
+         strOut = "";
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrValues", i_arrValues);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsStringArray(i_arrValues) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "The array contains values of a wrong type.");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strOut);
+            return(strOut);
+         }
+         
+         //join
+         intSize = i_arrValues.GetSize();
+         
+         for(i=0; i<intSize; i++)
+         {
+            strOut = strOut + i_arrValues.GetAt(i);
+         }
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strOut);
+         return(strOut);
+      }
+
+      //---------------------------------------------------------
+      // Joins an array with strings to one string and adds a delimiter between each substring
+      // NOTE: if the input parameter is not a array with strings the functions returns an empty string
+      //
+      // Parameters:
+      // 
+      // [in] i_arrValues        - array with strings
+      // [in] i_strDelimiter        - delimiter
+      // [out] string
+      //---------------------------------------------------------
+      function JoinWithDelimiter(variable i_arrValues[],
+                                 variable i_strDelimiter) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strOut;
+         variable intSize;
+         variable i;
+         
+         //init
+         strOut = "";
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrValues", i_arrValues);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDelimiter", i_strDelimiter);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsStringArray(i_arrValues) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "The array contains values of a wrong type.");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strOut);
+            return(strOut);
+         }
+         
+         if(HSLExtensions::Framework::Types::IsString(i_strDelimiter) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDelimiter);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strOut);
+            return(strOut);
+         }
+
+         //join
+         intSize = i_arrValues.GetSize();
+         
+         for(i=0; i<intSize; i++)
+         {
+            if(i>0)
+            {
+               strOut = strOut + i_strDelimiter;
+            }
+
+            strOut = strOut + i_arrValues.GetAt(i);
+         }
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strOut);
+         return(strOut);
+      }
+      
+   } //end String
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSIONS_STRING__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:50$$checksum=995fd4fa$$length=083$$

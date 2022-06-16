@@ -1,0 +1,55 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with framework functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2011.05.23   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_FRAMEWORKINTERFACE__
+#define __HSLEXTENSIONS_FRAMEWORKINTERFACE__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+
+//============================== HSLExtension ==============================
+namespace HSLExtensions
+{
+   //============================== Array ==============================
+   namespace Framework
+   {
+      //------------------------------------------------------
+      // Get the framework version
+      //
+      // [return] version (string)
+      //------------------------------------------------------
+      function GetVersion() variable
+      {
+         return(HSLExtensions::Framework::Informations::GetVersion());
+      }
+
+      //------------------------------------------------------
+      // Set the trace level of the framework
+      //
+      // [in] i_intTraceLevel: trace level (see ASWStandard::TraceLevel)
+      //------------------------------------------------------
+      function SetTraceLevel(variable i_intTraceLevel) void
+	   {
+         HSLExtensions::Framework::Trace::SetTraceLevel(i_intTraceLevel);		      
+	   }
+        
+   } //end Framework
+} //end HSLExtension
+
+#endif //end __HSLEXTENSIONS_FRAMEWORKINTERFACE__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:49$$checksum=1daf5895$$length=083$$

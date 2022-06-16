@@ -1,0 +1,121 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with enums
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2010.11.04   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+#define __HSLEXTENSIONS_FRAMEWORK_ENUMS__ 1
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //============================== Framework ==============================
+   namespace Framework
+   {
+      //============================== Enums ==============================
+      namespace Enumerators
+      {
+         // type enumerator
+         namespace Type
+         {
+            const variable String(1);
+            const variable Integer(2);
+            const variable Float(3);
+            const variable Boolean(4);
+            const variable Null(5);
+         }
+
+         // type enumerator
+         namespace SortMode
+         {
+            const variable Ascending(1);
+            const variable Descending(2);
+         }
+
+         // special directory type enumerator
+         namespace SpecialDirectoryType
+         {
+            const variable WindowsDirectory(1);
+            const variable SystemDirectory(2);
+            const variable TemporaryDirectory(3);
+         }
+
+         // registry key enumerator
+         namespace RegistryKey
+         {
+            const variable ClassesRoot(1);
+            const variable CurrentUser(2);
+            const variable LocalMachine(3);
+            const variable Users(4);
+            const variable CurrentConfig(5);
+         }
+
+         // registry value type enumerator
+         namespace RegistryValueType
+         {
+            const variable String(1);  
+            const variable Number(2);
+            const variable Binary(3);
+            const variable ExpandableString(4);
+         }
+
+         // TADM mode enumerator
+         namespace TadmMode
+         {
+            const variable Recording(1);  
+            const variable Monitoring(2);
+         }
+
+         // TADM mode enumerator
+         namespace UserRights
+         {
+            const variable Service(1);  
+            const variable Programmer(2);
+            const variable Operator2(3);
+            const variable Operator(4);
+            const variable NoRights(5);
+         }
+
+         // dictionary key type
+         namespace DictionaryKeyType
+         {
+            const variable Integer(1);  
+            const variable StringCaseSensitive(2);
+            const variable StringCaseInsensitive(3);  
+         }
+
+         // drive type
+         namespace DriveType
+         {
+            const variable Unknown(1);  
+            const variable Removable(2);
+            const variable Fixed(3);  
+            const variable Network(4);  
+            const variable CDRom(5); 
+            const variable RamDisk(6);  
+         }
+
+         // sequence copy mode
+         namespace SequenceCopyMode
+         {
+            const variable CopySubSequence(1);
+            const variable CopyFullSequence(2);
+            const variable CloneFullSequence(3);
+         }
+
+      } //end Enums
+   } //end Framework
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:47$$checksum=6df5766d$$length=083$$

@@ -1,0 +1,1203 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extensions Framework
+// Description          : Framework library with common functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2010.11.02   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+#define __HSLEXTENSIONS_FRAMEWORK__ 1
+
+//============================== includes ==============================
+#ifndef __TraceLevel_hsl__
+   #include "ASWStandard/TraceLevel/TraceLevel.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions\\HSLExtensions\\Framework\\Enumerators.hsl"
+#endif
+
+#ifndef __HSLStrLib_hsl__
+   #include "HSLStrLib.hsl"
+#endif
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //global variables
+   global variable gHSLExtensions_Framework_intTraceLevel(TRACE_LEVEL_RELEASE);
+
+   //============================== Framework ==============================
+   namespace Framework
+   {
+      //============================== Informations ==============================
+      namespace Informations
+      {
+         //------------------------------------------------------
+         // Get the framework version
+         //
+         // [return] version (string)
+         //------------------------------------------------------
+         function GetVersion() variable
+	      {
+		      return("1.0.1.1");
+	      }
+
+      } //end Informations
+
+      //============================== Types ==============================
+      namespace Types
+      {
+         //------------------------------------------------------
+         // Get whether the value is of type integer
+         //
+         // [in] i_varValue
+         // [return] 'true' if value is of type integer, otherwise 'false'
+         //------------------------------------------------------
+         function IsInteger(variable i_varValue) variable
+	      {
+            string strTypeIdentifier("");
+
+            strTypeIdentifier = GetType(i_varValue);
+
+            if(strTypeIdentifier.Compare(hslInteger) == 0)
+            {
+               return(hslTrue);
+            }
+
+            return(hslFalse);
+	      }
+      
+         //------------------------------------------------------
+         // Get whether the value is of type string
+         //
+         // [in] i_varValue
+         // [return] 'true' if value is of type string, otherwise 'false'
+         //------------------------------------------------------
+         function IsString(variable i_varValue) variable
+	      {
+            string strTypeIdentifier("");
+
+            strTypeIdentifier = GetType(i_varValue);
+
+            if(strTypeIdentifier.Compare(hslString) == 0)
+            {
+               return(hslTrue);
+            }
+            
+            return(hslFalse);
+	      }
+
+         //------------------------------------------------------
+         // Get whether the value is of type float
+         //
+         // [in] i_varValue
+         // [return] 'true' if value is of type float, otherwise 'false'
+         //------------------------------------------------------
+         function IsFloat(variable i_varValue) variable
+	      {
+            string strTypeIdentifier("");
+
+            strTypeIdentifier = GetType(i_varValue);
+
+            if(strTypeIdentifier.Compare(hslFloat) == 0)
+            {
+               return(hslTrue);
+            }
+
+            return(hslFalse);
+	      }
+
+         //------------------------------------------------------
+         // Get whether the value is of type boolean
+         // NOTE: boolean values are of type integer but only 'true' and 'false' are allowed
+         //
+         // [in] i_varValue
+         // [return] 'true' if value is of type boolean, otherwise 'false'
+         //------------------------------------------------------
+         function IsBoolean(variable i_varValue) variable
+	      {
+            string strTypeIdentifier("");
+
+            strTypeIdentifier = GetType(i_varValue);
+
+            if(strTypeIdentifier.Compare(hslInteger) == 0)
+            {
+               if( (i_varValue == hslTrue) ||
+                   (i_varValue == hslFalse) )
+               {
+                  return(hslTrue);
+               }
+            }
+
+            return(hslFalse);
+	      }
+
+         //------------------------------------------------------
+         // Get whether the value is null
+         //
+         // [in] i_varValue
+         // [return] 'true' if value is null, otherwise 'false'
+         //------------------------------------------------------
+         function IsNull(variable i_varValue) variable
+	      {
+            string strTypeIdentifier("");
+
+            strTypeIdentifier = GetType(i_varValue);
+
+            if(strTypeIdentifier.Compare("") == 0)
+            {
+               return(hslTrue);
+            }
+
+            return(hslFalse);
+	      }
+
+         //------------------------------------------------------
+         // Get whether the value is an empty string
+         //
+         // [in] i_varValue
+         // [return] 'true' if value is an empty string, otherwise 'false'
+         //------------------------------------------------------
+         function IsEmptyString(variable i_varValue) variable
+	      {
+            variable bIsString(hslFalse);
+
+            bIsString = IsString(i_varValue);
+
+            if(bIsString == hslTrue)
+            {
+               if(i_varValue == "")
+               {
+                  return(hslTrue);
+               }
+            }
+
+            return(hslFalse);
+	      }
+
+         //------------------------------------------------------
+         // Get the type of the value
+         // NOTE: the type 'boolean' will never returned because a 'boolean' is a subset of 'integer'
+         //
+         // [in] i_varValue
+         // [return] value type (see enumerator Types::Type)
+         //------------------------------------------------------
+         function GetValueType(variable i_varValue) variable
+	      {
+            if(IsInteger(i_varValue) == hslTrue)
+            {
+               return(HSLExtensions::Framework::Enumerators::Type::Integer);
+            }
+            else if(IsString(i_varValue) == hslTrue)
+            {
+               return(HSLExtensions::Framework::Enumerators::Type::String);
+            }
+            else if(IsFloat(i_varValue) == hslTrue)
+            {
+               return(HSLExtensions::Framework::Enumerators::Type::Float);
+            }
+            else
+            {
+               return(HSLExtensions::Framework::Enumerators::Type::Null);
+            }
+	      }
+
+         //------------------------------------------------------
+         // Check whether the array contains only integer values
+         // NOTE: if the array is empty the function returns 'true'
+         //
+         // [in] i_arrValues (array)
+         // [return] 'true' if all values are of type integer, otherwise 'false'
+         //------------------------------------------------------
+         function IsIntegerArray(variable i_arrValues[]) variable
+	      {
+            variable intSize;
+            variable i;
+
+            intSize = i_arrValues.GetSize();
+
+            if(intSize == 0)
+            {
+               return(hslTrue);
+            }
+
+            for(i=0; i<intSize; i++)
+            {
+               if(IsInteger(i_arrValues[i]) == hslFalse)
+               {
+                  return(hslFalse);
+               }
+            }
+
+            return(hslTrue);
+	      }
+
+         //------------------------------------------------------
+         // Check whether the array contains only string values
+         // NOTE: if the array is empty the function returns 'true'
+         //
+         // [in] i_arrValues (array)
+         // [return] 'true' if all values are of type string, otherwise 'false'
+         //------------------------------------------------------
+         function IsStringArray(variable i_arrValues[]) variable
+	      {
+            variable intSize;
+            variable i;
+
+            intSize = i_arrValues.GetSize();
+
+            if(intSize == 0)
+            {
+               return(hslTrue);
+            }
+
+            for(i=0; i<intSize; i++)
+            {
+               if(IsString(i_arrValues[i]) == hslFalse)
+               {
+                  return(hslFalse);
+               }
+            }
+
+            return(hslTrue);
+	      }
+
+         //------------------------------------------------------
+         // Check whether the array contains only float values
+         // NOTE: if the array is empty the function returns 'true'
+         //
+         // [in] i_arrValues (array)
+         // [return] 'true' if all values are of type float, otherwise 'false'
+         //------------------------------------------------------
+         function IsFloatArray(variable i_arrValues[]) variable
+	      {
+            variable intSize;
+            variable i;
+
+            intSize = i_arrValues.GetSize();
+
+            if(intSize == 0)
+            {
+               return(hslTrue);
+            }
+
+            for(i=0; i<intSize; i++)
+            {
+               if(IsFloat(i_arrValues[i]) == hslFalse)
+               {
+                  return(hslFalse);
+               }
+            }
+
+            return(hslTrue);
+	      }
+
+         //------------------------------------------------------
+         // Check whether the array contains only boolean values
+         // NOTE: if the array is empty the function returns 'true'
+         //
+         // [in] i_arrValues (array)
+         // [return] 'true' if all values are of type boolean, otherwise 'false'
+         //------------------------------------------------------
+         function IsBooleanArray(variable i_arrValues[]) variable
+	      {
+            variable intSize;
+            variable i;
+
+            intSize = i_arrValues.GetSize();
+
+            if(intSize == 0)
+            {
+               return(hslTrue);
+            }
+
+            for(i=0; i<intSize; i++)
+            {
+               if(IsBoolean(i_arrValues[i]) == hslFalse)
+               {
+                  return(hslFalse);
+               }
+            }
+
+            return(hslTrue);
+	      }
+      }
+
+      //============================== Converter ==============================
+      namespace Converter
+      {
+         //------------------------------------------------------
+         // Convert type to string
+         //
+         // [in] i_intType: type, see enum types
+         // [return] type string
+         //------------------------------------------------------
+         function ConvertTypeToString(variable i_intType) variable
+	      {
+            //check parameter
+            if(HSLExtensions::Framework::Types::IsInteger(i_intType) == hslFalse)
+            {
+               return("Unknown");
+            }
+
+            //convert  
+		      if(i_intType == HSLExtensions::Framework::Enumerators::Type::Integer)
+            {
+               return("Type.Integer");
+            }
+            else if(i_intType == HSLExtensions::Framework::Enumerators::Type::String)
+            {
+               return("Type.String");
+            }
+            else if(i_intType == HSLExtensions::Framework::Enumerators::Type::Float)
+            {
+               return("Type.Float");
+            }
+            else if(i_intType == HSLExtensions::Framework::Enumerators::Type::Boolean)
+            {
+               return("Type.Boolean");
+            }
+            else if(i_intType == HSLExtensions::Framework::Enumerators::Type::Null)
+            {
+               return("Type.Null");
+            }
+            else
+            {
+               return("Unknown");
+            }
+	      }
+
+         //------------------------------------------------------
+         // remove not needed zeros from a float value string
+         // e.g.: 
+         // '10.2003000' -> will be converted to '10.2003'
+         // '1.0000' -> will be converted to '1.0'
+         //
+         // [in] i_strValue: string of float value
+         // [return] string: if the input string is empty or of wrong format than the input will be returned
+         //------------------------------------------------------
+         static function _RemoveZerosFromFloatValueString(variable i_strValue)
+         {
+            variable intLength;
+            variable intIndexOfPoint;
+
+            variable strNewValue(i_strValue);
+
+            //get string length
+            intLength = StrGetLength(i_strValue);
+
+            if(intLength < 1)
+            {
+               return(strNewValue);
+            }
+
+            //search '.'
+            intIndexOfPoint = StrReverseFind(i_strValue, ".");
+
+            if(intIndexOfPoint < 0)
+            {
+               return(strNewValue);
+            }
+
+            //remove '0'
+            while(intIndexOfPoint < (intLength-2))
+            {
+               //ends with '0'?
+               if(StrRight(strNewValue, 1) == "0")
+               {
+                  strNewValue = StrLeft(strNewValue, intLength-1);
+                  intLength = intLength - 1;
+               }
+               else
+               {
+                  break;
+               }            
+            }
+
+            return(strNewValue);
+         }
+
+         //------------------------------------------------------
+         // Converts the value to a string
+         // NOTE: all value types are supported, if the value is 'null' an empty string will returned
+         //
+         // [in] i_varValue
+         // [return] string
+         //------------------------------------------------------
+         function ConvertToString(variable i_varValue) variable
+         {
+            variable intValueType(HSLExtensions::Framework::Enumerators::Type::Null);
+            variable strConvertedValue("");
+
+            //get value type
+            intValueType = Types::GetValueType(i_varValue);
+
+            //convert
+            if(intValueType == HSLExtensions::Framework::Enumerators::Type::String)
+            {
+               strConvertedValue = i_varValue;
+            }
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::Integer)
+            {
+               strConvertedValue = IStr(i_varValue);
+            }
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::Float)
+            {
+               strConvertedValue = FStr(i_varValue);
+               //remove '0' (e.g.: '1.23000' -> will be converted to '1.23'
+               strConvertedValue = _RemoveZerosFromFloatValueString(strConvertedValue);
+            }
+
+            //return
+            return(strConvertedValue);
+         }
+
+         //------------------------------------------------------
+         // Converts the value to a boolean
+         // NOTE: all value types are supported
+         // - integer: '0' will be converted to 'false', all other values will be converted to 'true'
+         // - float: '0' will be converted to 'false', all other values will be converted to 'true'
+         // - string: "0" and "false" will be converted to 'false', "1" and "true" will be converted to 'true', all other values will be converted to 'false' and i_bSuccessfulConverted is 'false'
+         // - NULL: 'false' will be returned and i_bSuccessfulConverted is 'false'
+         //
+         // [in] i_varValue
+         // [return] string
+         //------------------------------------------------------
+         function ConvertToBoolean(  variable i_varValue, 
+                                    variable& o_bSuccessfulConverted) variable
+         {
+            variable intValueType(HSLExtensions::Framework::Enumerators::Type::Null);
+            variable blnConvertedValue(hslFalse);
+
+            //init
+            o_bSuccessfulConverted = hslFalse;
+
+            //get value type
+            intValueType = Types::GetValueType(i_varValue);
+
+            //convert - boolean
+            if(intValueType == HSLExtensions::Framework::Enumerators::Type::Boolean)
+            {
+               blnConvertedValue = i_varValue;
+               o_bSuccessfulConverted = hslTrue;
+            }
+            //convert - integer
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::Integer)
+            {
+               if(i_varValue == 0)
+               {
+                  blnConvertedValue = hslFalse;
+               }
+               else
+               {
+                  blnConvertedValue = hslTrue;
+               }
+               o_bSuccessfulConverted = hslTrue;
+            }
+            //convert - float
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::Float)
+            {
+               if(i_varValue == 0)
+               {
+                  blnConvertedValue = hslFalse;
+               }
+               else
+               {
+                  blnConvertedValue = hslTrue;
+               }
+               o_bSuccessfulConverted = hslTrue;
+            }
+            //convert - string
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::String)
+            {
+               if(i_varValue == "1")
+               {
+                  blnConvertedValue = hslTrue;
+                  o_bSuccessfulConverted = hslTrue;
+               }
+               else if(i_varValue == "0")
+               {
+                  blnConvertedValue = hslFalse;
+                  o_bSuccessfulConverted = hslTrue;
+               }
+               else if(StrMakeLower(i_varValue) == "true")
+               {
+                  blnConvertedValue = hslTrue;
+                  o_bSuccessfulConverted = hslTrue;
+               }
+               else if(StrMakeLower(i_varValue) == "false")
+               {
+                  blnConvertedValue = hslFalse;
+                  o_bSuccessfulConverted = hslTrue;
+               }
+            }
+
+            //return
+            return(blnConvertedValue);
+         }
+
+         //------------------------------------------------------
+         // Converts the value to a integer
+         // NOTE:
+         // all value types are supported
+         // - float: the value will be truncated (e.g. '1.8' -> '1'; '-1.8' -> '-1')
+         // - string: if the string contains not allowed characters the return value is '0' and i_bSuccessfulConverted is 'false'
+         // - Null: '0' will be returned and i_bSuccessfulConverted is 'false'
+         //
+         // [in] i_varValue
+         // [out] o_bSuccessfulConverted: 'true' if value was successful converted, otherwise 'false'
+         // [return] integer
+         //------------------------------------------------------
+         function ConvertToInteger( variable i_varValue, 
+                                    variable& o_blnSuccessfulConverted) variable
+         {
+            variable intValueType(HSLExtensions::Framework::Enumerators::Type::Null);
+            variable intConvertedValue(0);
+            variable intLength;
+            variable strTest;
+            variable blnIsHexString(hslFalse);
+
+            //init
+            o_blnSuccessfulConverted = hslFalse;
+
+            //get value type
+            intValueType = Types::GetValueType(i_varValue);
+
+            //convert - integer
+            if(intValueType == HSLExtensions::Framework::Enumerators::Type::Integer)
+            {
+               if(i_varValue == hslTrue)
+               {
+                  intConvertedValue = 1;
+               }
+               else if(i_varValue == hslFalse)
+               {
+                  intConvertedValue = 0;
+               }
+               else
+               {
+                  intConvertedValue = i_varValue;
+               }
+
+               o_blnSuccessfulConverted = hslTrue;
+            }
+            //convert - boolean
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::Boolean)
+            {
+               if(i_varValue == hslTrue)
+               {
+                  intConvertedValue = 1;
+               }
+               else
+               {
+                  intConvertedValue = 0;
+               }
+               o_blnSuccessfulConverted = hslTrue;
+            }
+            //convert - float
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::Float)
+            {
+               if(i_varValue > 0)
+               {
+                  intConvertedValue = Floor(i_varValue);
+               }
+               else
+               {
+                  intConvertedValue = Ceiling(i_varValue);
+               }
+
+               o_blnSuccessfulConverted = hslTrue;
+            }
+            //convert - string
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::String)
+            {
+               intConvertedValue = IVal(i_varValue);
+               o_blnSuccessfulConverted = hslTrue;
+
+               //check string
+               //allowed is: '-', '+', '0x', '0..9'
+            
+               intLength = StrGetLength(i_varValue);
+            
+               if(intLength < 1)
+               {
+                  intConvertedValue = 0;
+                  o_blnSuccessfulConverted = hslFalse;
+               }
+               else
+               {
+                  strTest = i_varValue;
+               
+                  //remove leading signs
+                  if(StrLeft(i_varValue, 1) == "+")
+                  {
+                     strTest = StrRight(strTest, intLength - 1);
+                  }
+                  else if(StrLeft(i_varValue, 1) == "-")
+                  {
+                     strTest = StrRight(strTest, intLength - 1);
+                  }
+                  else if(StrLeft(i_varValue, 2) == "0x")
+                  {
+                     strTest = StrRight(strTest, intLength - 2);
+                     blnIsHexString = hslTrue;
+                  }
+
+                  intLength = StrGetLength(strTest);
+                  if(intLength == 0)
+                  {
+                     intConvertedValue = 0;
+                     o_blnSuccessfulConverted = hslFalse;
+                  }
+
+                  //remove alowed characters
+                  StrReplace(strTest, "0", "");
+                  StrReplace(strTest, "1", "");
+                  StrReplace(strTest, "2", "");
+                  StrReplace(strTest, "3", "");
+                  StrReplace(strTest, "4", "");
+                  StrReplace(strTest, "5", "");
+                  StrReplace(strTest, "6", "");
+                  StrReplace(strTest, "7", "");
+                  StrReplace(strTest, "8", "");
+                  StrReplace(strTest, "9", "");
+               
+                  if(blnIsHexString == hslTrue)
+                  {
+                     StrReplace(strTest, "a", "");
+                     StrReplace(strTest, "b", "");
+                     StrReplace(strTest, "c", "");
+                     StrReplace(strTest, "d", "");
+                     StrReplace(strTest, "e", "");
+                     StrReplace(strTest, "f", "");
+                     StrReplace(strTest, "A", "");
+                     StrReplace(strTest, "B", "");
+                     StrReplace(strTest, "C", "");
+                     StrReplace(strTest, "D", "");
+                     StrReplace(strTest, "E", "");
+                     StrReplace(strTest, "F", "");
+                  }
+
+
+                  //all alowed signs are removed, string has to be empty
+                  intLength = StrGetLength(strTest);
+                  if(intLength != 0)
+                  {
+                     intConvertedValue = 0;
+                     o_blnSuccessfulConverted = hslFalse;
+                  }
+               }
+            }
+
+            //return
+            return(intConvertedValue);
+         }
+
+         //------------------------------------------------------
+         // Converts the value to a float
+         // NOTE:
+         // all value types are supported
+         // - string: if the string contains not allowed characters the return value is '0.0' and i_bSuccessfulConverted is 'false'
+         // - Null: '0.0' will be returned and i_bSuccessfulConverted is 'false'
+         //
+         // [in] i_varValue
+         // [out] o_bSuccessfulConverted: 'true' if value was successful converted, otherwise 'false'
+         // [return] float
+         //------------------------------------------------------
+         function ConvertToFloat( variable i_varValue, 
+                                    variable& o_blnSuccessfulConverted) variable
+         {
+            variable intValueType(HSLExtensions::Framework::Enumerators::Type::Null);
+            variable fltConvertedValue(0.0);
+            variable intLength;
+            variable strTest;
+
+            //init
+            o_blnSuccessfulConverted = hslFalse;
+
+            //get value type
+            intValueType = Types::GetValueType(i_varValue);
+
+            //convert - integer
+            if(intValueType == HSLExtensions::Framework::Enumerators::Type::Integer)
+            {
+               fltConvertedValue = i_varValue * 1.0;
+               o_blnSuccessfulConverted = hslTrue;
+            }
+            //convert - boolean
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::Boolean)
+            {
+               if(i_varValue == hslTrue)
+               {
+                  fltConvertedValue = 1.0;
+               }
+               else
+               {
+                  fltConvertedValue = 0.0;
+               }
+               o_blnSuccessfulConverted = hslTrue;
+            }
+            //convert - float
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::Float)
+            {
+               fltConvertedValue = i_varValue;
+               o_blnSuccessfulConverted = hslTrue;
+            }
+            //convert - string
+            else if(intValueType == HSLExtensions::Framework::Enumerators::Type::String)
+            {
+               fltConvertedValue = FVal(i_varValue);
+               o_blnSuccessfulConverted = hslTrue;
+
+               //check string
+               //allowed is: '-', '+', '.', 'E', 'e'
+            
+               intLength = StrGetLength(i_varValue);
+            
+               if(intLength < 1)
+               {
+                  fltConvertedValue = 0.0;
+                  o_blnSuccessfulConverted = hslFalse;
+               }
+               else
+               {
+                  strTest = i_varValue;
+               
+                  //remove leading signs
+                  if(StrLeft(i_varValue, 1) == "+")
+                  {
+                     strTest = StrRight(strTest, intLength - 1);
+                  }
+                  else if(StrLeft(i_varValue, 1) == "-")
+                  {
+                     strTest = StrRight(strTest, intLength - 1);
+                  }
+               
+                  intLength = StrGetLength(strTest);
+                  if(intLength == 0)
+                  {
+                     fltConvertedValue = 0.0;
+                     o_blnSuccessfulConverted = hslFalse;
+                  }
+
+                  //remove alowed characters
+                  StrReplace(strTest, "0", "");
+                  StrReplace(strTest, "1", "");
+                  StrReplace(strTest, "2", "");
+                  StrReplace(strTest, "3", "");
+                  StrReplace(strTest, "4", "");
+                  StrReplace(strTest, "5", "");
+                  StrReplace(strTest, "6", "");
+                  StrReplace(strTest, "7", "");
+                  StrReplace(strTest, "8", "");
+                  StrReplace(strTest, "9", "");
+               
+                  StrReplace(strTest, "e", "");
+                  StrReplace(strTest, "E", "");
+                  StrReplace(strTest, ".", "");
+                  StrReplace(strTest, "+", "");
+                  StrReplace(strTest, "-", "");
+
+                  //all alowed signs are removed, string has to be empty
+                  intLength = StrGetLength(strTest);
+                  if(intLength != 0)
+                  {
+                     fltConvertedValue = 0.0;
+                     o_blnSuccessfulConverted = hslFalse;
+                  }
+               }
+            }
+
+            //return
+            return(fltConvertedValue);
+         }
+
+      } //end Converter
+
+      //============================== Trace ==============================
+      namespace Trace
+      {
+         //------------------------------------------------------
+         // Set the trace level of the framework
+         //
+         // [in] i_intTraceLevel: trace level (see ASWStandard::TraceLevel)
+         //------------------------------------------------------
+         function SetTraceLevel(variable i_intTraceLevel) void
+	      {
+		      gHSLExtensions_Framework_intTraceLevel = i_intTraceLevel;
+	      }
+
+         //------------------------------------------------------
+         // Write a debug trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_RELEASE"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strText: trace text
+         //------------------------------------------------------
+         function DebugTrace( variable i_strFunctionName,
+                              variable i_strText                              
+                           ) void
+	      {
+            if(gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_DEBUG)
+            {
+               Trace("HSLExtensionsFramework debug: ", i_strFunctionName, ": ", i_strText);
+		      }
+	      }
+
+         //------------------------------------------------------
+         // Write a warning trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_RELEASE" or "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strText: trace text
+         //------------------------------------------------------
+         function WarningTrace( variable i_strFunctionName,
+                              variable i_strText                              
+                           ) void
+	      {
+            if( (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_DEBUG) ||
+                (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_RELEASE) )
+            {
+               Trace("HSLExtensionsFramework warning: ", i_strFunctionName, ": ", i_strText);
+		      }
+	      }
+
+         //------------------------------------------------------
+         // Write a warning trace - parameter type error
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_RELEASE" or "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_intExcpectedType: expected type, see enum Type
+         // [in] i_varParameter: parameter
+         //------------------------------------------------------
+         function ParameterTypeWarningTrace( 
+                              variable i_strFunctionName,
+                              variable i_intExcpectedType,
+                              variable i_varParameter
+                           ) void
+	      {
+            variable intActualType;
+
+            if( (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_DEBUG) ||
+                (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_RELEASE) )
+            {  
+               intActualType = HSLExtensions::Framework::Types::GetValueType(i_varParameter);
+
+               Trace("HSLExtensionsFramework warning: ", 
+                     i_strFunctionName, 
+                     ": ", 
+                     "The parameter has a wrong type ", 
+                     "(expected type = '",  HSLExtensions::Framework::Converter::ConvertTypeToString(i_intExcpectedType), "')",
+                     "(parameter type = '",  HSLExtensions::Framework::Converter::ConvertTypeToString(intActualType), "')",
+                     "(parameter = '",  i_varParameter, "')"
+                     );
+		      }
+	      }
+      
+      
+         //------------------------------------------------------
+         // Write a error trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_RELEASE" or "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strText: trace text
+         //------------------------------------------------------
+         function ErrorTrace( variable i_strFunctionName,
+                              variable i_strText                              
+                           ) void
+	      {
+            if( (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_DEBUG) ||
+                (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_RELEASE) )
+            {
+               Trace("HSLExtensionsFramework error: ", i_strFunctionName, ": ", i_strText);
+		      }
+	      }
+
+         //------------------------------------------------------
+         // Write a error trace - parameter type error
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_RELEASE" or "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_intExcpectedType: expected type, see enum Type
+         // [in] i_varParameter: parameter
+         //------------------------------------------------------
+         function ParameterTypeErrorTrace( 
+                              variable i_strFunctionName,
+                              variable i_intExcpectedType,
+                              variable i_varParameter
+                           ) void
+	      {
+            variable intActualType;
+
+            if( (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_DEBUG) ||
+                (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_RELEASE) )
+            {  
+               intActualType = HSLExtensions::Framework::Types::GetValueType(i_varParameter);
+
+               Trace("HSLExtensionsFramework error: ", 
+                     i_strFunctionName, 
+                     ": ", 
+                     "The parameter has a wrong type ", 
+                     "(expected type = '",  HSLExtensions::Framework::Converter::ConvertTypeToString(i_intExcpectedType), "', ",
+                     "parameter type = '",  HSLExtensions::Framework::Converter::ConvertTypeToString(intActualType), "', ",
+                     "parameter = '",  i_varParameter, "')"
+                     );
+		      }
+	      }
+
+         //------------------------------------------------------
+         // Write a error trace - parameter out of range error
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_RELEASE" or "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strParameterName: name of the parameter
+         // [in] i_varParameter: parameter
+         //------------------------------------------------------
+         function ParameterOutOfRangeErrorTrace( 
+                              variable i_strFunctionName,
+                              variable i_strParameterName,
+                              variable i_varParameter
+                           ) void
+	      {
+            variable intActualType;
+
+            if( (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_DEBUG) ||
+                (gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_RELEASE) )
+            {  
+               intActualType = HSLExtensions::Framework::Types::GetValueType(i_varParameter);
+
+               Trace("HSLExtensionsFramework error: ", 
+                     i_strFunctionName, 
+                     ": ", 
+                     "The parameter '", i_strParameterName, "' is out of range ", 
+                     "(parameter type = '",  HSLExtensions::Framework::Converter::ConvertTypeToString(intActualType), "', ",
+                     "parameter = '",  i_varParameter, "')"
+                     );
+		      }
+	      }
+
+         //------------------------------------------------------
+         // Write a function parameter trace (input, output and result)
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strParameterPrefix: prefix (in, out, result)
+         // [in] i_strParameterName: name of the parameter         
+         // [in] i_varParameter: parameter
+         //------------------------------------------------------
+         static function _FunctionParameterTrace( 
+                              variable i_strFunctionName,
+                              variable i_strParameterPrefix,
+                              variable i_strParameterName,
+                              variable i_varParameter
+                           ) void
+	      {
+            variable intActualType;
+            variable strExtendedParameterName(" ");
+
+            if(gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_DEBUG)
+            {  
+               intActualType = HSLExtensions::Framework::Types::GetValueType(i_varParameter);
+
+               if(HSLExtensions::Framework::Types::IsString(i_strParameterName) == hslTrue)
+               {
+                  if(i_strParameterName != "")
+                  {
+                     strExtendedParameterName = " " + i_strParameterName + " = ";
+                  }
+               }
+
+               Trace(i_strFunctionName, 
+                     ": ",
+                     i_strParameterPrefix,
+                     strExtendedParameterName,
+                     "'", 
+                     i_varParameter,
+                     "' (type = '",  HSLExtensions::Framework::Converter::ConvertTypeToString(intActualType), "')"
+                     );
+		      }
+	      }
+
+         //------------------------------------------------------
+         // Write a function input parameter trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strParameterName: name of the parameter         
+         // [in] i_varParameter: parameter
+         //------------------------------------------------------
+         function FunctionInputParameterTrace( 
+                              variable i_strFunctionName,
+                              variable i_strParameterName,
+                              variable i_varParameter
+                           ) void
+	      {
+            _FunctionParameterTrace(i_strFunctionName, "[in]", i_strParameterName, i_varParameter);
+	      }
+
+         //------------------------------------------------------
+         // Write a function ouput parameter trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strParameterName: name of the parameter         
+         // [in] i_varParameter: parameter
+         //------------------------------------------------------
+         function FunctionOutputParameterTrace( 
+                              variable i_strFunctionName,
+                              variable i_strParameterName,
+                              variable i_varParameter
+                           ) void
+	      {
+            _FunctionParameterTrace(i_strFunctionName, "[out]", i_strParameterName, i_varParameter);
+	      }
+
+         //------------------------------------------------------
+         // Write a function result parameter trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function        
+         // [in] i_varParameter: parameter
+         //------------------------------------------------------
+         function FunctionResultParameterTrace( 
+                              variable i_strFunctionName,
+                              variable i_varParameter
+                           ) void
+	      {
+            _FunctionParameterTrace(i_strFunctionName, "[result]", "", i_varParameter);
+	      }
+
+         //------------------------------------------------------
+         // Write a function array trace (input, output and result)
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strParameterPrefix: prefix (in, out, result)
+         // [in] i_strParameterName: name of the parameter         
+         // [in] i_arrParameter: parameter
+         //------------------------------------------------------
+         static function _FunctionArryTrace( 
+                              variable i_strFunctionName,
+                              variable i_strParameterPrefix,
+                              variable i_strParameterName,
+                              variable i_arrParameter[]
+                           ) void
+	      {
+            variable intActualType;
+            variable varActualValue;
+            variable i;
+            variable intSize;
+
+            if(gHSLExtensions_Framework_intTraceLevel == TRACE_LEVEL_DEBUG)
+            {  
+               intSize = i_arrParameter.GetSize();
+
+               Trace(i_strFunctionName, 
+                     ": ",
+                     i_strParameterPrefix,
+                     " ", 
+                     i_strParameterName,
+                     " (type = 'Array', size = '", intSize, "')"
+                     );
+
+               for(i=0; i<intSize; i++)
+               {
+                     varActualValue = i_arrParameter.GetAt(i);
+                     intActualType = HSLExtensions::Framework::Types::GetValueType(varActualValue);
+
+                     Trace(i_strFunctionName, 
+                     ": ",
+                     i_strParameterPrefix,
+                     " ", 
+                     i_strParameterName,
+                     "[", i, "] = '", 
+                     varActualValue,
+                     "' (type = '", HSLExtensions::Framework::Converter::ConvertTypeToString(intActualType), "')"
+                     );
+               }               
+		      }
+	      }
+
+         //------------------------------------------------------
+         // Write a function input array trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strParameterName: name of the parameter         
+         // [in] i_arrParameter: parameter
+         //------------------------------------------------------
+         function ArrayTrace( 
+                              variable i_strFunctionName,
+                              variable i_strParameterName,
+                              variable i_arrParameter[]
+                           ) void
+	      {
+            _FunctionArryTrace(i_strFunctionName, "", i_strParameterName, i_arrParameter);
+	      }
+
+         //------------------------------------------------------
+         // Write a function input array trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strParameterName: name of the parameter         
+         // [in] i_arrParameter: parameter
+         //------------------------------------------------------
+         function FunctionInputArrayTrace( 
+                              variable i_strFunctionName,
+                              variable i_strParameterName,
+                              variable i_arrParameter[]
+                           ) void
+	      {
+            _FunctionArryTrace(i_strFunctionName, "[in]", i_strParameterName, i_arrParameter);
+	      }
+
+         //------------------------------------------------------
+         // Write a function input array trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function
+         // [in] i_strParameterName: name of the parameter         
+         // [in] i_arrParameter: parameter
+         //------------------------------------------------------
+         function FunctionOutputArrayTrace( 
+                              variable i_strFunctionName,
+                              variable i_strParameterName,
+                              variable i_arrParameter[]
+                           ) void
+	      {
+            _FunctionArryTrace(i_strFunctionName, "[out]", i_strParameterName, i_arrParameter);
+	      }
+
+         //------------------------------------------------------
+         // Write a function input array trace
+         // - this trace will be writen if the "TraceLevel" of the framework is "TRACE_LEVEL_DEBUG"
+         //
+         // [in] i_strFunctionName: name of the function      
+         // [in] i_arrParameter: parameter
+         //------------------------------------------------------
+         function FunctionResultArrayTrace( 
+                              variable i_strFunctionName,
+                              variable i_arrParameter[]
+                           ) void
+	      {
+            _FunctionArryTrace(i_strFunctionName, "[return]", "array", i_arrParameter);
+	      }
+
+      } //end Trace
+      
+      
+   } //end Framework
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSIONS_FRAMEWORK__
+
+// $$author=enriqueb$$valid=0$$time=2017-04-05 09:44$$checksum=c0ec445f$$length=085$$

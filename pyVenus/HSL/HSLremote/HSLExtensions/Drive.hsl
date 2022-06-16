@@ -1,0 +1,550 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with drive functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2011.02.16   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_DRIVE__
+#define __HSLEXTENSIONS_DRIVE__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //============================== Drive ==============================
+   namespace Drive
+   {
+      //---------------------------------------------------------
+      // Check whether the drive exists
+      // 
+      // [in] i_strDriveName: drive name (e.g. 'c:')
+      // [returns] 'true' if drive exists, otherwise 'false'
+      //---------------------------------------------------------
+      function Exists(variable i_strDriveName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable blnExists;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDriveName", i_strDriveName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDriveName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDriveName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDriveName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //directory exists?
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         
+         blnExists = objFileSystemObject.DriveExists(i_strDriveName);
+         
+         objFileSystemObject.ReleaseObject();
+
+         if(blnExists != hslFalse)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+         else
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Splits the drive names into the names
+      //
+      // [in] i_strNames      - The drive names
+      // [Return] array with the sub-directories
+      //---------------------------------------------------------
+      private function _Split(variable i_strNames, variable i_strDelimiter) variable[]
+      {
+         variable strRemaining;
+         variable intIndex;
+         variable strCurrent;
+         variable arrValues[];
+
+         //init
+         arrValues.SetSize(0);
+         strRemaining = i_strNames;
+
+         //loop over string
+         while(hslTrue)
+         {
+            //search next delimiter
+            intIndex = StrFind(strRemaining, i_strDelimiter);
+
+            //split
+            if(intIndex != -1)
+            {  
+               strCurrent = StrLeft(strRemaining, intIndex);
+               strRemaining = StrRight(strRemaining, StrGetLength(strRemaining) - StrGetLength(i_strDelimiter) - intIndex);
+               
+               if(StrGetLength(strCurrent) > 0)
+               {
+                  arrValues.AddAsLast(strCurrent);
+               }
+            }
+            //dont split but save remaining
+            else
+            {
+               if(StrGetLength(strRemaining) > 0)
+               {
+                  arrValues.AddAsLast(strRemaining);
+               }
+               break;
+            }
+         }
+
+         return(arrValues);
+      }
+      
+
+      //---------------------------------------------------------
+      // Get the names of all drives
+      // 
+      // [returns] array with names of all drives
+      //---------------------------------------------------------
+      function GetDrives() variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+
+         object objScriptControl;		
+         object objFileSystemObject;
+
+         variable strScriptResult;
+
+         variable arrDrives[];
+
+         //init
+         arrDrives.SetSize(0);
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get directories
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objScriptControl.CreateObject("MSScriptControl.ScriptControl");
+
+         // - create script
+			objScriptControl.Language = "VBScript";
+			objScriptControl.AddObject("fso", objFileSystemObject);			
+			objScriptControl.AddCode
+			("																														\n\
+				Option Explicit																								\n\
+																																	\n\
+				Function GetDrives()          																         \n\
+				   Dim drives																									\n\
+				   Dim drive   																								\n\
+               Dim result					          										                     \n\
+               Dim i										 	                   			                     \n\
+               Set drives = fso.Drives             																\n\
+               i = 0																                                 \n\
+               For Each drive In drives		   																   \n\
+                  i = i + 1																                        \n\
+                  															                                    \n\
+                  If i>1 Then																			               \n\
+					      result = result + \"?\"														               \n\
+					   End If																                           \n\
+                  															                                    \n\
+                  result = result + drive.Path			   											         \n\
+				   Next																											\n\
+				   GetDrives = result						         									               \n\
+				End Function																									\n\
+			");
+
+         // - execute script      
+		   strScriptResult = objScriptControl.Eval("GetDrives()");
+
+         // - clean up
+         objScriptControl.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         //convert result to array (result is a string with all drives, separated with '?'
+         arrDrives = _Split(strScriptResult, "?");
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrDrives);
+         return(arrDrives);
+
+         //exception
+         ExceptionHandler:
+         {
+            objScriptControl.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrDrives);
+            return(arrDrives);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Check whether the drive is ready to use
+      // 
+      // [in] i_strDriveName: drive name (e.g. 'c:')
+      // [returns] 'true' if drive is ready, otherwise 'false'
+      //---------------------------------------------------------
+      function IsReady(variable i_strDriveName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objDrive;
+         object objFileSystemObject;
+         variable blnIsReady;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDriveName", i_strDriveName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDriveName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDriveName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDriveName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //directory exists?
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         
+         objDrive = objFileSystemObject.GetDrive(i_strDriveName);
+         blnIsReady = objDrive.IsReady;
+         
+         objDrive.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         if(blnIsReady != hslFalse)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+         else
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //exception
+         ExceptionHandler:
+         {
+            objDrive.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Check whether the drive is ready to use
+      // 
+      // [in] i_strDriveName: drive name (e.g. 'c:')
+      // [out] o_intSizeInMB: size of the drive in MB
+      // [out] o_intAvailableSpaceInMB: available space of the drive in MB
+      //---------------------------------------------------------
+      function GetSize(variable i_strDriveName,
+                        variable& o_intSizeInMB,
+                        variable& o_intAvailableSpaceInMB) void 
+      {
+         variable strFunctionName(GetFunctionName());
+         object objDrive;
+         object objFileSystemObject;
+
+         variable fltSizeInBytes;
+         variable fltAvailableSpaceInBytes;
+
+         variable blnConvertionSuccessful;
+
+         //init
+         o_intSizeInMB = 0;
+         o_intAvailableSpaceInMB = 0;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDriveName", i_strDriveName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDriveName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDriveName);
+
+            HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeInMB", o_intSizeInMB);
+            HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intAvailableSpaceInMB", o_intAvailableSpaceInMB);
+            return;
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDriveName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeInMB", o_intSizeInMB);
+            HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intAvailableSpaceInMB", o_intAvailableSpaceInMB);
+            return;
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //directory exists?
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         
+         objDrive = objFileSystemObject.GetDrive(i_strDriveName);
+         
+         fltSizeInBytes = objDrive.TotalSize;
+         fltAvailableSpaceInBytes = objDrive.AvailableSpace;
+
+         objDrive.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         //calculate mb (origin is in kb)
+         fltSizeInBytes = fltSizeInBytes / 1048576;
+         fltAvailableSpaceInBytes = fltAvailableSpaceInBytes / 1048576;
+
+         //convert to integer
+         o_intSizeInMB = HSLExtensions::Framework::Converter::ConvertToInteger(fltSizeInBytes, blnConvertionSuccessful);
+         if(blnConvertionSuccessful != hslTrue)
+         {
+            o_intSizeInMB = 0;
+         }
+
+         o_intAvailableSpaceInMB = HSLExtensions::Framework::Converter::ConvertToInteger(fltAvailableSpaceInBytes, blnConvertionSuccessful);
+         if(blnConvertionSuccessful != hslTrue)
+         {
+            o_intAvailableSpaceInMB = 0;
+         }
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeInMB", o_intSizeInMB);
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intAvailableSpaceInMB", o_intAvailableSpaceInMB);
+         
+         return;
+
+         //exception
+         ExceptionHandler:
+         {
+            objDrive.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeInMB", o_intSizeInMB);
+            HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intAvailableSpaceInMB", o_intAvailableSpaceInMB);
+         
+         return;
+         }
+      }
+
+      //---------------------------------------------------------
+      // Get the type of the drive
+      // 
+      // [in] i_strDriveName: drive name (e.g. 'c:')
+      // [returns] drive type (see enum DriveType)
+      //---------------------------------------------------------
+      function GetType(variable i_strDriveName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objDrive;
+         object objFileSystemObject;
+         
+         variable intDriveType(HSLExtensions::Framework::Enumerators::DriveType::Unknown);
+
+         variable intType;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDriveName", i_strDriveName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDriveName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDriveName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intDriveType);
+            return(intDriveType);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDriveName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intDriveType);
+            return(intDriveType);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get type
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         
+         objDrive = objFileSystemObject.GetDrive(i_strDriveName);
+         intType = objDrive.DriveType;
+         
+         objDrive.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         //convert to enum
+         if(intType == 1)
+         {
+            intDriveType = HSLExtensions::Framework::Enumerators::DriveType::Removable;
+         }
+         else if(intType == 2)
+         {
+            intDriveType = HSLExtensions::Framework::Enumerators::DriveType::Fixed;
+         }
+         else if(intType == 3)
+         {
+            intDriveType = HSLExtensions::Framework::Enumerators::DriveType::Network;
+         }
+         else if(intType == 4)
+         {
+            intDriveType = HSLExtensions::Framework::Enumerators::DriveType::CDRom;
+         }
+         else if(intType == 5)
+         {
+            intDriveType = HSLExtensions::Framework::Enumerators::DriveType::RamDisk;
+         }
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intDriveType);
+         return(intDriveType);
+
+         //exception
+         ExceptionHandler:
+         {
+            objDrive.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intDriveType);
+            return(intDriveType);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Get the file system of the drive
+      // 
+      // [in] i_strDriveName: drive name (e.g. 'c:')
+      // [returns] file system (string), or empty string if an error occurs
+      //---------------------------------------------------------
+      function GetFileSystem(variable i_strDriveName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objDrive;
+         object objFileSystemObject;
+         
+         variable strFileSystem("");
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDriveName", i_strDriveName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDriveName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDriveName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileSystem);
+            return(strFileSystem);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDriveName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileSystem);
+            return(strFileSystem);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get file system
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         
+         objDrive = objFileSystemObject.GetDrive(i_strDriveName);
+         strFileSystem = objDrive.FileSystem;
+         
+         objDrive.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileSystem);
+         return(strFileSystem);
+
+         //exception
+         ExceptionHandler:
+         {
+            objDrive.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileSystem);
+            return(strFileSystem);
+         }
+      }
+      
+   } //end Drive
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSIONS_DRIVE__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:49$$checksum=4aa6cf4f$$length=083$$

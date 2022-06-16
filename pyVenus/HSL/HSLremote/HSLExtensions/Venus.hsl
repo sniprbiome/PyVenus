@@ -1,0 +1,524 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with Venus functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2011.02.08   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_VENUS__
+#define __HSLEXTENSIONS_VENUS__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+#ifndef __HSLMlStarCfgKeys_hs___
+   #include "HSLMlStarCfgKeys.hs_"
+#endif
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //============================== String ==============================
+   namespace Venus
+   {
+      //---------------------------------------------------------
+      // Retrieves string separators for block data packages.
+      // 
+      // Parameters:
+      // [in] ML_STAR: instrument
+      // [out] o_strBlockDelimiter: value that indicates the delimiter which separates a block data package.
+      // [out] o_strFieldDelimiter: value that indicates the delimiter which separates the information within the block data package.
+      //---------------------------------------------------------
+      function GetBlockDataPackageDelimiters(device& ML_STAR, 
+                                             variable& o_strBlockDelimiter, 
+                                             variable& o_strFieldDelimiter) void
+      {
+         variable strFunctionName(GetFunctionName());
+
+         //init
+         o_strBlockDelimiter = "[";
+         o_strFieldDelimiter = ",";
+
+         //get values
+         o_strBlockDelimiter = ML_STAR.GetCfgValueWithKey(MlStarCfgKey::blockSeparator);
+         o_strFieldDelimiter = ML_STAR.GetCfgValueWithKey(MlStarCfgKey::wordSeparator);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_strBlockDelimiter", o_strBlockDelimiter);
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_strFieldDelimiter", o_strFieldDelimiter);
+      }
+
+      //---------------------------------------------------------
+      // Retrieves the TADM mode
+      // 
+      // Parameters:
+      // [in] ML_STAR: instrument
+      // [return] TADM mode (see enumerator TadmMode)
+      //---------------------------------------------------------
+      function GetTadmMode(device& ML_STAR) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable intTadmMode;
+         variable intConfigValue;
+        
+         //init
+         intTadmMode = HSLExtensions::Framework::Enumerators::TadmMode::Recording;
+
+         //get value
+         intConfigValue = ML_STAR.GetCfgValueWithKey(MlStarCfgKey::tadmRecordMode);
+
+         //convert to tadm type enumerator
+         if(intConfigValue == 0)
+         {
+            intTadmMode = HSLExtensions::Framework::Enumerators::TadmMode::Recording;
+         }
+         else
+         {
+            intTadmMode = HSLExtensions::Framework::Enumerators::TadmMode::Monitoring;
+         }
+
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intTadmMode);
+
+         //return
+         return(intTadmMode);
+      }
+
+      //---------------------------------------------------------
+      // Retrieves whether the star is simulated
+      // 
+      // Parameters:
+      // [in] ML_STAR: instrument
+      // [return] 'TRUE' if Star is simulated, otherwise 'false'
+      //---------------------------------------------------------
+      function IsStarSimulated(device& ML_STAR) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable blnIsSimulated;
+         variable intSimulatorMode;
+        
+         //init
+         blnIsSimulated = hslTrue;
+
+         //get value
+         intSimulatorMode = ML_STAR.GetCfgValueWithKey(MlStarCfgKey::simulatorMode);
+
+         //convert to boolean
+         if(intSimulatorMode == 0)
+         {
+            blnIsSimulated = hslFalse;
+         }
+         else
+         {
+            blnIsSimulated = hslTrue;
+         }
+
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnIsSimulated);
+
+         //return
+         return(blnIsSimulated);
+      }
+
+      //---------------------------------------------------------
+      // Retrieves the offset (starting position) of the deck in mm
+      // 
+      // Parameters:
+      // [in] ML_STAR: instrument
+      // [out] o_fltDeckOffsetX: x offset of the deck (in mm)
+      // [out] o_fltDeckOffsetY: x offset of the deck (in mm)
+      // [out] o_fltDeckOffsetZ: x offset of the deck (in mm)
+      //---------------------------------------------------------
+      function GetDeckOffset(device& ML_STAR, 
+                                             variable& o_fltDeckOffsetX, 
+                                             variable& o_fltDeckOffsetY, 
+                                             variable& o_fltDeckOffsetZ) void
+      {
+         variable strFunctionName(GetFunctionName());
+
+         //init
+         o_fltDeckOffsetX = 0.0;
+         o_fltDeckOffsetY = 0.0;
+         o_fltDeckOffsetZ = 0.0;
+
+         //get values
+         o_fltDeckOffsetX = ML_STAR.GetCfgValueWithKey(MlStarCfgKey::deckXOffset);
+         o_fltDeckOffsetY = ML_STAR.GetCfgValueWithKey(MlStarCfgKey::deckYOffset);
+         o_fltDeckOffsetZ = ML_STAR.GetCfgValueWithKey(MlStarCfgKey::deckZOffset);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_fltDeckOffsetX", o_fltDeckOffsetX);
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_fltDeckOffsetY", o_fltDeckOffsetY);
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_fltDeckOffsetZ", o_fltDeckOffsetZ);
+      }
+
+      //---------------------------------------------------------
+      // Retrieves the deck raster (width of a track) in mm
+      // 
+      // Parameters:
+      // [in] ML_STAR: instrument
+      // [returns] deck raster (with of a track) (in mm)
+      //---------------------------------------------------------
+      function GetDeckRaster(device& ML_STAR) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable fltDeckRaster(0.0);
+
+         //get value
+         fltDeckRaster = ML_STAR.GetCfgValueWithKey(MlStarCfgKey::deckRaster);
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, fltDeckRaster);
+
+         return(fltDeckRaster);
+      }
+
+      //---------------------------------------------------------
+      // Retrieves the number of installed channels
+      // 
+      // Parameters:
+      // [in] ML_STAR: instrument
+      // [returns] number of installed channels
+      //---------------------------------------------------------
+      function GetNumberOfChannels(device& ML_STAR) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable intNumberOfChannels(0);
+
+         //get value
+         intNumberOfChannels = ML_STAR.GetCfgValueWithKey(MlStarCfgKey::numberOfChannels);
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intNumberOfChannels);
+
+         return(intNumberOfChannels);
+      }
+
+      //---------------------------------------------------------
+      // Retrieves the laboratory name (which was typed in during installation of vector software)
+      // 
+      // Parameters:
+      // [returns] laboratory name
+      //---------------------------------------------------------
+      function GetLaboratoryName() variable
+      {
+         variable strFunctionName(GetFunctionName());
+   	   object   objHxRegistry;
+         variable strLaboratoryName("");
+
+         //register error handler
+         onerror goto ErrorHandler;
+         
+         //get name
+         objHxRegistry.CreateObject("HXREGLib.HxRegistry.1");
+
+         strLaboratoryName = objHxRegistry.Laboratory;
+
+         objHxRegistry.ReleaseObject();
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strLaboratoryName);
+
+         return(strLaboratoryName);
+
+         //on error
+         ErrorHandler:
+         {
+            objHxRegistry.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(GetFunctionName(), "HxRegistry object error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strLaboratoryName);
+
+            return(strLaboratoryName);
+         }
+      }
+      
+      //---------------------------------------------------------
+      // Retrieves the system software version
+      // 
+      // Parameters:
+      // [returns] system software version
+      //---------------------------------------------------------
+      function GetSystemSoftwareVersion() variable
+      {
+         variable strFunctionName(GetFunctionName());
+   	   object   objHxRegistry;
+         variable strVersion("");
+
+         //register error handler
+         onerror goto ErrorHandler;
+         
+         //get name
+         objHxRegistry.CreateObject("HXREGLib.HxRegistry.1");
+
+         objHxRegistry.ReleaseString(strVersion);
+
+         objHxRegistry.ReleaseObject();
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strVersion);
+
+         return(strVersion);
+
+         //on error
+         ErrorHandler:
+         {
+            objHxRegistry.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(GetFunctionName(), "HxRegistry object error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strVersion);
+
+            return(strVersion);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Retrieves the star software version
+      // 
+      // Parameters:
+      // [returns] star software version
+      //---------------------------------------------------------
+      function GetStarSoftwareVersion() variable
+      {
+         variable strFunctionName(GetFunctionName());
+   	   object   objHxRegistry;
+         variable strVersion("");
+
+         //register error handler
+         onerror goto ErrorHandler;
+         
+         //get name
+         objHxRegistry.CreateObject("HXREGLib.HxRegistry.1");
+
+         objHxRegistry.InstReleaseString("ML_STAR", strVersion);
+
+         objHxRegistry.ReleaseObject();
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strVersion);
+
+         return(strVersion);
+
+         //on error
+         ErrorHandler:
+         {
+            objHxRegistry.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(GetFunctionName(), "HxRegistry object error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strVersion);
+
+            return(strVersion);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Retrieves whether a ivd systemis installed
+      // 
+      // Parameters:
+      // [return] 'TRUE' if it is a IVD system, otherwise 'false'
+      //---------------------------------------------------------
+      function IsIvdSystem() variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable blnIsIVDSystem;         
+        
+         //init
+         blnIsIVDSystem = GetIVDSystem();
+
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnIsIVDSystem);
+
+         //return
+         return(blnIsIVDSystem);
+      }
+
+      //---------------------------------------------------------
+      // Retrieves the e mail address which is used to send error information
+      // 
+      // Parameters:
+      // [return] email addresss
+      //---------------------------------------------------------
+      function GetErrorEmailAddress() variable
+      {
+         variable strFunctionName(GetFunctionName());
+     	   object objHxCfgFile;
+     	   variable strConfigurationPath("");
+     	   variable strEmailAddress("");
+
+         //register error handler
+         onerror goto ErrorHandler;
+
+         //get value
+     	   objHxCfgFile.CreateObject("HXCFGFILLib.HxCfgFile");
+     	
+         strConfigurationPath = GetConfigPath();
+     	
+         objHxCfgFile.LoadFile(strConfigurationPath + "\\HxServices.cfg");
+
+     	   objHxCfgFile.LookupDataDefValueAsString("HxServicesErrorEvent", "default", "EmailOnErrorAddress", strEmailAddress);
+
+     	   objHxCfgFile.ReleaseObject();
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strEmailAddress);
+
+         return(strEmailAddress);
+
+         //on error
+         ErrorHandler:
+         {
+            objHxCfgFile.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(GetFunctionName(), "HxCfgFile object error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strEmailAddress);
+
+            return(strEmailAddress);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Get whether the error email function is enabled
+      // 
+      // Parameters:
+      // [return] 'TRUE' if error email is enabled, otherwise 'false'
+      //---------------------------------------------------------
+      function IsErrorEmailEnabled() variable
+      {
+         variable strFunctionName(GetFunctionName());
+     	   object objHxCfgFile;
+     	   variable strConfigurationPath("");
+     	   variable strEmailEnabled("");
+         variable blnEmailEnabled(hslFalse);
+         variable blnSuccessfulConverted;
+
+         //register error handler
+         onerror goto ErrorHandler;
+
+         //get value
+     	   objHxCfgFile.CreateObject("HXCFGFILLib.HxCfgFile");
+     	
+         strConfigurationPath = GetConfigPath();
+     	
+         objHxCfgFile.LoadFile(strConfigurationPath + "\\HxServices.cfg");
+
+     	   objHxCfgFile.LookupDataDefValueAsString("HxServicesErrorEvent", "default", "EmailOnErrorFlag", strEmailEnabled);
+
+     	   objHxCfgFile.ReleaseObject();
+
+         //convert to boolean
+         blnEmailEnabled = HSLExtensions::Framework::Converter::ConvertToBoolean(strEmailEnabled, blnSuccessfulConverted);
+         if(blnSuccessfulConverted != hslTrue)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(GetFunctionName(), "HxCfgFile result can not be converted to boolean");
+            blnEmailEnabled = hslFalse;
+         }
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnEmailEnabled);
+
+         return(blnEmailEnabled);
+
+         //on error
+         ErrorHandler:
+         {
+            objHxCfgFile.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(GetFunctionName(), "HxCfgFile object error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnEmailEnabled);
+
+            return(blnEmailEnabled);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Get the rights of the current user
+      // 
+      // Parameters:
+      // [return] user rights (see enumerator UserRights)
+      //---------------------------------------------------------
+      function GetCurrentUserRights() variable
+      {
+         variable strFunctionName(GetFunctionName());
+     	   object objHxSecurityCom;
+     	   variable intUserRights(HSLExtensions::Framework::Enumerators::UserRights::NoRights);
+         variable intAccessRights(0);
+     	   
+         //register error handler
+         onerror goto ErrorHandler;
+
+         //get value
+     	   objHxSecurityCom.CreateObject("Hamilton.HxSecurityCom");
+         
+         intAccessRights = objHxSecurityCom.GetCurrentAccessRight();
+
+     	   objHxSecurityCom.ReleaseObject();
+
+         //convert to enumerator
+         if(intAccessRights == 0)
+         {
+            intUserRights = HSLExtensions::Framework::Enumerators::UserRights::Service;
+         }
+         else if(intAccessRights == 1)
+         {
+            intUserRights = HSLExtensions::Framework::Enumerators::UserRights::Programmer;
+         }
+         else if(intAccessRights == 2)
+         {
+            intUserRights = HSLExtensions::Framework::Enumerators::UserRights::Operator2;
+         }
+         else if(intAccessRights == 3)
+         {
+            intUserRights = HSLExtensions::Framework::Enumerators::UserRights::Operator;
+         }
+         else if(intAccessRights == 4)
+         {
+            intUserRights = HSLExtensions::Framework::Enumerators::UserRights::NoRights;
+         }
+         else
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(GetFunctionName(), "GetCurrentAccessRight result is out of range");
+            intUserRights = HSLExtensions::Framework::Enumerators::UserRights::NoRights;
+         }
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intUserRights);
+
+         return(intUserRights);
+
+         //on error
+         ErrorHandler:
+         {
+            objHxSecurityCom.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(GetFunctionName(), "HxSecurityCom object error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intUserRights);
+
+            return(intUserRights);
+         }
+      }
+
+   } //end String
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSIONS_STRING__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 11:00$$checksum=0f5fd7ff$$length=083$$

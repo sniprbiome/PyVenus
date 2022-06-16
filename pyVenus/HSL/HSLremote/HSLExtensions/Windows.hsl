@@ -1,0 +1,428 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with windows functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2010.11.12   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_WINDOWS__
+#define __HSLEXTENSIONS_WINDOWS__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //============================== String ==============================
+   namespace Windows
+   {
+      //---------------------------------------------------------
+      // Get the specified special directory
+      // 
+      // [in] i_intSpecialDirectory: directory type (see enum SpecialDirectory)
+      // [returns] directory
+      //---------------------------------------------------------
+      function GetSpecialDirectory(variable i_intSpecialDirectoryType) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         object objDirectory;
+         variable strDirectory("");
+         variable blnInputError;
+         variable intDirectoryType;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intSpecialDirectoryType", i_intSpecialDirectoryType);
+
+         //check input - sort mode
+         blnInputError = hslFalse;
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intSpecialDirectoryType) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intSpecialDirectoryType);
+            blnInputError = hslTrue;
+         }
+         else
+         {
+            if( (i_intSpecialDirectoryType != HSLExtensions::Framework::Enumerators::SpecialDirectoryType::WindowsDirectory) && 
+                (i_intSpecialDirectoryType != HSLExtensions::Framework::Enumerators::SpecialDirectoryType::SystemDirectory) &&
+                (i_intSpecialDirectoryType != HSLExtensions::Framework::Enumerators::SpecialDirectoryType::TemporaryDirectory) )
+            {
+               HSLExtensions::Framework::Trace::ParameterOutOfRangeErrorTrace(strFunctionName, "i_intSpecialDirectoryType", i_intSpecialDirectoryType);
+               blnInputError = hslTrue;
+            }
+         }
+
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strDirectory);
+            return(strDirectory);
+         }
+
+         //convert enumerator to directory type
+         if(i_intSpecialDirectoryType == HSLExtensions::Framework::Enumerators::SpecialDirectoryType::WindowsDirectory)
+         {
+            intDirectoryType = 0;
+         }
+         else if(i_intSpecialDirectoryType == HSLExtensions::Framework::Enumerators::SpecialDirectoryType::SystemDirectory)
+         {
+            intDirectoryType = 1;
+         }
+         else if(i_intSpecialDirectoryType == HSLExtensions::Framework::Enumerators::SpecialDirectoryType::TemporaryDirectory)
+         {
+            intDirectoryType = 2;
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get directory
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objDirectory = objFileSystemObject.GetSpecialFolder(intDirectoryType);
+         strDirectory = objDirectory.Path;
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strDirectory);
+         return(strDirectory);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            strDirectory = "";
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strDirectory);
+            return(strDirectory);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Read a value from registry
+      //
+      // [in] i_intHKey: main key (see enumerator RegistryKey)
+      // [in] i_strKey: key (e.g: SOFTWARE\Phoenix\Directories\Methods)
+      // [in] i_strValueName: name of the value
+      // [out] o_varValue: value which was read (type is according to value type)
+      // [returns] "true" if the key exist, otherwise "false"
+      //---------------------------------------------------------
+      function GetRegistryValue( variable i_intHKey, 
+                                 variable i_strKey, 
+                                 variable i_strValueName, 
+                                 variable& o_varValue) variable 
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strFullValueName;
+         object   objRegistry;
+         variable blnInputError;
+         variable strHKey;
+
+         //init output
+         o_varValue = 0;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intHKey", i_intHKey);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strKey", i_strKey);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strValueName", i_strValueName);
+
+         //check input
+         blnInputError = hslFalse;
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intHKey) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intHKey);
+            blnInputError = hslTrue;
+         }
+         else
+         {
+            if( (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::ClassesRoot) && 
+                (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::CurrentUser) &&
+                (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::LocalMachine) &&
+                (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::Users) &&
+                (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::CurrentConfig) )
+            {
+               HSLExtensions::Framework::Trace::ParameterOutOfRangeErrorTrace(strFunctionName, "i_intHKey", i_intHKey);
+               blnInputError = hslTrue;
+            }
+         }
+
+         if(HSLExtensions::Framework::Types::IsString(i_strKey) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strKey);
+            blnInputError = hslTrue;
+         }
+         
+         if(HSLExtensions::Framework::Types::IsString(i_strValueName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strValueName);
+            blnInputError = hslTrue;
+         }
+
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //convert enumerator to directory type
+         if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::ClassesRoot)
+         {
+            strHKey = "HKEY_CLASSES_ROOT";
+         }
+         else if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::CurrentUser)
+         {
+            strHKey = "HKEY_CURRENT_USER";
+         }
+         else if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::LocalMachine)
+         {
+            strHKey = "HKEY_LOCAL_MACHINE";
+         }
+         else if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::Users)
+         {
+            strHKey = "HKEY_USERS";
+         }
+         else if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::CurrentConfig)
+         {
+            strHKey = "HKEY_CURRENT_CONFIG";
+         }
+
+         //create value name
+         strFullValueName = "";
+         strFullValueName = strFullValueName + strHKey;
+         strFullValueName = strFullValueName + "\\";
+         strFullValueName = strFullValueName + i_strKey;
+         strFullValueName = strFullValueName + "\\";
+         strFullValueName = strFullValueName + i_strValueName;
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //get value
+         objRegistry.CreateObject("WScript.Shell");
+         
+         o_varValue= objRegistry.RegRead(strFullValueName);
+         
+         objRegistry.ReleaseObject();
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_varValue", o_varValue);      
+
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue); 
+
+         //exception
+         ExceptionHandler:
+         {
+            objRegistry.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "WScript.Shell error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Write a value to the registry
+      //
+      // [in] i_intHKey: main key (see enumerator RegistryKey)
+      // [in] i_strKey: key (e.g: SOFTWARE\Phoenix\Directories\Methods)
+      // [in] i_strValueName: name of the value
+      // [in] i_varValue: value which shall be writen (type is according to value type)
+      // [in] i_intValueType: type of the value (wee enumerator RegistryValueType)
+      // [returns] "true" if the function was successful, otherwise "false"
+      //---------------------------------------------------------
+      function SetRegistryValue( variable i_intHKey, 
+                                 variable i_strKey, 
+                                 variable i_strValueName, 
+                                 variable i_varValue,
+                                 variable i_intValueType) variable 
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strFullValueName;
+         object   objRegistry;
+         variable blnInputError;
+         variable strHKey;
+         variable strValueType;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intHKey", i_intHKey);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strKey", i_strKey);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strValueName", i_strValueName);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intValueType", i_intValueType);
+
+         //check input
+         blnInputError = hslFalse;
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intHKey) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intHKey);
+            blnInputError = hslTrue;
+         }
+         else
+         {
+            if( (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::ClassesRoot) && 
+                (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::CurrentUser) &&
+                (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::LocalMachine) &&
+                (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::Users) &&
+                (i_intHKey != HSLExtensions::Framework::Enumerators::RegistryKey::CurrentConfig) )
+            {
+               HSLExtensions::Framework::Trace::ParameterOutOfRangeErrorTrace(strFunctionName, "i_intHKey", i_intHKey);
+               blnInputError = hslTrue;
+            }
+         }
+
+         if(HSLExtensions::Framework::Types::IsString(i_strKey) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strKey);
+            blnInputError = hslTrue;
+         }
+         
+         if(HSLExtensions::Framework::Types::IsString(i_strValueName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strValueName);
+            blnInputError = hslTrue;
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intValueType) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intValueType);
+            blnInputError = hslTrue;
+         }
+         else
+         {
+            if( (i_intValueType != HSLExtensions::Framework::Enumerators::RegistryValueType::String) && 
+                (i_intValueType != HSLExtensions::Framework::Enumerators::RegistryValueType::Number) &&
+                (i_intValueType != HSLExtensions::Framework::Enumerators::RegistryValueType::Binary) &&
+                (i_intValueType != HSLExtensions::Framework::Enumerators::RegistryValueType::ExpandableString) )
+            {
+               HSLExtensions::Framework::Trace::ParameterOutOfRangeErrorTrace(strFunctionName, "i_intValueType", i_intValueType);
+               blnInputError = hslTrue;
+            }
+         }
+
+         if(blnInputError == hslFalse)
+         {
+            if( (i_intValueType == HSLExtensions::Framework::Enumerators::RegistryValueType::String) ||
+                (i_intValueType == HSLExtensions::Framework::Enumerators::RegistryValueType::ExpandableString) )
+            {
+               if(HSLExtensions::Framework::Types::IsString(i_varValue) == hslFalse)
+               {
+                  HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_varValue);
+                  blnInputError = hslTrue;
+               }
+            }
+            else
+            {
+               if(HSLExtensions::Framework::Types::IsInteger(i_varValue) == hslFalse)
+               {
+                  HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_varValue);
+                  blnInputError = hslTrue;
+               }
+            }
+         }
+
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //convert enumerator to directory type
+         if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::ClassesRoot)
+         {
+            strHKey = "HKEY_CLASSES_ROOT";
+         }
+         else if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::CurrentUser)
+         {
+            strHKey = "HKEY_CURRENT_USER";
+         }
+         else if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::LocalMachine)
+         {
+            strHKey = "HKEY_LOCAL_MACHINE";
+         }
+         else if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::Users)
+         {
+            strHKey = "HKEY_USERS";
+         }
+         else if(i_intHKey == HSLExtensions::Framework::Enumerators::RegistryKey::CurrentConfig)
+         {
+            strHKey = "HKEY_CURRENT_CONFIG";
+         }
+
+         //convert enumerator to value type
+         if(i_intValueType == HSLExtensions::Framework::Enumerators::RegistryValueType::String)
+         {
+            strValueType = "REG_SZ";
+         }
+         else if(i_intValueType == HSLExtensions::Framework::Enumerators::RegistryValueType::Number)
+         {
+            strValueType = "REG_DWORD";
+         }
+         else if(i_intValueType == HSLExtensions::Framework::Enumerators::RegistryValueType::Binary)
+         {
+            strValueType = "REG_BINARY";
+         }
+         else if(i_intValueType == HSLExtensions::Framework::Enumerators::RegistryValueType::ExpandableString)
+         {
+            strValueType = "REG_EXPAND_SZ";
+         }
+
+         //create value name
+         strFullValueName = "";
+         strFullValueName = strFullValueName + strHKey;
+         strFullValueName = strFullValueName + "\\";
+         strFullValueName = strFullValueName + i_strKey;
+         strFullValueName = strFullValueName + "\\";
+         strFullValueName = strFullValueName + i_strValueName;
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //set value
+         objRegistry.CreateObject("WScript.Shell");
+         
+         objRegistry.RegWrite(strFullValueName,i_varValue,strValueType);
+         
+         objRegistry.ReleaseObject();
+
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue); 
+
+         //exception
+         ExceptionHandler:
+         {
+            objRegistry.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "WScript.Shell error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }
+      
+   } //end Windows
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSIONS_WINDOWS__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:49$$checksum=ef26cb36$$length=083$$

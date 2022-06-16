@@ -1,0 +1,177 @@
+// include standard libraries needed for HSLremote
+#include "HSLExtensions\\File.hsl" 
+#include "HSLStrLib.hsl"
+
+// define internal variables for HSLremote
+namespace HSLremote 
+{
+   variable strLayout;
+   variable strToSystem;
+   variable strFromSystem;
+   variable intCommandCounter(1);
+   variable strFilename;
+   timer hdlTimer;
+}
+
+variable ___SHUTDOWN___(0);
+variable ___ARRAY___[];
+variable ___JSON___;
+
+
+
+
+
+function JSONobject_start(variable & strJSON, variable strName) void {
+   if(strName != "")
+      strJSON = strJSON + "\n\"" + strName + "\": ";
+
+   strJSON = strJSON + "{";
+}
+
+function JSONobject_end(variable & strJSON) void {
+   strJSON = StrTrimRight(strJSON, ",");
+   strJSON = strJSON + "\n},";
+}
+
+
+function JSONproperty(variable & strJSON, variable strName, variable value) void {
+   if(GetType(value) == "i")
+      strJSON = strJSON + "\n\"" + strName + "\": " + IStr(value) + ",";
+   if(GetType(value) == "f")
+      strJSON = strJSON + "\n\"" + strName + "\": " + FStr(value) + ",";
+   if(GetType(value) == "s")
+      strJSON = strJSON + "\n\"" + strName + "\": \"" + value + "\",";
+}
+
+
+function JSONarray_start(variable & strJSON, variable strName) void {
+   strJSON = strJSON + "\n\"" + strName + "\": [";
+}
+
+function JSONarray_element(variable & strJSON, variable value) void {
+  if(GetType(value) == "i")
+      strJSON = strJSON + "\n" + IStr(value) + ",";
+   if(GetType(value) == "f")
+      strJSON = strJSON + "\n" + FStr(value) + ",";
+   if(GetType(value) == "s")
+      strJSON = strJSON + "\n\"" + value + "\",";
+}
+
+function JSONarray_end(variable & strJSON) void {
+   strJSON = StrTrimRight(strJSON, ",");
+   strJSON = strJSON + "\n],";
+}
+
+function JSONwrite(variable strJSON, variable strFile) void {
+   file hdlFile;
+   
+   strJSON = StrTrimRight(strJSON, ",");
+   hdlFile.AddField(1, strJSON, hslString);
+   hdlFile.SetDelimiter(hslAsciiText);
+   hdlFile.Open(strFile, hslWrite);
+   hdlFile.WriteRecord();
+   hdlFile.Close();
+   hdlFile.RemoveFields();
+}
+
+
+
+function addJSON_variable(variable & strJSON, variable var, variable strName) void 
+{
+   JSONproperty(strJSON, strName, var);  
+}
+
+function addJSON_array(variable & strJSON, variable arr[], variable strName) void {
+   variable intIndex;
+
+   JSONarray_start(strJSON, strName);
+   for(intIndex = 0; intIndex < arr.GetSize();)
+      JSONarray_element(strJSON, arr.ElementAt(intIndex));
+   JSONarray_end(strJSON);   
+}
+
+function addJSON_sequence(variable & strJSON, sequence seq, variable strName) void {
+   variable intIndex;
+
+   JSONobject_start(strJSON, strName);
+
+   JSONproperty(strJSON, "current", seq.GetCurrentPosition());
+   JSONproperty(strJSON, "end", seq.GetCount());
+
+   seq.SetCurrentPosition(1);
+   seq.SetCount(seq.GetTotal());
+   JSONarray_start(strJSON, "labware");
+   for(intIndex = 0; intIndex < seq.GetTotal();) {
+      JSONarray_element(strJSON, seq.GetLabwareId());
+      seq.Increment(1);
+      intIndex = intIndex + 1;
+   }
+   JSONarray_end(strJSON);
+
+   seq.SetCurrentPosition(1);
+   seq.SetCount(seq.GetTotal());
+   JSONarray_start(strJSON, "position");
+   for(intIndex = 0; intIndex < seq.GetTotal();) {
+      JSONarray_element(strJSON, seq.GetPositionId());
+      seq.Increment(1);
+      intIndex = intIndex + 1;
+   }
+   JSONarray_end(strJSON);
+
+   JSONobject_end(strJSON);
+}
+
+
+
+
+
+method main()
+{  
+   // set location of input and output folders
+   HSLremote::strToSystem = HSLExtensions::File::GetDirectoryName(GetFileName()) + "\\toSystem\\";
+   HSLremote::strFromSystem = HSLExtensions::File::GetDirectoryName(GetFileName()) + "\\fromSystem\\";
+   Trace("Directory >> toSystem: " + HSLremote::strToSystem);
+   Trace("Directory >> fromSystem: " + HSLremote::strFromSystem);
+
+   // start the main method with the specific deck layout
+   while (___SHUTDOWN___ == 0)
+   {
+      // generate filename for next command file
+      HSLremote::strFilename = HSLremote::strToSystem + IStr(HSLremote::intCommandCounter) + ".hsl";
+      
+      // wait for next command file to appear
+      Trace("Waiting for next command file...");
+      while (HSLExtensions::File::Exists(HSLremote::strFilename) == 0)
+      {  
+         HSLremote::hdlTimer.SetTimer(1);
+         HSLremote::hdlTimer.WaitTimer(hslFalse, hslFalse);
+      }
+      Trace("New command file found (", HSLremote::strFilename, ") >> Executing...");
+    
+      AddCheckSum(HSLremote::strFilename, "//");
+      
+      // import command file
+      << HSLremote::strFilename;
+      
+      // setup JSON object for return information
+      ___JSON___ = "";
+      JSONobject_start(___JSON___, "");
+
+      // execute new HSL code
+      #ifdef HSL_RUNTIME
+         __EvalExpr__();
+      #endif
+
+      // generate return file
+      Trace("Generating return file (", HSLremote::strFromSystem + IStr(HSLremote::intCommandCounter) + ".json", ")");
+      JSONobject_end(___JSON___);
+      JSONwrite(___JSON___, HSLremote::strFromSystem + IStr(HSLremote::intCommandCounter) + ".json");
+
+      // increment the command counter         
+      HSLremote::intCommandCounter = HSLremote::intCommandCounter + 1;
+   }
+
+   // shut down
+   return;
+}
+// $$author=BenjaminWohl$$valid=0$$time=2022-05-11 16:25$$checksum=fd96f2dd$$length=089$$

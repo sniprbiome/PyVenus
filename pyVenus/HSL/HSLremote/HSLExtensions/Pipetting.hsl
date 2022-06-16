@@ -1,0 +1,646 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with pipetting functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2010.11.17   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_PIPETTING__
+#define __HSLEXTENSIONS_PIPETTING__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+#ifndef __HSLStrLib_hsl__
+   #include "HSLStrLib.hsl"
+#endif
+
+
+//============================== HSLExtension ==============================
+namespace HSLExtensions
+{
+   //============================== Pipetting ==============================
+   namespace Pipetting
+   {
+      //---------------------------------------------------------
+      // convert position text to position number (for 96 well plate)
+      //
+      // Notes:
+      // - positions
+      // 1..89
+      // ....
+      // 8..96
+      // - labware id
+      // A1..A12
+      // ....
+      // H1..H12
+      //
+      // [in] i_strPositionText   - position text (string, 'A1'..'H12')
+      // [out] o_intPositionNumber  - position number (int, 1-96)
+      // [return] 'hslTrue' if conversion was successful, otherwise 'false'
+      //---------------------------------------------------------
+      function Plate96PositionTextToPositionNumber(variable i_strPositionText, 
+                                 variable& o_intPositionNumber)variable
+      {
+         variable strFunctionName(GetFunctionName());
+
+         string strRowID;
+         string strColumnID;
+
+         variable intRow;
+         variable intColumn;
+
+         //init
+         o_intPositionNumber = 0;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strPositionText", i_strPositionText);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strPositionText) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strPositionText);            
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //get row id and column id
+         if(StrGetLength(i_strPositionText) == 2)
+         {
+            strRowID = StrLeft(i_strPositionText, 1);
+            strColumnID = StrRight(i_strPositionText, 1);
+         }
+         else if(StrGetLength(i_strPositionText) == 3)
+         {
+            strRowID = StrLeft(i_strPositionText, 1);
+            strColumnID = StrRight(i_strPositionText, 2);
+         }
+         else
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //calc row
+         strRowID.MakeUpper();
+
+         if(strRowID.Compare("A") == 0) intRow = 1;
+         else if(strRowID.Compare("B") == 0) intRow = 2;
+         else if(strRowID.Compare("C") == 0) intRow = 3;
+         else if(strRowID.Compare("D") == 0) intRow = 4;
+         else if(strRowID.Compare("E") == 0) intRow = 5;
+         else if(strRowID.Compare("F") == 0) intRow = 6;
+         else if(strRowID.Compare("G") == 0) intRow = 7;
+         else if(strRowID.Compare("H") == 0) intRow = 8;
+         else 
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //calc column
+         intColumn = IVal(strColumnID);
+
+         if( (intColumn < 1) || (intColumn > 12) )
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //return
+         o_intPositionNumber = (intColumn-1) * 8 + intRow;
+
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intPositionNumber", o_intPositionNumber);
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+      }
+
+      //---------------------------------------------------------
+      // convert position number to position text (for 96 well plate)
+      //
+      // Notes:
+      // - positions
+      // 1..89    
+      // ....
+      // 8..96
+      // - labware id
+      // A1..A12
+      // ....
+      // H1..H12
+      //
+      // [in] i_intPositionNumber  - position number (int, 1-96)
+      // [out] o_strPositionText   - position text (string, 'A1'..'H12')
+      // [return] 'hslTrue' if conversion was successful, otherwise 'false'
+      //---------------------------------------------------------
+      function Plate96PositionNumberToPositionText(variable i_intPositionNumber,
+                                 variable& o_strPositionText) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strRow;
+         variable strColumn;
+
+         variable intRow;
+         variable intColumn;
+
+         //init
+         o_strPositionText = "";
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionNumber", i_intPositionNumber);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionNumber) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intPositionNumber);            
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if( (i_intPositionNumber < 1) ||
+             (i_intPositionNumber > 96) )
+         {
+            HSLExtensions::Framework::Trace::ParameterOutOfRangeErrorTrace(strFunctionName, "i_intPositionNumber", i_intPositionNumber);            
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //calculate position id
+         // - column
+         intColumn = (i_intPositionNumber - ((i_intPositionNumber-1) % 8) - 1);
+         intColumn = intColumn / 8 + 1;      
+
+         // - row
+         intRow = ((i_intPositionNumber-1) % 8) + 1;
+
+         // - set row
+         if(1 == intRow) strRow = "A";
+         else if(2 == intRow) strRow = "B";
+         else if(3 == intRow) strRow = "C";
+         else if(4 == intRow) strRow = "D";
+         else if(5 == intRow) strRow = "E";
+         else if(6 == intRow) strRow = "F";
+         else if(7 == intRow) strRow = "G";
+         else if(8 == intRow) strRow = "H";
+         else 
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         // - set column
+         strColumn = IStr(intColumn);
+
+         //return
+         o_strPositionText = strRow + strColumn;
+
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_strPositionText", o_strPositionText);
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+      }
+
+      //---------------------------------------------------------
+      // convert position text to position number (for 384 well plate)
+      //
+      // Notes:
+      // - positions
+      // 1..369
+      // ....
+      // 16..384
+      // - labware id
+      // A1..A24
+      // ....
+      // P1..P24
+      //
+      // [in] i_strPositionText   - position text (string, 'A1'..'H12')
+      // [out] o_intPositionNumber  - position number (int, 1-384)
+      // [return] 'hslTrue' if conversion was successful, otherwise 'false'
+      //---------------------------------------------------------
+      function Plate384PositionTextToPositionNumber(variable i_strPositionText, 
+                                 variable& o_intPositionNumber)variable
+      {
+         variable strFunctionName(GetFunctionName());
+         string strRowID;
+         string strColumnID;
+
+         variable intRow;
+         variable intColumn;
+
+         //init
+         o_intPositionNumber = 0;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strPositionText", i_strPositionText);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strPositionText) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strPositionText);            
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //get row id and column id
+         if(StrGetLength(i_strPositionText) == 2)
+         {
+            strRowID = StrLeft(i_strPositionText, 1);
+            strColumnID = StrRight(i_strPositionText, 1);
+         }
+         else if(StrGetLength(i_strPositionText) == 3)
+         {
+            strRowID = StrLeft(i_strPositionText, 1);
+            strColumnID = StrRight(i_strPositionText, 2);
+         }
+         else
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //calc row
+         strRowID.MakeUpper();
+
+         if(strRowID.Compare("A") == 0) intRow = 1;
+         else if(strRowID.Compare("B") == 0) intRow = 2;
+         else if(strRowID.Compare("C") == 0) intRow = 3;
+         else if(strRowID.Compare("D") == 0) intRow = 4;
+         else if(strRowID.Compare("E") == 0) intRow = 5;
+         else if(strRowID.Compare("F") == 0) intRow = 6;
+         else if(strRowID.Compare("G") == 0) intRow = 7;
+         else if(strRowID.Compare("H") == 0) intRow = 8;
+         else if(strRowID.Compare("I") == 0) intRow = 9;
+         else if(strRowID.Compare("J") == 0) intRow = 10;
+         else if(strRowID.Compare("K") == 0) intRow = 11;
+         else if(strRowID.Compare("L") == 0) intRow = 12;
+         else if(strRowID.Compare("M") == 0) intRow = 13;
+         else if(strRowID.Compare("N") == 0) intRow = 14;
+         else if(strRowID.Compare("O") == 0) intRow = 15;
+         else if(strRowID.Compare("P") == 0) intRow = 16;
+         else 
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //calc column
+         intColumn = IVal(strColumnID);
+
+         if( (intColumn < 1) || (intColumn > 24) )
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //return
+         o_intPositionNumber = (intColumn-1) * 16 + intRow;
+         
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intPositionNumber", o_intPositionNumber);
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+      }
+
+      //---------------------------------------------------------
+      // convert position number to position text (for 384 well plate)
+      //
+      // Notes:
+      // - positions
+      // 1..369
+      // ....
+      // 16..384
+      // - labware id
+      // A1..A24
+      // ....
+      // P1..P24
+      //
+      // [in] i_intPositionNumber  - position number (int, 1-384)
+      // [out] o_strPositionText   - position text (string, 'A1'..'H12')
+      // [return] 'hslTrue' if conversion was successful, otherwise 'false'
+      //---------------------------------------------------------
+      function Plate384PositionNumberToPositionText(variable i_intPositionNumber,
+                                 variable& o_strPositionText)variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strRow;
+         variable strColumn;
+
+         variable intRow;
+         variable intColumn;
+
+         //init
+         o_strPositionText = "";
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionNumber", i_intPositionNumber);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionNumber) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intPositionNumber);            
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if( (i_intPositionNumber < 1) ||
+             (i_intPositionNumber > 384) )
+         {
+            HSLExtensions::Framework::Trace::ParameterOutOfRangeErrorTrace(strFunctionName, "i_intPositionNumber", i_intPositionNumber);            
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //calculate position id
+         // - column
+         intColumn = (i_intPositionNumber - ((i_intPositionNumber-1) % 16) - 1);
+         intColumn = intColumn / 16 + 1;      
+
+         // - row
+         intRow = ((i_intPositionNumber-1) % 16) + 1;
+
+         // - set row
+         if(1 == intRow) strRow = "A";
+         else if(2 == intRow) strRow = "B";
+         else if(3 == intRow) strRow = "C";
+         else if(4 == intRow) strRow = "D";
+         else if(5 == intRow) strRow = "E";
+         else if(6 == intRow) strRow = "F";
+         else if(7 == intRow) strRow = "G";
+         else if(8 == intRow) strRow = "H";
+         else if(9 == intRow) strRow = "I";
+         else if(10 == intRow) strRow = "J";
+         else if(11 == intRow) strRow = "K";
+         else if(12 == intRow) strRow = "L";
+         else if(13 == intRow) strRow = "M";
+         else if(14 == intRow) strRow = "N";
+         else if(15 == intRow) strRow = "O";
+         else if(16 == intRow) strRow = "P";
+         else
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         // - set column
+         strColumn = IStr(intColumn);
+
+         //return
+         o_strPositionText = strRow + strColumn;
+
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_strPositionText", o_strPositionText);
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+      }
+
+      //---------------------------------------------------------
+      // generate a ordered channel pattern
+      // the used channels are at the beginning of the pattern and the pattern will be filled with '0' to total number of channels
+      // NOTE: if 'i_iNumberOfUsedChannels' is greater then 'i_iTotalNumberOfChannels' the pattern will be limited to 'i_iTotalNumberOfChannels'
+      //
+      // [in] i_intNumberOfUsedChannels: number of channels which should be used
+      // [in] i_intTotalNumberOfChannels: total number of channels (total size of channel pattern)
+      // [return] channel pattern (string)
+      //---------------------------------------------------------
+      function CreateOrderedChannelPattern(variable i_intNumberOfUsedChannels, 
+                                          variable i_intTotalNumberOfChannels) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable i;
+         
+         variable strChannelPattern;
+         
+         //init
+         strChannelPattern = "";
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intNumberOfUsedChannels", i_intNumberOfUsedChannels);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intTotalNumberOfChannels", i_intTotalNumberOfChannels);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intNumberOfUsedChannels) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intNumberOfUsedChannels);            
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strChannelPattern);
+            return(strChannelPattern);
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intTotalNumberOfChannels) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intTotalNumberOfChannels);            
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strChannelPattern);
+            return(strChannelPattern);
+         }
+
+         if(i_intNumberOfUsedChannels < 0)
+         {
+            HSLExtensions::Framework::Trace::ParameterOutOfRangeErrorTrace(strFunctionName, "i_intNumberOfUsedChannels", i_intNumberOfUsedChannels);
+
+            i_intNumberOfUsedChannels = 0;
+         }
+
+         if(i_intTotalNumberOfChannels < 0)
+         {
+            HSLExtensions::Framework::Trace::ParameterOutOfRangeErrorTrace(strFunctionName, "i_intTotalNumberOfChannels", i_intTotalNumberOfChannels);
+
+            i_intTotalNumberOfChannels = 0;
+         }
+
+         if(i_intNumberOfUsedChannels > i_intTotalNumberOfChannels)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "parameter 'i_intNumberOfUsedChannels' is larger then parameter 'i_intTotalNumberOfChannels'");
+
+            i_intNumberOfUsedChannels = i_intTotalNumberOfChannels;
+         }
+       
+         //change bool to int -> workaround, because the for-statement raises in error if an bool is used
+         if(i_intNumberOfUsedChannels == hslTrue)
+         {
+            i_intNumberOfUsedChannels = 1;
+         }
+         if(i_intNumberOfUsedChannels == hslFalse)
+         {
+            i_intNumberOfUsedChannels = 0;
+         }
+
+         //used channels
+         for(i=0; i<i_intNumberOfUsedChannels; i++)
+         {
+            strChannelPattern = strChannelPattern + "1";
+         }
+
+         //total channels
+         for(i=i_intNumberOfUsedChannels; i<i_intTotalNumberOfChannels; i++)
+         {
+            strChannelPattern = strChannelPattern + "0";
+         }
+
+         //return
+			HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strChannelPattern);
+         return(strChannelPattern);
+      }
+
+
+      //---------------------------------------------------------
+      // generate a mixed channel pattern
+      // the channel pattern is regarding to the input array and the pattern will be filled with '0' to total number of channels
+      // NOTE: if array soze is greater then 'i_iTotalNumberOfChannels' the pattern will be limited to 'i_iTotalNumberOfChannels'
+      //
+      // [in] i_arrUseChannel: array with channels (boolean array, 'true' if channel should be used, otherwise false)
+      // [in] i_intTotalNumberOfChannels: total number of channels (total size of channel pattern)
+      // [return] channel pattern (string)
+      //---------------------------------------------------------
+      function CreateMixedChannelPattern(variable i_arrUseChannel[],
+                                          variable i_intTotalNumberOfChannels) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable i;
+         variable intSize;
+         
+         variable strChannelPattern;
+
+         intSize = i_arrUseChannel.GetSize();
+         
+         //init
+         strChannelPattern = "";
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrUseChannel", i_arrUseChannel);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intTotalNumberOfChannels", i_intTotalNumberOfChannels);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsBooleanArray(i_arrUseChannel) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "The array 'i_arrUseChannel' contains values with a wrong type");
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strChannelPattern);
+            return(strChannelPattern);
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intTotalNumberOfChannels) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intTotalNumberOfChannels);            
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strChannelPattern);
+            return(strChannelPattern);
+         }
+
+         if(intSize > i_intTotalNumberOfChannels)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "size of array 'i_arrUseChannel' is larger then parameter 'i_intTotalNumberOfChannels'");
+
+            intSize = i_intTotalNumberOfChannels;
+         }
+
+         //read array
+         for(i=0; i<intSize; i++)
+         {
+            if(i_arrUseChannel.GetAt(i) == hslTrue)
+            {
+               strChannelPattern = strChannelPattern + "1";
+            }
+            else
+            {
+               strChannelPattern = strChannelPattern + "0";
+            }
+         }
+
+         //total channels
+         for(i=intSize; i<i_intTotalNumberOfChannels; i++)
+         {
+            strChannelPattern = strChannelPattern + "0";
+         }
+
+         //return
+			HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strChannelPattern);
+         return(strChannelPattern);
+      }
+
+      //---------------------------------------------------------
+      // parse a channel pattern
+      // NOTE: if input has a wrong type or is empty or contains not allowed characters, then the result is an empty array
+      //
+      // [in] i_strChannelPattern: channel pattern      
+      // [return] array with all channels of the channel pattern (array of boolean), if channel is used the array value is 'true' otherwise it is 'false'
+      //---------------------------------------------------------
+      function ParseChannelPattern(variable i_strChannelPattern) variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+         variable arrIsChannelUsed[];
+         variable i;
+         variable intSize;
+         variable strActualCharacter;
+
+         //init
+         arrIsChannelUsed.SetSize(0);
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strChannelPattern", i_strChannelPattern);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strChannelPattern) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_strChannelPattern);
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrIsChannelUsed);
+            return(arrIsChannelUsed);
+         }
+
+         //analyse string
+         intSize = StrGetLength(i_strChannelPattern);
+         
+         for(i=0; i<intSize; i++)
+         {
+            strActualCharacter = StrMid(i_strChannelPattern, i, 1);
+
+            if(strActualCharacter == "1")
+            {
+               arrIsChannelUsed.AddAsLast(hslTrue);
+            }
+            else if(strActualCharacter == "0")
+            {
+               arrIsChannelUsed.AddAsLast(hslFalse);
+            }
+            else
+            {
+               arrIsChannelUsed.SetSize(0);
+
+               HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "The channel pattern contains not allowed characters");
+
+               HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrIsChannelUsed);
+               return(arrIsChannelUsed);
+            }
+         }
+
+         //return
+			HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrIsChannelUsed);
+         return(arrIsChannelUsed);
+      }
+
+     
+   } //end Pipetting
+} //end HSLExtension
+
+#endif //end __HSLEXTENSION_ARRAY__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:50$$checksum=3796aedb$$length=083$$

@@ -1,0 +1,400 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with core functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2010.11.02   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_CORE__
+#define __HSLEXTENSIONS_CORE__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+//============================== HSLExtension ==============================
+namespace HSLExtensions
+{
+   //============================== Core ==============================
+   namespace Core
+   {
+      //------------------------------------------------------
+      // Get whether the value is of type integer
+      //
+      // [in] i_varValue
+      // [return] 'true' if value is of type integer, otherwise 'false'
+      //------------------------------------------------------
+      function IsInteger(variable i_varValue) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable blnIsInteger;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //is integer
+         blnIsInteger = HSLExtensions::Framework::Types::IsInteger(i_varValue);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnIsInteger);
+
+         return(blnIsInteger);
+      }
+   
+      //------------------------------------------------------
+      // Get whether the value is of type string
+      //
+      // [in] i_varValue
+      // [return] 'true' if value is of type string, otherwise 'false'
+      //------------------------------------------------------
+      function IsString(variable i_varValue) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable blnIsString;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //is string
+         blnIsString = HSLExtensions::Framework::Types::IsString(i_varValue);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnIsString);
+
+         return(blnIsString);
+      }
+
+      //------------------------------------------------------
+      // Get whether the value is of type float
+      //
+      // [in] i_varValue
+      // [return] 'true' if value is of type float, otherwise 'false'
+      //------------------------------------------------------
+      function IsFloat(variable i_varValue) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable blnIsFloat;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //is float
+         blnIsFloat = HSLExtensions::Framework::Types::IsFloat(i_varValue);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnIsFloat);
+
+         return(blnIsFloat);
+      }
+
+      //------------------------------------------------------
+      // Get whether the value is of type boolean
+      // NOTE: boolean values are of type integer but only 'true' and 'false' are allowed
+      //
+      // [in] i_varValue
+      // [return] 'true' if value is of type boolean, otherwise 'false'
+      //------------------------------------------------------
+      function IsBoolean(variable i_varValue) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable blnIsBoolean;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //is boolean
+         blnIsBoolean = HSLExtensions::Framework::Types::IsBoolean(i_varValue);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnIsBoolean);
+
+         return(blnIsBoolean);
+      }
+
+      //------------------------------------------------------
+      // Get whether the value is null
+      //
+      // [in] i_varValue
+      // [return] 'true' if value is null, otherwise 'false'
+      //------------------------------------------------------
+      function IsNull(variable i_varValue) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable blnIsNull;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //is null
+         blnIsNull = HSLExtensions::Framework::Types::IsNull(i_varValue);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnIsNull);
+
+         return(blnIsNull);
+      }
+
+      //------------------------------------------------------
+      // Get whether the value is an empty string
+      //
+      // [in] i_varValue
+      // [return] 'true' if value is an empty string, otherwise 'false'
+      //------------------------------------------------------
+      function IsEmptyString(variable i_varValue) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable blnIsEmptyString;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //is empty string
+         blnIsEmptyString = HSLExtensions::Framework::Types::IsEmptyString(i_varValue);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnIsEmptyString);
+
+         return(blnIsEmptyString);
+      }
+
+      //------------------------------------------------------
+      // Get the type of the value
+      // NOTE: the type 'boolean' will never returned because a 'boolean' is a subset of 'integer'
+      //
+      // [in] i_varValue
+      // [return] value type (see enumerator Types::Type)
+      //------------------------------------------------------
+      function GetValueType(variable i_varValue) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable intValueType;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //get value type
+         intValueType = HSLExtensions::Framework::Types::GetValueType(i_varValue);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intValueType);
+
+         return(intValueType);
+      }
+
+      //------------------------------------------------------
+      // Converts the value to a string
+      // NOTE: all value types are supported, if the value is 'null' an empty string will returned
+      //
+      // [in] i_varValue
+      // [return] string
+      //------------------------------------------------------
+      function ConvertToString(variable i_varValue) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable strConvertedValue;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //convert
+         strConvertedValue = HSLExtensions::Framework::Converter::ConvertToString(i_varValue);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strConvertedValue);
+
+         return(strConvertedValue);
+      }
+
+      //------------------------------------------------------
+      // Converts the value to a boolean
+      // NOTE: all value types are supported
+      // - integer: '0' will be converted to 'false', all other values will be converted to 'true'
+      // - float: '0' will be converted to 'false', all other values will be converted to 'true'
+      // - string: "0" and "false" will be converted to 'false', "1" and "true" will be converted to 'true', all other values will be converted to 'false' and i_bSuccessfulConverted is 'false'
+      // - null: 'false' will be returned and i_bSuccessfulConverted is 'false'
+      //
+      // [in] i_varValue
+      // [return] string
+      //------------------------------------------------------
+      function ConvertToBoolean(  variable i_varValue, 
+                                 variable& o_blnSuccessfulConverted) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable blnConvertedValue;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //convert
+         blnConvertedValue = HSLExtensions::Framework::Converter::ConvertToBoolean(i_varValue, o_blnSuccessfulConverted);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_blnSuccessfulConverted", o_blnSuccessfulConverted);
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, blnConvertedValue);
+
+         return(blnConvertedValue);
+      }
+
+      //------------------------------------------------------
+      // Converts the value to a integer
+      // NOTE:
+      // all value types are supported
+      // - float: the value will be truncated (e.g. '1.8' -> '1'; '-1.8' -> '-1')
+      // - string: if the string contains not allowed characters the return value is '0' and i_bSuccessfulConverted is 'false'
+      // - null: '0' will be returned and i_bSuccessfulConverted is 'false'
+      //
+      // [in] i_varValue
+      // [out] o_blnSuccessfulConverted: 'true' if value was successful converted, otherwise 'false'
+      // [return] integer
+      //------------------------------------------------------
+      function ConvertToInteger( variable i_varValue, 
+                                 variable& o_blnSuccessfulConverted) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable intConvertedValue;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //convert
+         intConvertedValue = HSLExtensions::Framework::Converter::ConvertToInteger(i_varValue, o_blnSuccessfulConverted);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_blnSuccessfulConverted", o_blnSuccessfulConverted);
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intConvertedValue);
+
+         return(intConvertedValue);
+      }
+
+      //------------------------------------------------------
+      // Converts the value to a float
+      // NOTE:
+      // all value types are supported
+      // - string: if the string contains not allowed characters the return value is '0.0' and i_bSuccessfulConverted is 'false'
+      // - null: '0.0' will be returned and i_bSuccessfulConverted is 'false'
+      //
+      // [in] i_varValue
+      // [out] o_blnSuccessfulConverted: 'true' if value was successful converted, otherwise 'false'
+      // [return] float
+      //------------------------------------------------------
+      function ConvertToFloat( variable i_varValue, 
+                                 variable& o_blnSuccessfulConverted) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable fltConvertedValue;
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //convert
+         fltConvertedValue = HSLExtensions::Framework::Converter::ConvertToFloat(i_varValue, o_blnSuccessfulConverted);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_blnSuccessfulConverted", o_blnSuccessfulConverted);
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, fltConvertedValue);
+
+         return(fltConvertedValue);
+      }
+
+      //------------------------------------------------------
+      // Check whether the value is in between two values (minimum and maximum are inside the range and therefore allowed for the value)
+      // NOTE: 
+      // - all value types are supported (except 'null' -> in this case the function returns 'false')
+      // - if input parameters have different types the function returns 'false'
+      // - if i_oMinimum is higher than i_oMaximum the function returns 'false'
+      //
+      // [in] i_varValue
+      // [in] i_varMinimum
+      // [in] i_varMaximum
+      // [return] bool: 'true' if the value is inside the range, otherwise 'false'
+      //------------------------------------------------------
+      function IsBetween( variable i_varValue, 
+                          variable i_varMinimum,
+                          variable i_varMaximum) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable intValueType(HSLExtensions::Framework::Enumerators::Type::Null);
+         variable intTypeMinimum(HSLExtensions::Framework::Enumerators::Type::Null);
+         variable intTypeMaximum(HSLExtensions::Framework::Enumerators::Type::Null);
+         variable strErrorMsg("");
+
+         intValueType = HSLExtensions::Framework::Types::GetValueType(i_varValue);
+         intTypeMinimum = HSLExtensions::Framework::Types::GetValueType(i_varMinimum);
+         intTypeMaximum = HSLExtensions::Framework::Types::GetValueType(i_varMaximum);
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varMinimum", i_varMinimum);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varMaximum", i_varMaximum);
+
+         //check input - same value types
+         if( (intValueType != intTypeMinimum) ||
+             (intValueType != intTypeMaximum) )
+         {
+            strErrorMsg = "The parameters have differnt types. (value type = ";
+            strErrorMsg = strErrorMsg + HSLExtensions::Framework::Converter::ConvertTypeToString(intValueType);
+            strErrorMsg = strErrorMsg + ", minimum range type = ";
+            strErrorMsg = strErrorMsg + HSLExtensions::Framework::Converter::ConvertTypeToString(intTypeMinimum);
+            strErrorMsg = strErrorMsg + ", maximum range type = ";
+            strErrorMsg = strErrorMsg + HSLExtensions::Framework::Converter::ConvertTypeToString(intTypeMaximum);
+            strErrorMsg = strErrorMsg + ")";
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, strErrorMsg);
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //check input - type not 'null'
+         if(intValueType == HSLExtensions::Framework::Enumerators::Type::Null)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "The input parameters are Null");
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //check input - min>max
+         if(i_varMinimum > i_varMaximum)
+         {
+            strErrorMsg = "The minimum range is higher than the maximum range. (";
+            strErrorMsg = strErrorMsg + "minimum range = '";
+            strErrorMsg = strErrorMsg + ConvertToString(i_varMinimum);
+            strErrorMsg = strErrorMsg + "', maximum range = '";
+            strErrorMsg = strErrorMsg + ConvertToString(i_varMaximum);
+            strErrorMsg = strErrorMsg + "')";
+
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, strErrorMsg);
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //is between
+         if( (i_varValue >= i_varMinimum) &&
+             (i_varValue <= i_varMaximum) )
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslTrue);
+         }
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+         return(hslFalse);
+      }
+      
+
+   } //end Core
+} //end HSLExtension
+
+#endif //end __HSLEXTENSION_CORE__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:48$$checksum=e6646e2d$$length=083$$

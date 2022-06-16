@@ -1,0 +1,695 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with 2-dimensional sequence array functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - 0.0.0    Stefan Reckow   2013.01.18   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSION_SEQARRAY2D__
+#define __HSLEXTENSION_SEQARRAY2D__ 1
+
+//============================== includes ==============================
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //============================== SequenceArray2D ==============================
+   namespace SequenceArray2D
+   {  
+         
+      //------------------------------------------------------
+      // Get the size of the sequence array
+      //
+      // throws an exception if
+      // - input is not a 2d sequence array      
+      //
+      // [in] i_arrValues: array
+      // [out] o_intSizeX: size of x dimension (1..x)
+      // [out] o_intSizeY: size of y dimension (0..x)
+      //------------------------------------------------------
+      private function _GetSize(sequence i_arrValues[], variable& o_intSizeX, variable& o_intSizeY) void
+      {
+         variable intSizeTotal;
+         variable strSizeX;
+         variable strSizeY;
+         variable intSizeX;
+         variable intSizeY;
+         sequence seqX;         
+         sequence seqY;
+
+         //init
+         o_intSizeX = 0;
+         o_intSizeY = 0;
+         
+         //get size total
+         intSizeTotal = i_arrValues.GetSize();
+
+         if(intSizeTotal < 2)
+         {
+            err.Raise(3,"The parameter 'i_arrValues[]' is not a 2D Sequence Array");
+         }
+
+         //get size x and y
+         seqX = i_arrValues.GetAt(0);
+         seqY = i_arrValues.GetAt(1);
+         
+         strSizeX = seqX.GetPositionId();
+         strSizeY = seqY.GetPositionId();                
+
+         // convert string to int
+         intSizeX = StrIVal(strSizeX);
+         intSizeY = StrIVal(strSizeY);
+
+         // double check conversion (strings are converted to 0, floats are truncated)                           
+
+         if(IStr(intSizeX) != strSizeX)
+         {
+            err.Raise(3,"The parameter 'i_arrValues[]' is not a 2D Sequence Array");
+         }
+
+         if(IStr(intSizeY) != strSizeY)
+         {
+            err.Raise(3,"The parameter 'i_arrValues[]' is not a 2D Sequence Array");
+         }
+
+         if((intSizeX*intSizeY + 2) != intSizeTotal)
+         {
+            err.Raise(3,"The parameter 'i_arrValues[]' is not a 2D Sequence Array");
+         }
+
+         //set return values
+         o_intSizeX = intSizeX;
+         o_intSizeY = intSizeY;
+      }   
+
+      //------------------------------------------------------
+      // Creates a trace string for the specified sequence
+      //
+      // [in] i_seqObject: sequence
+      //
+      // returns: string containing sequence name, current position,
+      //          position ID and labware
+      //------------------------------------------------------
+      private function _CreateTraceOfSequence(sequence i_seqObject) variable
+      {
+         variable strCurrentPos;
+         variable strCurrentLabware;
+         variable strCurrentPositionID; 
+
+         strCurrentPos = IStr(i_seqObject.GetCurrentPosition());
+         strCurrentLabware = i_seqObject.GetLabwareId();
+         strCurrentPositionID = i_seqObject.GetPositionId();
+
+         return(i_seqObject.GetName() + ": " + strCurrentLabware +  " / " + strCurrentPositionID + " (pos: " + strCurrentPos + ")");
+      }       
+
+      //------------------------------------------------------
+      // Creates an array of trace strings for the specified sequence array
+      //
+      // [in] i_seqObject: sequence[]
+      //
+      // returns: string array containing sequence name, current position,
+      //          position ID and labware of each sequence
+      private function _CreateTraceOfSequenceArray(sequence i_seqObject[]) variable[]
+      {        
+         variable intSize;
+         variable i;
+         variable strArrayTrace[];
+
+         //get size 
+         intSize = i_seqObject.GetSize();
+
+         for(i=0; i<intSize; i++){            
+            strArrayTrace.AddAsLast(_CreateTraceOfSequence(i_seqObject.GetAt(i)));
+         }
+
+         return(strArrayTrace);
+      } 
+
+      //------------------------------------------------------
+      // Creates a 2 dimensional sequence array
+      //
+      // throws an exception if
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in] i_intSizeX: size of x dimension (1..x)
+      // [in] i_intSizeY: size of y dimension (0..x)
+      // [return] sequence array
+      //------------------------------------------------------
+      function Create(variable i_intSizeX, variable i_intSizeY) sequence[]
+      {
+         variable strFunctionName(GetFunctionName());
+         sequence arrValues[];
+         sequence seqX;
+         sequence seqY;
+
+         //init
+         arrValues.SetSize(0);
+                
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intSizeX", i_intSizeX);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intSizeY", i_intSizeY);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intSizeX) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intSizeX' has a wrong type");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intSizeY) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intSizeY' has a wrong type");
+         }
+
+         if(i_intSizeX < 1)
+         {
+            err.Raise(2,"The parameter 'i_intSizeX' is out of range");
+         }
+
+         if(i_intSizeY < 0)
+         {
+            err.Raise(2,"The parameter 'i_intSizeY' is out of range");
+         }
+
+         //create aray - add 2 header values and store dimensions
+         arrValues.SetSize(i_intSizeX * i_intSizeY + 2);
+         seqX.Add("X", StrIStr(i_intSizeX));
+         seqY.Add("Y", StrIStr(i_intSizeY));
+         seqX.SetCurrentPosition(1);
+         seqY.SetCurrentPosition(1);
+         arrValues[0] = seqX;
+         arrValues[1] = seqY;
+
+         //trace output         
+         
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, _CreateTraceOfSequenceArray(arrValues));
+
+         return(arrValues);
+      }
+
+
+
+
+      //------------------------------------------------------
+      // Get the size of the array
+      //
+      // throws an exception if
+      // - input is not a 2D sequence array      
+      //
+      // [in] i_arrValues: array
+      // [out] o_intSizeX: size of x dimension (1..x)
+      // [out] o_intSizeY: size of y dimension (0..x)
+      //------------------------------------------------------
+      function GetSize(sequence i_arrValues[], variable& o_intSizeX, variable& o_intSizeY) void
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrValues", _CreateTraceOfSequenceArray(i_arrValues));
+         
+         //get size 
+         _GetSize(i_arrValues, o_intSizeX, o_intSizeY);
+         
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeX", o_intSizeX);
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeY", o_intSizeY);
+      }
+
+      //------------------------------------------------------
+      // Set the array value
+      //
+      // throws an exception if
+      // - input is not a 2D sequence array      
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in/out] io_arrValues: array
+      // [in] i_intPositionX: position in x dimension (1..x)
+      // [in] i_intPositionY: position in y dimension (1..x)
+      // [in] i_varValue: value to set
+      //------------------------------------------------------
+      function SetSequence(sequence& io_arrValues[], 
+                        variable i_intPositionX, 
+                        variable i_intPositionY, 
+                        sequence i_seqValue) void
+      {
+         variable strFunctionName(GetFunctionName());
+
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+
+         variable intPosition;
+        
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "io_arrValues", _CreateTraceOfSequenceArray(io_arrValues));
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionX", i_intPositionX);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionY", i_intPositionY);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_seqValue", _CreateTraceOfSequence(i_seqValue));
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionX) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionX' has a wrong type");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionY) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionY' has a wrong type");
+         }
+
+         //get size 
+         _GetSize(io_arrValues, intSizeX, intSizeY);
+
+         //check range
+         if( (i_intPositionX < 1) ||
+             (i_intPositionX > intSizeX) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionX' is out of range");
+         }
+
+         if( (i_intPositionY < 1) ||
+             (i_intPositionY > intSizeY) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionY' is out of range");
+         }
+
+         //calculate position
+         intPosition = (i_intPositionY - 1) * intSizeX + i_intPositionX + 1;
+
+         //set value
+         io_arrValues.SetAt(intPosition, i_seqValue);
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputArrayTrace(strFunctionName, "io_arrValues", _CreateTraceOfSequenceArray(io_arrValues));
+      }
+
+      //------------------------------------------------------
+      // Get the array value
+      //
+      // throws an exception if
+      // - input is not a 2D sequence array      
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in] i_arrValues: array
+      // [in] i_intPositionX: position in x dimension (1..x)
+      // [in] i_intPositionY: position in y dimension (1..x)
+      // [return] value 
+      //------------------------------------------------------
+      function GetSequence(sequence i_arrValues[], 
+                        variable i_intPositionX, 
+                        variable i_intPositionY) sequence
+      {
+         variable strFunctionName(GetFunctionName());
+
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+
+         variable intPosition;
+
+         sequence seqValue;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrValues", _CreateTraceOfSequenceArray(i_arrValues));
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionX", i_intPositionX);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionY", i_intPositionY);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionX) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionX' has a wrong type");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionY) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionY' has a wrong type");
+         }
+
+         //get size 
+         _GetSize(i_arrValues, intSizeX, intSizeY);
+
+         //check range
+         if( (i_intPositionX < 1) ||
+             (i_intPositionX > intSizeX) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionX' is out of range");
+         }
+
+         if( (i_intPositionY < 1) ||
+             (i_intPositionY > intSizeY) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionY' is out of range");
+         }
+
+         //calculate position
+         intPosition = (i_intPositionY - 1) * intSizeX + i_intPositionX + 1;
+
+         //get value
+         seqValue = i_arrValues.GetAt(intPosition);
+
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, _CreateTraceOfSequence(seqValue));
+
+         return(seqValue);
+      }
+
+      //------------------------------------------------------
+      // Get all sequences of a row (all values of the x dimension)
+      //
+      // throws an exception if
+      // - input is not a 2D sequence array      
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in] i_arrValues: array
+      // [in] i_intPositionY: position in y dimension (1..x)
+      // [return] value 
+      //------------------------------------------------------
+      function GetRow(sequence i_arrValues[],                        
+                        variable i_intPositionY) sequence[]
+      {
+         variable strFunctionName(GetFunctionName());
+         sequence arrSeqValues[];
+
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+
+         variable intPosition;
+
+         variable i;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrValues", _CreateTraceOfSequenceArray(i_arrValues));
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionY", i_intPositionY);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionY) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionY' has a wrong type");
+         }
+
+         //get size 
+         _GetSize(i_arrValues, intSizeX, intSizeY);
+
+         //check range
+         if( (i_intPositionY < 1) ||
+             (i_intPositionY > intSizeY) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionY' is out of range");
+         }
+
+         //create sequence array
+         for(i = 0; i<intSizeX; i++)
+         {
+            intPosition = (i_intPositionY - 1) * intSizeX + i + 2;
+
+            arrSeqValues.AddAsLast(i_arrValues.GetAt(intPosition));
+         }
+                 
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, _CreateTraceOfSequenceArray(arrSeqValues));
+
+         return(arrSeqValues);
+      }
+
+      //------------------------------------------------------
+      // Get all sequences of a column (all values of the y dimension)
+      //
+      // throws an exception if
+      // - input is not a 2D array      
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in] i_arrValues: array
+      // [in] i_intPositionX: position in x dimension (1..x)
+      // [return] value 
+      //------------------------------------------------------
+      function GetColumn(sequence i_arrValues[], 
+                        variable i_intPositionX) sequence[]
+      {
+         variable strFunctionName(GetFunctionName());
+         sequence arrValues[];
+
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+
+         variable intPosition;
+
+         variable i;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrValues", _CreateTraceOfSequenceArray(i_arrValues));
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionX", i_intPositionX);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionX) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionX' has a wrong type");
+         }
+
+         //get size 
+         _GetSize(i_arrValues, intSizeX, intSizeY);
+
+         //check range
+         if( (i_intPositionX < 1) ||
+             (i_intPositionX > intSizeX) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionX' is out of range");
+         }
+
+         //create array
+         for(i = 0; i<intSizeY; i++)
+         {
+            intPosition = i * intSizeX + i_intPositionX + 1;      // actually: i * intSize + (i_intPosX - 1) + 2
+
+            arrValues.AddAsLast(i_arrValues.GetAt(intPosition));
+         }
+         
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, _CreateTraceOfSequenceArray(arrValues));
+
+         return(arrValues);
+      }
+
+      //------------------------------------------------------
+      // Set all sequences of a row (all sequences of the x dimension)
+      //
+      // throws an exception if
+      // - input is not a 2D sequence array      
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in] io_arrValues: array
+      // [in] i_arrRow: array
+      // [in] i_intPositionY: position in y dimension (1..x)
+      // [return] no return value 
+      //------------------------------------------------------
+      function SetRow(sequence io_arrValues[],
+                        sequence i_arrRow[],
+                        variable i_intPositionY) void
+      {
+         variable strFunctionName(GetFunctionName());
+
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+
+         variable intSizeRow;
+
+         variable intPosition;
+
+         variable i;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "io_arrValues", _CreateTraceOfSequenceArray(io_arrValues));
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrRow", _CreateTraceOfSequenceArray(i_arrRow));
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionY", i_intPositionY);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionY) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionY' has a wrong type");
+         }
+
+         //get size 
+         _GetSize(io_arrValues, intSizeX, intSizeY);
+
+         intSizeRow = i_arrRow.GetSize();
+
+         //check range
+         if( (i_intPositionY < 1) ||
+             (i_intPositionY > intSizeY) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionY' is out of range");
+         }
+
+         //check size of input
+         if(intSizeRow != intSizeX)
+         {
+            err.Raise(2,"The number of parameters int the input array 'i_arrRow' does not match with the 2DArray size");
+         }
+
+
+         //set values array
+         for(i = 0; i<intSizeX; i++)
+         {
+            intPosition = (i_intPositionY - 1) * intSizeX + i + 2;
+
+            io_arrValues.SetAt(intPosition, i_arrRow.GetAt(i));
+         }
+         
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionOutputArrayTrace(strFunctionName, "io_arrValues after update", _CreateTraceOfSequenceArray(io_arrValues));
+      }
+
+      //------------------------------------------------------
+      // Set all sequences of a column (all sequences of the y dimension)
+      //
+      // throws an exception if
+      // - input is not a 2D array      
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in] io_arrValues: array
+      // [in] i_arrColumn: array
+      // [in] i_intPositionX: position in x dimension (1..x)
+      // [return] no return value 
+      //------------------------------------------------------
+      function SetColumn(sequence io_arrValues[],
+                        sequence i_arrColumn[],
+                        variable i_intPositionX) void
+      {
+         variable strFunctionName(GetFunctionName());
+
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+
+         variable intSizeColumn;
+
+         variable intPosition;
+
+         variable i;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "io_arrValues", _CreateTraceOfSequenceArray(io_arrValues));
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrColumn", _CreateTraceOfSequenceArray(i_arrColumn));
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionX", i_intPositionX);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionX) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionX' has a wrong type");
+         }
+
+         //get size 
+         _GetSize(io_arrValues, intSizeX, intSizeY);
+
+         intSizeColumn = i_arrColumn.GetSize();
+
+         //check range
+         if( (i_intPositionX < 1) ||
+             (i_intPositionX > intSizeX) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionX' is out of range");
+         }
+
+         //check size of input
+         if(intSizeColumn != intSizeY)
+         {
+            err.Raise(2,"The number of parameters int the input array 'i_arrColumn' does not match with the 2DArray size");
+         }
+
+         //set values of array
+         for(i = 0; i<intSizeY; i++)
+         {
+            intPosition = i * intSizeX + i_intPositionX + 1;
+
+            io_arrValues.SetAt(intPosition, i_arrColumn.GetAt(i));
+         }
+         
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionOutputArrayTrace(strFunctionName, "io_arrValues after update", _CreateTraceOfSequenceArray(io_arrValues));
+      }
+
+
+      //------------------------------------------------------
+      // Add a row to the table (increases the y dimension and adds all values of the x dimension)
+      //
+      // throws an exception if
+      // - input is not a 2D sequence array      
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in] io_arrValues: array
+      // [in] i_arrRow: array
+      // [return] no return value 
+      //------------------------------------------------------
+      function AddRow(sequence io_arrValues[],
+                        sequence i_arrNewRow[]) void
+      {
+         variable strFunctionName(GetFunctionName());
+
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+
+         variable intSizeRow;
+         variable intPosition;
+         sequence seqNewX;
+
+         variable i;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "io_arrValues", _CreateTraceOfSequenceArray(io_arrValues));
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrNewRow", _CreateTraceOfSequenceArray(i_arrNewRow));
+         
+         //get size 
+         _GetSize(io_arrValues, intSizeX, intSizeY);
+
+         intSizeRow = i_arrNewRow.GetSize();
+
+         //check size of input
+         if(intSizeRow != intSizeX)
+         {
+            err.Raise(2,"The number of parameters in the input array 'i_arrRow' does not match the 2D sequence array size");
+         }
+
+         //add values to array
+         for(i = 0; i<intSizeRow; i++)
+         {            
+            io_arrValues.AddAsLast(i_arrNewRow.GetAt(i));
+         }
+
+         //increase array size info
+         seqNewX.Add("X", StrIStr(intSizeY+1));
+         seqNewX.SetCurrentPosition(1);
+         io_arrValues[1] = seqNewX;
+
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionOutputArrayTrace(strFunctionName, "io_arrValues after update", _CreateTraceOfSequenceArray(io_arrValues));
+      }       
+
+   } //end SeqArray2D
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSION_SEQARRAY2D__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:50$$checksum=524d2d57$$length=083$$

@@ -1,0 +1,1119 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with directory functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2011.02.10   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_DIRECTORY__
+#define __HSLEXTENSIONS_DIRECTORY__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //============================== Directory ==============================
+   namespace Directory
+   {
+      //---------------------------------------------------------
+      // Check whether the directory exists
+      // NOTE: if 'i_strDirectoryName' is not a string the function returns 'false'
+      // 
+      // [in] i_strDirectoryName: file name
+      // [returns] 'true' if directory exists, otherwise 'false'
+      //---------------------------------------------------------
+      function Exists(variable i_strDirectoryName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable blnDirectoryExists;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryName", i_strDirectoryName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //directory exists?
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         blnDirectoryExists = objFileSystemObject.FolderExists(i_strDirectoryName);
+         objFileSystemObject.ReleaseObject();
+
+         if(blnDirectoryExists != hslFalse)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+         else
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Splits the directory name into the sub-directories
+      //
+      // [in] i_strDirectoryName      - The directory name that has to be splitted.
+      // [Return] array with the sub-directories
+      //---------------------------------------------------------
+      private function _Split(variable i_strDirectoryName, variable i_strDelimiter) variable[]
+      {
+         variable strRemaining;
+         variable intIndex;
+         variable strCurrent;
+         variable arrValues[];
+
+         //init
+         arrValues.SetSize(0);
+         strRemaining = i_strDirectoryName;
+
+         //loop over string
+         while(hslTrue)
+         {
+            //search next delimiter
+            intIndex = StrFind(strRemaining, i_strDelimiter);
+
+            //split
+            if(intIndex != -1)
+            {  
+               strCurrent = StrLeft(strRemaining, intIndex);
+               strRemaining = StrRight(strRemaining, StrGetLength(strRemaining) - StrGetLength(i_strDelimiter) - intIndex);
+               
+               if(StrGetLength(strCurrent) > 0)
+               {
+                  arrValues.AddAsLast(strCurrent);
+               }
+            }
+            //dont split but save remaining
+            else
+            {
+               if(StrGetLength(strRemaining) > 0)
+               {
+                  arrValues.AddAsLast(strRemaining);
+               }
+               break;
+            }
+         }
+
+         return(arrValues);
+      }
+      
+      //---------------------------------------------------------
+      // Creates the directory
+      //
+      // Note: it is not possbile to create a directory if the parent directory not exist, therefore the directory will be created by creating all parent directories
+      // 
+      // [in] i_strDirectoryName: file name
+      // [returns] 'true' if directory was created, otherwise 'false'
+      //---------------------------------------------------------
+      function Create(variable i_strDirectoryName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable arrSubDirectories[];
+         variable strCurrentDirectory;
+         variable intSize;
+         variable i;
+         variable blnCreated;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryName", i_strDirectoryName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //does the directory already exist?
+         if(Exists(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+
+         //split the directory name
+         arrSubDirectories = _Split(i_strDirectoryName, "\\");
+
+         HSLExtensions::Framework::Trace::ArrayTrace(strFunctionName, "arrSubDirectories", arrSubDirectories);
+
+         intSize = arrSubDirectories.GetSize();
+
+         if(intSize < 2)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "The input parameter is not a valid directory name");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //create directory - by looping over all directories and create them form root to target directory
+         strCurrentDirectory = arrSubDirectories[0];
+
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+
+         for(i=1; i<intSize; i++)
+         {
+            //add next directory
+            strCurrentDirectory = strCurrentDirectory + "\\";
+            strCurrentDirectory = strCurrentDirectory + arrSubDirectories.GetAt(i);
+
+            //exists?
+            if(objFileSystemObject.FolderExists(strCurrentDirectory) == hslFalse)
+            {
+               //create
+               objFileSystemObject.CreateFolder(strCurrentDirectory);
+            }
+         }
+         
+         objFileSystemObject.ReleaseObject();
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+         
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }
+      
+      //---------------------------------------------------------
+      // Delete directory with all sub-directories and all files
+      // NOTE: if 'i_strDirectoryName' is not a string the function returns 'false'
+      // 
+      // [in] i_strDirectoryName: directory name
+      // [in] i_bDeleteProtectedFiles: 'true' to delete all files and directories, 'false' to delete all files and directories except write protected ones
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function Delete(variable i_strDirectoryName, 
+                     variable i_blnDeleteProtectedFiles) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryName", i_strDirectoryName);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_bDeleteProtectedFiles", i_blnDeleteProtectedFiles);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //does the directory exist?
+         if(Exists(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The directory does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //delete directory
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objFileSystemObject.DeleteFolder(i_strDirectoryName,i_blnDeleteProtectedFiles);
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }    
+
+      //---------------------------------------------------------
+      // Get all sub directories of the given directory
+      // 
+      // [in] i_strDirectoryName: directory name
+      // [returns] array with names of all sub directories (short directory names (only sub directory and NOT with full name with all parent directories)
+      //---------------------------------------------------------
+      function GetSubDirectories(variable i_strDirectoryName) variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+
+         object objScriptControl;		
+         object objFileSystemObject;
+
+         variable strScriptResult;
+
+         variable arrSubDirectories[];
+
+         //init
+         arrSubDirectories.SetSize(0);
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryName", i_strDirectoryName);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryName);
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrSubDirectories);
+            return(arrSubDirectories);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrSubDirectories);
+            return(arrSubDirectories);
+         }
+
+         //does the directory exist?
+         if(Exists(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The directory does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrSubDirectories);
+            return(arrSubDirectories);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get directories
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objScriptControl.CreateObject("MSScriptControl.ScriptControl");
+
+         // - create script
+			objScriptControl.Language = "VBScript";
+			objScriptControl.AddObject("fso", objFileSystemObject);			
+			objScriptControl.AddCode
+			("																														\n\
+				Option Explicit																								\n\
+																																	\n\
+				Function GetSubDirectories(dir)        																\n\
+				   Dim folder																									\n\
+				   Dim subFolders																								\n\
+               Dim subFolder 			   																				\n\
+               Dim result					          										                     \n\
+               Dim i										 	                   			                     \n\
+               Set folder = fso.GetFolder(CStr(dir))																\n\
+               Set subFolders = folder.SubFolders																	\n\
+               i = 0																                                 \n\
+               For Each subFolder In subFolders																		\n\
+                  i = i + 1																                        \n\
+                  															                                    \n\
+                  If i>1 Then																			               \n\
+					      result = result + \"?\"														               \n\
+					   End If																                           \n\
+                  															                                    \n\
+                  result = result + subFolder.Name														         \n\
+				   Next																											\n\
+				   GetSubDirectories = result															               \n\
+				End Function																									\n\
+			");
+
+         // - execute script      
+		   strScriptResult = objScriptControl.Eval("GetSubDirectories(\"" + i_strDirectoryName + "\")");
+
+         // - clean up
+         objScriptControl.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         //convert result to array (result is a string with all sub directories, separated with '\\'
+         arrSubDirectories = _Split(strScriptResult, "?");
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrSubDirectories);
+         return(arrSubDirectories);
+
+         //exception
+         ExceptionHandler:
+         {
+            objScriptControl.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrSubDirectories);
+            return(arrSubDirectories);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Get the number of files in this directory (only files which are directly in the directory and NOT files which are in sub directories)
+      // 
+      // [in] i_strDirectoryName: directory name
+      // [returns] number of files (integer)
+      //---------------------------------------------------------
+      function GetFileCount(variable i_strDirectoryName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         object objFolder;
+         object objFiles;
+         variable intNumberOfFiles(0);
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryName", i_strDirectoryName);         
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intNumberOfFiles);
+            return(intNumberOfFiles);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intNumberOfFiles);
+            return(intNumberOfFiles);
+         }
+
+         //does the directory exist?
+         if(Exists(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The directory does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intNumberOfFiles);
+            return(intNumberOfFiles);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get number of files
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+
+         objFolder = objFileSystemObject.GetFolder(i_strDirectoryName);         
+         objFiles = objFolder.Files;
+
+         intNumberOfFiles = objFiles.Count;
+
+         objFiles.ReleaseObject();
+         objFolder.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intNumberOfFiles);
+         return(intNumberOfFiles);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFiles.ReleaseObject();
+            objFolder.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, intNumberOfFiles);
+            return(intNumberOfFiles);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Get the names of all files in this directory (only files which are directly in the directory and NOT files which are in sub directories)
+      // 
+      // [in] i_strDirectoryName: directory name
+      // [returns] array with names of all files (short names (only file name without directory)
+      //---------------------------------------------------------
+      function GetFileNames(variable i_strDirectoryName) variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+
+         object objScriptControl;		
+         object objFileSystemObject;
+
+         variable strScriptResult;
+
+         variable arrFiles[];
+
+         //init
+         arrFiles.SetSize(0);
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryName", i_strDirectoryName);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryName);
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrFiles);
+            return(arrFiles);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrFiles);
+            return(arrFiles);
+         }
+
+         //does the directory exist?
+         if(Exists(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The directory does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrFiles);
+            return(arrFiles);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get directories
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objScriptControl.CreateObject("MSScriptControl.ScriptControl");
+
+         // - create script
+			objScriptControl.Language = "VBScript";
+			objScriptControl.AddObject("fso", objFileSystemObject);			
+			objScriptControl.AddCode
+			("																														\n\
+				Option Explicit																								\n\
+																																	\n\
+				Function GetFiles(dir)        																         \n\
+				   Dim folder																									\n\
+				   Dim subFiles																								\n\
+               Dim subFile 			   																				\n\
+               Dim result					          										                     \n\
+               Dim i										 	                   			                     \n\
+               Set folder = fso.GetFolder(CStr(dir))																\n\
+               Set subFiles = folder.Files						   										   	\n\
+               i = 0																                                 \n\
+               For Each subFile In subFiles																		   \n\
+                  i = i + 1																                        \n\
+                  															                                    \n\
+                  If i>1 Then																			               \n\
+					      result = result + \"?\"														               \n\
+					   End If																                           \n\
+                  															                                    \n\
+                  result = result + subFile.Name														         \n\
+				   Next																											\n\
+				   GetFiles = result						         									               \n\
+				End Function																									\n\
+			");
+
+         // - execute script      
+		   strScriptResult = objScriptControl.Eval("GetFiles(\"" + i_strDirectoryName + "\")");
+
+         // - clean up
+         objScriptControl.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         //convert result to array (result is a string with all sub directories, separated with '\\'
+         arrFiles = _Split(strScriptResult, "?");
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrFiles);
+         return(arrFiles);
+
+         //exception
+         ExceptionHandler:
+         {
+            objScriptControl.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrFiles);
+            return(arrFiles);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Copy directory
+      //
+      // Note: it is not possbile to copy a directory if the parent directory not exist, therefore the parent directory will be created if necessary
+      // 
+      // [in] i_strDirectoryNameSource: name of source directory
+      // [in] i_strDirectoryNameTarget: name of destination directory
+      // [in] i_bOverwriteExisting: 'true' to overwrite already existing files and directories, otherwise 'false' -> if 'false' and a target file or directory exist then the function returns erroneous
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function Copy( variable i_strDirectoryNameSource,
+                     variable i_strDirectoryNameTarget,
+                     variable i_blnOverwriteExisting) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable blnInputError(hslFalse);
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryNameSource", i_strDirectoryNameSource);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryNameTarget", i_strDirectoryNameTarget);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_blnOverwriteExisting", i_blnOverwriteExisting);
+         
+         //check input         
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryNameSource) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryNameSource);
+            blnInputError = hslTrue;
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryNameSource) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDirectoryNameSource' is an empty string");
+            blnInputError = hslTrue;
+         }
+
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryNameTarget) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryNameTarget);
+            blnInputError = hslTrue;
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryNameTarget) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDirectoryNameTarget' is an empty string");
+            blnInputError = hslTrue;
+         }
+
+         if(HSLExtensions::Framework::Types::IsBoolean(i_blnOverwriteExisting) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Boolean, i_blnOverwriteExisting);
+            blnInputError = hslTrue;
+         }
+
+         //return on input error
+         if(blnInputError == hslTrue)
+         {
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //does the directory exist?
+         if(Exists(i_strDirectoryNameSource) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The directory does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //source = destination, then return
+         if(i_strDirectoryNameSource == i_strDirectoryNameTarget)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "source directory name is equal to destination directory name");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+
+         //create parent if it not exist
+         if(Exists(i_strDirectoryNameTarget) == hslFalse)
+         {
+            if(Create(i_strDirectoryNameTarget) == hslFalse)
+            {
+               HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "Error while creating the target directory");
+
+               HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+               return(hslFalse);
+            }
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //copy directory
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+
+         objFileSystemObject.CopyFolder(i_strDirectoryNameSource, i_strDirectoryNameTarget, i_blnOverwriteExisting);
+
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }   
+
+      //---------------------------------------------------------
+      // Move directory
+      // NOTE: with the 'fso.Move' command it is not possible to move a directory from one drive to another, therefore the copy and delete commands are used
+      // 
+      // [in] i_strDirectoryNameSource: name of source directory
+      // [in] i_strDirectoryNameTarget: name of destination directory
+      // [in] i_bOverwriteExisting: 'true' to overwrite already existing files and directories, otherwise 'false' -> if 'false' and a target file or directory exist then the function returns erroneous
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function Move( variable i_strDirectoryNameSource,
+                     variable i_strDirectoryNameTarget,
+                     variable i_blnOverwriteExisting) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable blnInputError(hslFalse);
+
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryNameSource", i_strDirectoryNameSource);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryNameTarget", i_strDirectoryNameTarget);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_bOverwriteExisting", i_blnOverwriteExisting);
+         
+         //copy
+         if(Copy(i_strDirectoryNameSource, i_strDirectoryNameTarget, i_blnOverwriteExisting) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //source = destination, then return
+         if(i_strDirectoryNameSource == i_strDirectoryNameTarget)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "source directory name is equal to destination directory name");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+         
+         //delete
+         if(Delete(i_strDirectoryNameSource, hslTrue) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+      }
+
+      //---------------------------------------------------------
+      // Rename directory
+      // 
+      // [in] i_strDirectoryNameSource: name of source directory
+      // [in] i_strDirectoryNameTarget: name of destination directory
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function Rename( variable i_strDirectoryNameSource,
+                     variable i_strDirectoryNameTarget) variable
+      {
+         variable strFunctionName(GetFunctionName());
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryNameSource", i_strDirectoryNameSource);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryNameTarget", i_strDirectoryNameTarget);
+         
+         //does the target directory exist?
+         if(Exists(i_strDirectoryNameTarget) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "A directory with the target name already exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //rename with move function
+         return(Move(i_strDirectoryNameSource, i_strDirectoryNameTarget, hslTrue));
+      }
+
+      //---------------------------------------------------------
+      // Get directory information
+      // 
+      // [in] i_strDirectoryName: file name
+      // [out] o_bIsReadOnly: 'true' if the file is read only, otherwise 'false'
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function GetDirectoryInformation(variable i_strDirectoryName,                                    
+                                    variable& o_blnIsReadOnly
+                                    ) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         object objFolder;
+
+         //init                     
+         o_blnIsReadOnly = hslFalse;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryName", i_strDirectoryName);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //does the directory exist?
+         if(Exists(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The directory does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get info
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objFolder = objFileSystemObject.GetFolder(i_strDirectoryName);
+         
+         //read only?
+         if(objFolder.Attributes & 1)
+         {
+            o_blnIsReadOnly = hslTrue;
+         }
+
+         //release objects
+         objFolder.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+         
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_bIsReadOnly", o_blnIsReadOnly);
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }   
+
+      //---------------------------------------------------------
+      // Get the name of the newest file in this directory (only file which are directly in the directory and NOT files which are in sub directories)
+      // the 'last modified' date will be compared to find the newest file
+      // 
+      // [in] i_strDirectoryName: directory name
+      // [returns] empty string if no file exist, otherwise name of the file (short name (only file name without directory))
+      //---------------------------------------------------------
+      function GetNewestFileName(variable i_strDirectoryName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+
+         object objScriptControl;		
+         object objFileSystemObject;
+
+         variable strScriptResult("");
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryName", i_strDirectoryName);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+            return(strScriptResult);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+            return(strScriptResult);
+         }
+
+         //does the directory exist?
+         if(Exists(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The directory does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+            return(strScriptResult);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get file
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objScriptControl.CreateObject("MSScriptControl.ScriptControl");
+
+         // - create script
+			objScriptControl.Language = "VBScript";
+			objScriptControl.AddObject("fso", objFileSystemObject);			
+			objScriptControl.AddCode
+			("																														\n\
+				Option Explicit																								\n\
+																																	\n\
+				Function GetNewestFile(dir)        																      \n\
+				   Dim folder																									\n\
+				   Dim subFiles																								\n\
+               Dim subFile 			   																				\n\
+               Dim result					          										                     \n\
+               Dim i										 	                   			                     \n\
+               Dim date1																									\n\
+				   Dim date2																									\n\
+				   date1 = 0																						         \n\
+				   date2 = 0																						         \n\
+               Set folder = fso.GetFolder(CStr(dir))																\n\
+               Set subFiles = folder.Files						   										   	\n\
+               result = \"\"                                                                       \n\
+               For Each subFile In subFiles																		   \n\
+                  If date1 = 0 Then                          										         \n\
+                     result = subFile.Name																		   \n\
+                     date1 = subFile.DateLastModified  														   \n\
+                  Else                                                                             \n\
+                     date2 = subFile.DateLastModified  														   \n\
+					      If date2 > date1 Then																			\n\
+					         date1 = date2																		         \n\
+					         result = subFile.Name																		\n\
+                        End If																							\n\
+					   End If																								   \n\
+				   Next																											\n\
+				   GetNewestFile = result						         									         \n\
+				End Function																									\n\
+			");
+
+         // - execute script      
+		   strScriptResult = objScriptControl.Eval("GetNewestFile(\"" + i_strDirectoryName + "\")");
+
+         // - clean up
+         objScriptControl.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+         return(strScriptResult);
+
+         //exception
+         ExceptionHandler:
+         {
+            objScriptControl.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+            return(strScriptResult);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Get the name of the oldest file in this directory (only file which are directly in the directory and NOT files which are in sub directories)
+      // the 'last modified' date will be compared to find the newest file
+      // 
+      // [in] i_strDirectoryName: directory name
+      // [returns] empty string if no file exist, otherwise name of the file (short name (only file name without directory))
+      //---------------------------------------------------------
+      function GetOldestFileName(variable i_strDirectoryName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+
+         object objScriptControl;		
+         object objFileSystemObject;
+
+         variable strScriptResult("");
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectoryName", i_strDirectoryName);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectoryName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+            return(strScriptResult);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectoryName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+            return(strScriptResult);
+         }
+
+         //does the directory exist?
+         if(Exists(i_strDirectoryName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The directory does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+            return(strScriptResult);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get file
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objScriptControl.CreateObject("MSScriptControl.ScriptControl");
+
+         // - create script
+			objScriptControl.Language = "VBScript";
+			objScriptControl.AddObject("fso", objFileSystemObject);			
+			objScriptControl.AddCode
+			("																														\n\
+				Option Explicit																								\n\
+																																	\n\
+				Function GetOldestFile(dir)        																      \n\
+				   Dim folder																									\n\
+				   Dim subFiles																								\n\
+               Dim subFile 			   																				\n\
+               Dim result					          										                     \n\
+               Dim i										 	                   			                     \n\
+               Dim date1																									\n\
+				   Dim date2																									\n\
+				   date1 = 0																						         \n\
+				   date2 = 0																						         \n\
+               Set folder = fso.GetFolder(CStr(dir))																\n\
+               Set subFiles = folder.Files						   										   	\n\
+               result = \"\"                                                                       \n\
+               For Each subFile In subFiles																		   \n\
+                  If date1 = 0 Then                          										         \n\
+                     result = subFile.Name																		   \n\
+                     date1 = subFile.DateLastModified  														   \n\
+                  Else                                                                             \n\
+                     date2 = subFile.DateLastModified  														   \n\
+					      If date2 < date1 Then																			\n\
+					         date1 = date2																		         \n\
+					         result = subFile.Name																		\n\
+                        End If																							\n\
+					   End If																								   \n\
+				   Next																											\n\
+				   GetOldestFile = result						         									         \n\
+				End Function																									\n\
+			");
+
+         // - execute script      
+		   strScriptResult = objScriptControl.Eval("GetOldestFile(\"" + i_strDirectoryName + "\")");
+
+         // - clean up
+         objScriptControl.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+
+         //return
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+         return(strScriptResult);
+
+         //exception
+         ExceptionHandler:
+         {
+            objScriptControl.ReleaseObject();
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strScriptResult);
+            return(strScriptResult);
+         }
+      } 
+
+   } //end Directory
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSIONS_DIRECTORY__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:49$$checksum=a4de7276$$length=083$$

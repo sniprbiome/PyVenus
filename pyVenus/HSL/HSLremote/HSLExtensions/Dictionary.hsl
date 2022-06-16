@@ -1,0 +1,993 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with Dictionary functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2011.02.12   library created
+// - Oliver Funke   2013.01.31   added functions: GetKeys, GetItems
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_DICTIONARY__
+#define __HSLEXTENSIONS_DICTIONARY__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //============================== Dictionary ==============================
+   namespace Dictionary
+   {
+      global static object gHSLExtensionsDictionary_arrDictionaries[];
+      global static variable gHSLExtensionsDictionary_arrDictionaryNames[];      
+      global static variable gHSLExtensionsDictionary_arrDictionaryKeyTypes[];      
+      
+      //------------------------------------------------------
+      // Get the index of the dictionary
+      //
+      // [in] i_strDictionaryName: name of the dictionary (must be a unique name)
+      // [return] '0'..'x' if dictionary exist, otherwise '-1'
+      //------------------------------------------------------
+      private function _GetDictionaryIndex(variable i_strDictionaryName) variable
+      {
+         variable i;
+         variable intSize;
+         variable strName;
+
+         //search
+         intSize = gHSLExtensionsDictionary_arrDictionaryNames.GetSize();
+
+         for(i=0; i<intSize; i++)
+         {
+            strName = gHSLExtensionsDictionary_arrDictionaryNames[i];
+
+            if(strName == i_strDictionaryName)
+            {
+               return(i);
+            }
+         }
+
+         //not found
+         return(-1);
+      }
+
+      //------------------------------------------------------
+      // Create a dictionary
+      //
+      // [in] i_strDictionaryName: name of the dictionary (must be a unique name)
+      // [in] i_strDictionaryName: type of the dictionary key (see enum DictionaryKeyType)
+      // [return] 'true' if dictionary was created, otherwise 'false'
+      //------------------------------------------------------
+      function CreateDictionary(variable i_strDictionaryName,
+                                variable i_intDictionaryKeyType) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         variable blnInputError(hslFalse);
+         
+         variable intIndex;
+         
+         object objDictionary;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDictionaryName", i_strDictionaryName);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intDictionaryKeyType", i_intDictionaryKeyType);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDictionaryName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDictionaryName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDictionaryName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDictionaryName' is an empty string");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intDictionaryKeyType) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_intDictionaryKeyType);
+            blnInputError = hslTrue;
+         }
+         else
+         {
+            if( (i_intDictionaryKeyType != HSLExtensions::Framework::Enumerators::DictionaryKeyType::Integer) && 
+                (i_intDictionaryKeyType != HSLExtensions::Framework::Enumerators::DictionaryKeyType::StringCaseSensitive) &&
+                (i_intDictionaryKeyType != HSLExtensions::Framework::Enumerators::DictionaryKeyType::StringCaseInsensitive) )
+            {
+               HSLExtensions::Framework::Trace::ParameterOutOfRangeErrorTrace(strFunctionName, "i_intDictionaryKeyType", i_intDictionaryKeyType);
+               blnInputError = hslTrue;
+            }
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //already existing dictionary?
+         intIndex = _GetDictionaryIndex(i_strDictionaryName);
+         if(intIndex != -1)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "The dictionary with the name '" + i_strDictionaryName +"' already exist.");
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //create dictionary
+         objDictionary.CreateObject("Scripting.Dictionary");
+
+         if( (i_intDictionaryKeyType == HSLExtensions::Framework::Enumerators::DictionaryKeyType::Integer) ||
+             (i_intDictionaryKeyType == HSLExtensions::Framework::Enumerators::DictionaryKeyType::StringCaseSensitive) )
+         {
+            objDictionary.CompareMode = 0;   //binary comparision - case sensitive
+         }
+         else
+         {
+            objDictionary.CompareMode = 1;   //text comparision - case insensitive
+         }
+
+
+         //store values
+         gHSLExtensionsDictionary_arrDictionaries.AddAsLast(objDictionary);
+         gHSLExtensionsDictionary_arrDictionaryNames.AddAsLast(i_strDictionaryName);
+         gHSLExtensionsDictionary_arrDictionaryKeyTypes.AddAsLast(i_intDictionaryKeyType);
+
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+       
+         //exception
+         ExceptionHandler:
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "DictionaryObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }
+
+      //------------------------------------------------------
+      // Get whether the dictionary exist
+      //
+      // [in] i_strDictionaryName: name of the dictionary
+      // [return] 'true' if dictionary exists, otherwise 'false'
+      //------------------------------------------------------
+      function ExistsDictionary(variable i_strDictionaryName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         variable blnInputError(hslFalse);
+         
+         variable intIndex;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDictionaryName", i_strDictionaryName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDictionaryName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDictionaryName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDictionaryName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDictionaryName' is an empty string");
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //dictionary exsits?
+         intIndex = _GetDictionaryIndex(i_strDictionaryName);
+         if(intIndex != -1)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }         
+
+         //dictionary does not exist
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+         return(hslFalse);
+      }
+
+      //------------------------------------------------------
+      // Get whether an item with the given key exist
+      //
+      // [in] i_strDictionaryName: name of the dictionary
+      // [in] i_varKey: name of the key (type must be according to key type which was set on creation of dictionary)      
+      // [return] 'true' if the item exists, otherwise 'false'
+      //------------------------------------------------------
+      function ExistsItem(variable i_strDictionaryName,
+                        variable i_varKey
+                        ) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         variable blnInputError(hslFalse);
+         
+         variable intIndex;
+         object objDictionary;
+
+         variable intDictionaryKeyType;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDictionaryName", i_strDictionaryName);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varKey", i_varKey);
+
+         //check input - dictionary name
+         if(HSLExtensions::Framework::Types::IsString(i_strDictionaryName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDictionaryName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDictionaryName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDictionaryName' is an empty string");
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //dictionary exists?
+         intIndex = _GetDictionaryIndex(i_strDictionaryName);
+         if(intIndex == -1)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The dictionary '" + i_strDictionaryName +"' does not exist");
+            
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }     
+
+         //get dictionary and key type
+         objDictionary = gHSLExtensionsDictionary_arrDictionaries.GetAt(intIndex);
+         intDictionaryKeyType = gHSLExtensionsDictionary_arrDictionaryKeyTypes.GetAt(intIndex);
+
+         //check input - key
+         if(intDictionaryKeyType == HSLExtensions::Framework::Enumerators::DictionaryKeyType::Integer)
+         {
+            if(HSLExtensions::Framework::Types::IsInteger(i_varKey) == hslFalse)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_varKey);            
+            }
+         }
+         else
+         {
+            if(HSLExtensions::Framework::Types::IsString(i_varKey) == hslFalse)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_varKey);            
+            }
+
+            if(HSLExtensions::Framework::Types::IsEmptyString(i_varKey) == hslTrue)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_varKey' is an empty string");
+            }
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }    
+         
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //key exists?
+         if(objDictionary.Exists(i_varKey) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+
+         //item does not exist
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+         return(hslFalse);
+       
+         //exception
+         ExceptionHandler:
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "DictionaryObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }    
+      }
+
+      //------------------------------------------------------
+      // Deletes all dictionaries
+      //
+      // [return] 'true' if all dictionaries were deleted, otherwise 'false'
+      //------------------------------------------------------
+      function DeleteAllDictionaries() variable
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         object objDictionary;
+
+         variable i;
+         variable intSize;
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //loop over all dictionaries and clean up (free disc space)
+         intSize = gHSLExtensionsDictionary_arrDictionaries.GetSize();
+
+         for(i=0; i<intSize; i++)
+         {
+            objDictionary = gHSLExtensionsDictionary_arrDictionaries.GetAt(i);
+
+            objDictionary.RemoveAll;
+            objDictionary.ReleaseObject();
+         }
+
+         //reset arrays
+         gHSLExtensionsDictionary_arrDictionaries.SetSize(0);
+         gHSLExtensionsDictionary_arrDictionaryNames.SetSize(0);
+         gHSLExtensionsDictionary_arrDictionaryKeyTypes.SetSize(0);
+
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+       
+         //exception
+         ExceptionHandler:
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "DictionaryObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }
+
+      //------------------------------------------------------
+      // Deletes a dictionary
+      //
+      // [in] i_strDictionaryName: name of the dictionary
+      // [return] 'true' if dictionary was deleted, otherwise 'false'
+      //------------------------------------------------------
+      function DeleteDictionary(variable i_strDictionaryName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         variable blnInputError(hslFalse);
+         
+         variable intIndex;
+         object objDictionary;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDictionaryName", i_strDictionaryName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDictionaryName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDictionaryName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDictionaryName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDictionaryName' is an empty string");
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //dictionary exsits?
+         intIndex = _GetDictionaryIndex(i_strDictionaryName);
+         if(intIndex == -1)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The dictionary '" + i_strDictionaryName +"' does not exist");
+            
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }     
+         
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //clean up (free disc space)
+         objDictionary = gHSLExtensionsDictionary_arrDictionaries.GetAt(intIndex);
+
+         objDictionary.RemoveAll;
+         objDictionary.ReleaseObject();
+         
+         //remove from arrays
+         gHSLExtensionsDictionary_arrDictionaries.RemoveElementAt(intIndex);
+         gHSLExtensionsDictionary_arrDictionaryNames.RemoveElementAt(intIndex);
+         gHSLExtensionsDictionary_arrDictionaryKeyTypes.RemoveElementAt(intIndex);
+
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+       
+         //exception
+         ExceptionHandler:
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "DictionaryObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }    
+      }
+
+      //------------------------------------------------------
+      // Adds a item to the dictionary
+      //
+      // [in] i_strDictionaryName: name of the dictionary
+      // [in] i_varKey: key (key must be unique, type must be according to key type which was set on creation of dictionary)
+      // [in] i_varItem: item (all type are allowed, except 'null')
+      // [return] 'true' if item was added, otherwise 'false'
+      //------------------------------------------------------
+      function AddItem(variable i_strDictionaryName,
+                        variable i_varKey,
+                        variable i_varItem
+                        ) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         variable blnInputError(hslFalse);
+         
+         variable intIndex;
+         object objDictionary;
+
+         variable intDictionaryKeyType;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDictionaryName", i_strDictionaryName);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varKey", i_varKey);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varItem", i_varItem);
+
+         //check input - dictionary name and item
+         if(HSLExtensions::Framework::Types::IsString(i_strDictionaryName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDictionaryName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDictionaryName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDictionaryName' is an empty string");
+         }
+
+         if(HSLExtensions::Framework::Types::IsNull(i_varItem) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_varItem' is 'null'");
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //dictionary exists?
+         intIndex = _GetDictionaryIndex(i_strDictionaryName);
+         if(intIndex == -1)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The dictionary '" + i_strDictionaryName +"' does not exist");
+            
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }     
+
+         //get dictionary and key type
+         objDictionary = gHSLExtensionsDictionary_arrDictionaries.GetAt(intIndex);
+         intDictionaryKeyType = gHSLExtensionsDictionary_arrDictionaryKeyTypes.GetAt(intIndex);
+
+         //check input - key
+         if(intDictionaryKeyType == HSLExtensions::Framework::Enumerators::DictionaryKeyType::Integer)
+         {
+            if(HSLExtensions::Framework::Types::IsInteger(i_varKey) == hslFalse)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_varKey);            
+            }
+         }
+         else
+         {
+            if(HSLExtensions::Framework::Types::IsString(i_varKey) == hslFalse)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_varKey);            
+            }
+
+            if(HSLExtensions::Framework::Types::IsEmptyString(i_varKey) == hslTrue)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_varKey' is an empty string");
+            }
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }    
+         
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //key exists?
+         if(objDictionary.Exists(i_varKey) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "A item with the key '" + i_varKey + "' already exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //add item
+         objDictionary.Add(i_varKey, i_varItem);
+
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+       
+         //exception
+         ExceptionHandler:
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "DictionaryObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }    
+      }
+
+      //------------------------------------------------------
+      // Get a item of the dictionary
+      //
+      // [in] i_strDictionaryName: name of the dictionary
+      // [in] i_varKey: key (type must be according to key type which was set on creation of dictionary)
+      // [return] item (variant type), 'null' if item was not found
+      //------------------------------------------------------
+      function GetItem(variable i_strDictionaryName,
+                        variable i_varKey
+                        ) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         variable blnInputError(hslFalse);
+         
+         variable intIndex;
+         object objDictionary;
+
+         variable intDictionaryKeyType;
+
+         variable varItem;
+         variable varNull;
+         
+         SetDBNull(varNull);
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDictionaryName", i_strDictionaryName);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varKey", i_varKey);
+
+         //check input - dictionary name and item
+         if(HSLExtensions::Framework::Types::IsString(i_strDictionaryName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDictionaryName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDictionaryName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDictionaryName' is an empty string");
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, varNull);
+            return(varNull);
+         }
+
+         //dictionary exists?
+         intIndex = _GetDictionaryIndex(i_strDictionaryName);
+         if(intIndex == -1)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The dictionary '" + i_strDictionaryName +"' does not exist");
+            
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, varNull);
+            return(varNull);
+         }     
+
+         //get dictionary and key type
+         objDictionary = gHSLExtensionsDictionary_arrDictionaries.GetAt(intIndex);
+         intDictionaryKeyType = gHSLExtensionsDictionary_arrDictionaryKeyTypes.GetAt(intIndex);
+
+         //check input - key
+         if(intDictionaryKeyType == HSLExtensions::Framework::Enumerators::DictionaryKeyType::Integer)
+         {
+            if(HSLExtensions::Framework::Types::IsInteger(i_varKey) == hslFalse)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_varKey);            
+            }
+         }
+         else
+         {
+            if(HSLExtensions::Framework::Types::IsString(i_varKey) == hslFalse)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_varKey);            
+            }
+
+            if(HSLExtensions::Framework::Types::IsEmptyString(i_varKey) == hslTrue)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_varKey' is an empty string");
+            }
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, varNull);
+            return(varNull);
+         }    
+         
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //key exists?
+         if(objDictionary.Exists(i_varKey) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "A item with the key '" + i_varKey + "' does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, varNull);
+            return(varNull);
+         }
+
+         //get item
+         varItem = objDictionary.Item(i_varKey);
+
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, varItem);
+         return(varItem);
+       
+         //exception
+         ExceptionHandler:
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "DictionaryObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, varNull);
+            return(varNull);
+         }    
+      }
+
+      //------------------------------------------------------
+      // Changes the value of an dictionary entry
+      //
+      // [in] i_strDictionaryName: name of the dictionary
+      // [in] i_varKey: key (type must be according to key type which was set on creation of dictionary)
+      // [in] i_varItem: item (all type are allowed, except 'null')
+      // [return] 'true' if item was changed, otherwise 'false'
+      //------------------------------------------------------
+      function ChangeItem(variable i_strDictionaryName,
+                        variable i_varKey,
+                        variable i_varItem
+                        ) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         variable blnInputError(hslFalse);
+         
+         variable intIndex;
+         object objDictionary;
+
+         variable intDictionaryKeyType;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDictionaryName", i_strDictionaryName);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varKey", i_varKey);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varItem", i_varItem);
+
+         //check input - dictionary name and item
+         if(HSLExtensions::Framework::Types::IsString(i_strDictionaryName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDictionaryName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDictionaryName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDictionaryName' is an empty string");
+         }
+
+         if(HSLExtensions::Framework::Types::IsNull(i_varItem) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_varItem' is 'null'");
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //dictionary exists?
+         intIndex = _GetDictionaryIndex(i_strDictionaryName);
+         if(intIndex == -1)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The dictionary '" + i_strDictionaryName +"' does not exist");
+            
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }     
+
+         //get dictionary and key type
+         objDictionary = gHSLExtensionsDictionary_arrDictionaries.GetAt(intIndex);
+         intDictionaryKeyType = gHSLExtensionsDictionary_arrDictionaryKeyTypes.GetAt(intIndex);
+
+         //check input - key
+         if(intDictionaryKeyType == HSLExtensions::Framework::Enumerators::DictionaryKeyType::Integer)
+         {
+            if(HSLExtensions::Framework::Types::IsInteger(i_varKey) == hslFalse)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Integer, i_varKey);            
+            }
+         }
+         else
+         {
+            if(HSLExtensions::Framework::Types::IsString(i_varKey) == hslFalse)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_varKey);            
+            }
+
+            if(HSLExtensions::Framework::Types::IsEmptyString(i_varKey) == hslTrue)
+            {
+               blnInputError = hslTrue;
+               HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_varKey' is an empty string");
+            }
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }    
+         
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //key exists?
+         if(objDictionary.Exists(i_varKey) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "No item with the key '" + i_varKey + "' found");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //change item
+         objDictionary.Remove(i_varKey);
+         objDictionary.Add(i_varKey, i_varItem);
+
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+       
+         //exception
+         ExceptionHandler:
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "DictionaryObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }    
+      }
+
+      //------------------------------------------------------
+      // Get all keys of the dictionary
+      //
+      // [in] i_strDictionaryName: name of the dictionary      
+      // [return] keys (array of string or int depending on key type), empty array if item was not found
+      //------------------------------------------------------
+      function GetKeys(variable i_strDictionaryName                        
+                        ) variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         variable blnInputError(hslFalse);
+         
+         variable intIndex;
+         object objDictionary;
+
+         variable arrKeys[];
+
+         arrKeys.SetSize(0);
+                  
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDictionaryName", i_strDictionaryName);
+
+         //check input - dictionary name and item
+         if(HSLExtensions::Framework::Types::IsString(i_strDictionaryName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDictionaryName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDictionaryName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDictionaryName' is an empty string");
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrKeys);
+            return(arrKeys);
+         }
+
+         //dictionary exists?
+         intIndex = _GetDictionaryIndex(i_strDictionaryName);
+         if(intIndex == -1)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The dictionary '" + i_strDictionaryName +"' does not exist");
+            
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrKeys);
+            return(arrKeys);
+         }     
+
+         //get dictionary 
+         objDictionary = gHSLExtensionsDictionary_arrDictionaries.GetAt(intIndex);
+         
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //kget keys
+         arrKeys = objDictionary.Keys;
+         
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrKeys);
+         return(arrKeys);
+       
+         //exception
+         ExceptionHandler:
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "DictionaryObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrKeys);
+            return(arrKeys);            
+         }      
+      }
+   
+
+      
+      //------------------------------------------------------
+      // Get all items of the dictionary
+      //
+      // [in] i_strDictionaryName: name of the dictionary      
+      // [return] items (array of variant), empty array if item was not found
+      //------------------------------------------------------
+      function GetItems(variable i_strDictionaryName                        
+                        ) variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         variable blnInputError(hslFalse);
+         
+         variable intIndex;
+         object objDictionary;
+
+         variable arrItems[];
+
+         arrItems.SetSize(0);
+                  
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDictionaryName", i_strDictionaryName);
+
+         //check input - dictionary name and item
+         if(HSLExtensions::Framework::Types::IsString(i_strDictionaryName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDictionaryName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDictionaryName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDictionaryName' is an empty string");
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrItems);
+            return(arrItems);
+         }
+
+         //dictionary exists?
+         intIndex = _GetDictionaryIndex(i_strDictionaryName);
+         if(intIndex == -1)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The dictionary '" + i_strDictionaryName +"' does not exist");
+            
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrItems);
+            return(arrItems);
+         }     
+
+         //get dictionary 
+         objDictionary = gHSLExtensionsDictionary_arrDictionaries.GetAt(intIndex);
+         
+         //register exception handler 
+         onerror goto ExceptionHandler;
+
+         //kget keys
+         arrItems = objDictionary.Items;
+         
+         //return successful
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrItems);
+         return(arrItems);
+       
+         //exception
+         ExceptionHandler:
+         {
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "DictionaryObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrItems);
+            return(arrItems);            
+         }      
+      }
+   } //end Dictionary
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSIONS_DICTIONARY__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 11:35$$checksum=d66ef011$$length=083$$

@@ -1,0 +1,1862 @@
+
+// ======================================================================
+// Library to work with JSON
+//
+// Copyright(C) 2014 by HAMILTON Reno, NV
+// All rights reserved.
+// ======================================================================
+//
+// Modification History
+//
+// 2014-02-15 Z. Newell (Zachary.Newell@hamiltoncompany.com)
+//      - Created First Version.
+//
+//
+// ======================================================================
+
+#ifndef __HslJson__
+#define __HslJson__ 1
+
+
+#ifndef __TraceLevel_hsl__
+  #include "ASWStandard\\TraceLevel\\TraceLevel.hsl"
+#endif
+#ifndef __ASWGLOBAL_hsl__
+  #include "ASWStandard\\ASWGlobal\\ASWGlobal.hsl"
+#endif
+
+namespace HSLJsonLib
+{
+
+    // Exported return constants
+    const variable CMD_FAIL(0);
+    const variable CMD_START(1);
+    const variable CMD_COMPLETE(2);
+    const variable CMD_ERROR(3);
+    const variable CMD_PROGRESS(4);
+    const variable CMD_ERRCOMPLETE(5);
+
+    namespace ERRORS
+    {
+      const variable NO_ERROR(0);
+      const variable TYPE_ERROR(1);
+      const variable NULL_ERROR(2);
+      const variable PARSE_ERROR(3);
+      const variable DATETIME_FORMAT_ERROR(4);
+      const variable FILE_SAVE_ERROR(5);
+      const variable FILE_LOAD_ERROR(6);
+    }
+
+    function Create( object& i_objJSON) variable;
+
+    function SetTraceLevel(variable i_intTraceLevel) variable;
+
+    private function StatusTrace(variable i_intState,
+                                 variable i_intTraceLevel,
+                                 variable i_strMessage,
+                                 variable i_strFunctionName) void;
+
+
+    private function ExtractFunctionName(variable i_strFunctionName) variable;
+
+
+    private function CheckString(variable i_strVariableToCheck,
+                                       variable i_strTraceEntry,
+                                       variable i_strFunctionName) variable;
+
+
+    private function CheckInteger(variable i_intVariableToCheck,
+                                       variable i_strTraceEntry,
+                                       variable i_strFunctionName) variable;
+
+    private function CheckIntGreaterThanZero(variable i_intVariableToCheck,
+                                             variable i_strTraceEntry,
+                                             variable i_strFunctionName) variable;
+
+    private function CheckFlt(variable i_fltVariableToCheck,
+                                       variable i_strTraceEntry,
+                                       variable i_strFunctionName) variable;
+
+    private function CheckBool(variable i_blnVariableToCheck,
+                                       variable i_strTraceEntry,
+                                       variable i_strFunctionName) variable;
+
+    private function CheckIntegerRange(variable i_intVariableToCheck,
+                                       variable i_strTraceEntry,
+                                       variable i_intMin,
+                                       variable i_intMax,
+                                       variable i_strFunctionName) variable;
+
+    static global variable _hslHSLJsonLib_intTraceLevel(TRACE_LEVEL_DEBUG);
+
+    private const variable HSLJSON_TRACE_SOURCE("HSLJSONLib");
+
+   // --------------------------------------------------------------------------------------
+    // function Create
+    // --------------------------------------------------------------------------------------
+    function Create( object& i_objJSON) variable
+    { 
+        variable result(0);
+        object objJSON;
+
+        onerror goto Unexpected;
+        
+        //RegisterAbortHandler("HSLRabbitMQLib::OnAbortHSLRabbitMQ");
+
+        if( objJSON.IsNull() )   
+        {
+            result = objJSON.CreateObject("Hamilton.Json");
+
+            if( objJSON.IsNull() )
+            {
+                // Show Error
+                StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Unable to Create Object", GetFunctionName());
+                return(ASWGLOBAL::BOOL::TRUE);
+            }
+        }
+
+
+
+        if( result == 1 )
+        {
+            // Success
+            StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "Created JSON Object.", GetFunctionName());
+            i_objJSON = objJSON;
+            result = 0;
+        }  else
+        {
+            StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Failed to Create JSON Object", GetFunctionName());
+        }
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        }  
+
+    } // Connect
+
+
+    // --------------------------------------------------------------------------------------
+    // function SetStringProperty
+    // --------------------------------------------------------------------------------------
+    function SetStringProperty(object& i_objJSON,
+                        variable i_strName,
+                        variable i_strValue
+                        ) variable
+    { 
+        variable result(1);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckString(i_strValue, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+
+        result = i_objJSON.SetStringProperty(i_strName, i_strValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, i_strValue, GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  //SetStringProperty
+
+
+    // --------------------------------------------------------------------------------------
+    // function SetIntegerProperty
+    // --------------------------------------------------------------------------------------
+    function SetIntegerProperty(object& i_objJSON,
+                        variable i_strName,
+                        variable i_intValue
+                        ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckInteger(i_intValue, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+
+        result = i_objJSON.SetIntProperty(i_strName, i_intValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, IStr(i_intValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  //SetIntegerProperty
+
+    // --------------------------------------------------------------------------------------
+    // function SetFloatProperty
+    // --------------------------------------------------------------------------------------
+    function SetFloatProperty(object& i_objJSON,
+                        variable i_strName,
+                        variable i_fltValue
+                        ) variable
+    { 
+        variable result(1);
+
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckFlt(i_fltValue, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+
+        result = i_objJSON.SetFloatProperty(i_strName, i_fltValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, FStr(i_fltValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetFloatProperty
+
+    // --------------------------------------------------------------------------------------
+    // function SetBooleanProperty
+    // --------------------------------------------------------------------------------------
+    function SetBooleanProperty(object& i_objJSON,
+                                variable i_strName,
+                                variable i_blnValue
+                                ) variable
+    { 
+        variable result(1);
+        variable check;
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckBool(i_blnValue, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+
+        result = i_objJSON.SetBooleanProperty(i_strName, i_blnValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, IStr(i_blnValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetBooleanProperty
+
+    // --------------------------------------------------------------------------------------
+    // function SetDateTimeProperty
+    // --------------------------------------------------------------------------------------
+    function SetDateTimeProperty(object& i_objJSON,
+                                 variable i_strName,
+                                 variable i_strValue
+                                 ) variable
+    { 
+        variable result(1);
+        variable check;
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckString(i_strValue, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.SetDateTimeProperty(i_strName, i_strValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, i_strValue, GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetDateTimeProperty
+
+    // --------------------------------------------------------------------------------------
+    // function SetJsonProperty
+    // --------------------------------------------------------------------------------------
+    function SetJsonProperty(object& i_objJSON,
+                             variable i_strName,
+                             object& i_objValue
+                             ) variable
+    { 
+        variable result(1);
+        variable check;
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+        
+        if (i_objValue.IsNull() == ASWGLOBAL::BOOL::TRUE){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.SetJsonProperty(i_strName, i_objValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetJsonProperty
+    
+    // Arrays
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetStringArrayElement
+    // --------------------------------------------------------------------------------------
+    function GetStringArrayElement(object& i_objJSON,
+                                   variable i_strName,
+                                   variable i_intPosition,
+                                   variable& o_strValue
+                                   ) variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        o_strValue = "";
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.GetStringArrayElement(i_strName,position, o_strValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, o_strValue, GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetStringArrayElement
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetIntegerArrayElement
+    // --------------------------------------------------------------------------------------
+    function GetIntegerArrayElement(object& i_objJSON,
+                                   variable i_strName,
+                                   variable i_intPosition,
+                                   variable& o_intValue
+                                   ) variable
+    { 
+        variable result(1);
+        variable check(0);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        o_intValue = 0;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        check = CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName());
+
+        if (check != ASWGLOBAL::BOOL::TRUE){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.GetIntArrayElement(i_strName,position, o_intValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, IStr(o_intValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetIntegerArrayElement
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetFloatArrayElment
+    // --------------------------------------------------------------------------------------
+    function GetFloatArrayElement(object& i_objJSON,
+                                   variable i_strName,
+                                   variable i_intPosition,
+                                   variable& o_fltValue
+                                   ) variable
+    { 
+        variable result(1);
+        variable check;
+        variable position(0);
+        variable strFloat("");
+        onerror goto Unexpected;
+
+
+        o_fltValue = 0.0;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        check = CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName());
+
+        if (check != ASWGLOBAL::BOOL::TRUE){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.GetFloatArrayElement(i_strName, position, strFloat);
+ 
+        if( result == 0 )
+        {
+          o_fltValue = FVal(strFloat);
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, FStr(o_fltValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetFloatArrayElement
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetBooleanArrayElement
+    // --------------------------------------------------------------------------------------
+    function GetBooleanArrayElement(object& i_objJSON,
+                                   variable i_strName,
+                                   variable i_intPosition,
+                                   variable& o_blnValue
+                                   ) variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        o_blnValue = ASWGLOBAL::BOOL::TRUE;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.GetBooleanArrayElement(i_strName,position, o_blnValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, IStr(o_blnValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetBooleanArrayElement
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetDateTimeArrayElement
+    // --------------------------------------------------------------------------------------
+    function GetDateTimeArrayElement(object& i_objJSON,
+                                   variable i_strName,
+                                   variable i_intPosition,
+                                   variable& o_strValue
+                                   ) variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        o_strValue = "";
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.GetDateTimeArrayElement(i_strName,position, o_strValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, o_strValue, GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetDateTimeArrayElement
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetJsonArrayElement
+    // --------------------------------------------------------------------------------------
+    function GetJsonArrayElement(object& i_objJSON,
+                                   variable i_strName,
+                                   variable i_intPosition,
+                                   object& o_objValue
+                                   ) variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        o_objValue = i_objJSON.GetJsonArrayElement(i_strName,position, result);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetStringArrayElement
+
+    // --------------------------------------------------------------------------------------
+    // function SetStringArrayElement
+    // --------------------------------------------------------------------------------------
+    function SetStringArrayElement(object&  i_objJSON,
+                                   variable i_strName,
+                                   variable i_intPosition,
+                                   variable i_strValue
+                                   ) variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.SetStringArrayElement(i_strName,position, i_strValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetStringArrayElement
+
+    // --------------------------------------------------------------------------------------
+    // function SetIntegerArrayElement
+    // --------------------------------------------------------------------------------------
+    function SetIntegerArrayElement(object&  i_objJSON,
+                                    variable i_strName,
+                                    variable i_intPosition,
+                                    variable i_intValue
+                                   )variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.SetIntegerArrayElement(i_strName, position, i_intValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+          return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetIntegerArrayElement
+
+    // --------------------------------------------------------------------------------------
+    // function SetFloatArrayElement
+    // --------------------------------------------------------------------------------------
+    function SetFloatArrayElement(object&  i_objJSON,
+                                   variable i_strName,
+                                   variable i_intPosition,
+                                   variable i_fltValue
+                                   ) variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.SetFloatArrayElement(i_strName,position, i_fltValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetFloatArrayElement
+
+    // --------------------------------------------------------------------------------------
+    // function SetBooleanArrayElement
+    // --------------------------------------------------------------------------------------
+    function SetBooleanArrayElement(object&  i_objJSON,
+                                    variable i_strName,
+                                    variable i_intPosition,
+                                    variable i_blnValue
+                                   )variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.SetBooleanArrayElement(i_strName,position, i_blnValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetBooleanArrayElement
+
+    // --------------------------------------------------------------------------------------
+    // function SetDateTimeArrayElement
+    // --------------------------------------------------------------------------------------
+    function SetDateTimeArrayElement(object&  i_objJSON,
+                                   variable i_strName,
+                                   variable i_intPosition,
+                                   variable i_strValue
+                                   ) variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.SetDateTimeArrayElement(i_strName,position, i_strValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetDateTimeArrayElement
+
+    // --------------------------------------------------------------------------------------
+    // function SetJsonArrayElement
+    // --------------------------------------------------------------------------------------
+    function SetJsonArrayElement(object&  i_objJSON,
+                                 variable i_strName,
+                                 variable i_intPosition,
+                                 object&  i_objValue
+                                )variable
+    { 
+        variable result(1);
+        variable position(0);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.SetJsonArrayElement(i_strName,position, i_objValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetJsonArrayElement
+
+    // --------------------------------------------------------------------------------------
+    // function SetArray
+    // --------------------------------------------------------------------------------------
+    function SetArray(object& i_objJSON,
+                      variable i_strName
+                     )variable
+    { 
+        variable result(1);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+
+
+        result = i_objJSON.SetArray(i_strName);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetArray
+
+    // --------------------------------------------------------------------------------------
+    // function SetArrayLength
+    // --------------------------------------------------------------------------------------
+    function SetArrayLength(object&  i_objJSON,
+                            variable i_strName,
+                            variable i_intLength
+                           )variable
+    { 
+        variable result(1);
+        
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intLength, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.SetArrayLength(i_strName, i_intLength);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // SetArrayLength
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetStringProperty
+    // --------------------------------------------------------------------------------------
+    function GetStringProperty(object& i_objJSON,
+                               variable i_strName,
+                               variable& o_strValue
+                        ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        o_strValue = "";
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.GetStringProperty(i_strName, o_strValue);
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, o_strValue, GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  //SetStringProperty
+
+    // --------------------------------------------------------------------------------------
+    // function GetIntegerProperty
+    // --------------------------------------------------------------------------------------
+    function GetIntegerProperty(object&   i_objJSON,
+                                variable  i_strName,
+                                variable& o_intValue
+                                ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        o_intValue = 0;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.GetIntProperty(i_strName, o_intValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, IStr(o_intValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  //GetIntegerProperty
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetFloatProperty
+    // --------------------------------------------------------------------------------------
+    function GetFloatProperty(object& i_objJSON,
+                              variable i_strName,
+                              variable& o_fltValue
+                              ) variable
+    { 
+        variable result(1);
+        variable strFloat("");
+
+        onerror goto Unexpected;
+
+        o_fltValue = 0.0;
+
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.GetFloatProperty(i_strName, strFloat);
+ 
+
+        if( result == 0 )
+        {
+
+          o_fltValue = FVal(strFloat);
+
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, FStr(o_fltValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  //GetFloatProperty
+
+    // --------------------------------------------------------------------------------------
+    // function GetBooleanProperty
+    // --------------------------------------------------------------------------------------
+    function GetBooleanProperty(object&   i_objJSON,
+                                variable  i_strName,
+                                variable& o_blnValue
+                                ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        o_blnValue = 0;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.GetBooleanProperty(i_strName, o_blnValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, IStr(o_blnValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  //GetBooleanProperty
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetDateTimeProperty
+    // --------------------------------------------------------------------------------------
+    function GetDateTimeProperty(object&   i_objJSON,
+                                 variable  i_strName,
+                                 variable& o_strValue
+                                 ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        o_strValue = "";
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.GetDateTimeProperty(i_strName, o_strValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, o_strValue, GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  //GetDateTimeProperty
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetJsonProperty
+    // --------------------------------------------------------------------------------------
+    function GetJsonProperty(object&  i_objJSON,
+                             variable i_strName,
+                             object&  o_objValue
+                             ) variable
+    { 
+
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        o_objValue = i_objJSON.GetJsonProperty(i_strName, result);
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetJsonProperty
+
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetElementType
+    // --------------------------------------------------------------------------------------
+    function GetElementType(object& i_objJSON,
+                            variable    i_strName,
+                            variable    i_intPosition,
+                            variable&   o_intValue
+                            ) variable
+    { 
+        variable result(1);
+        variable position(0);
+
+        onerror goto Unexpected;
+
+        o_intValue = 0;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        position = i_intPosition - 1;
+
+        result = i_objJSON.GetElementType(i_strName, position, o_intValue);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, IStr(o_intValue), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetElementType
+
+    // --------------------------------------------------------------------------------------
+    // function DeleteProperty
+    // --------------------------------------------------------------------------------------
+    function DeleteProperty(object&  i_objJSON,
+                            variable i_strName
+                            ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.DeleteProperty(i_strName);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // DeleteProperty
+
+
+    // --------------------------------------------------------------------------------------
+    // function DeleteArrayElement
+    // --------------------------------------------------------------------------------------
+    function DeleteArrayElement(object&  i_objJSON,
+                                variable i_strName,
+                                variable i_intPosition
+                                ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckIntGreaterThanZero(i_intPosition, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+
+        result = i_objJSON.DeleteArrayElement(i_strName, i_intPosition);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // DeleteArrayElement
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetJson
+    // --------------------------------------------------------------------------------------
+    function GetJson(object&   i_objJSON,
+                     variable& o_strValue
+                    )variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        o_strValue = "";
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        result = i_objJSON.GetJson(o_strValue);
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetJson
+
+    // --------------------------------------------------------------------------------------
+    // function Save
+    // --------------------------------------------------------------------------------------
+    function Save(object&   i_objJSON,
+                  variable  i_strFilePath,
+                  variable  i_intOverwrite
+                  ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strFilePath, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        if (!CheckInteger(i_intOverwrite, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.Save(i_strFilePath, i_intOverwrite);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, i_strFilePath, GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetJson
+
+
+    // --------------------------------------------------------------------------------------
+    // function Load
+    // --------------------------------------------------------------------------------------
+    function Load(object&  i_objJSON,
+                  variable i_strFilePath
+                  ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strFilePath, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.Load(i_strFilePath);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetJson
+
+
+    // --------------------------------------------------------------------------------------
+    // function ParseJson
+    // --------------------------------------------------------------------------------------
+    function ParseJson(object&  i_objJSON,
+                       variable i_strJSON
+                      )variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strJSON, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.ParseJson(i_strJSON);
+ 
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // ParseJson
+
+
+    // --------------------------------------------------------------------------------------
+    // function Validate
+    // --------------------------------------------------------------------------------------
+    function Validate(object&   i_objJSON,
+                      variable  i_strSchemaFilePath,
+                      variable& o_blnValid,
+                      variable& o_strErrorMessages 
+                      ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strSchemaFilePath, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        o_blnValid = 0;
+        o_strErrorMessages = "";
+
+        result = i_objJSON.Validate(i_strSchemaFilePath, o_blnValid, o_strErrorMessages);
+
+        if( result == 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // ParseJson
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetArrayLength
+    // --------------------------------------------------------------------------------------
+    function GetArrayLength(object&  i_objJSON,
+                            variable i_strName
+                            ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        if (!CheckString(i_strName, TRACE_LEVEL_RELEASE, GetFunctionName())){
+          return(ASWGLOBAL::BOOL::TRUE);
+        }
+
+        result = i_objJSON.GetArrayLength(i_strName);
+
+        if( result >= 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, i_strName+ " Length: " + IStr(result), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+        return(result);
+
+        Unexpected:
+        {
+          return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetArrayLength
+
+
+    // --------------------------------------------------------------------------------------
+    // function GetPropertyType
+    // --------------------------------------------------------------------------------------
+    function GetPropertyType(object& i_objJSON,
+                            variable i_strName,
+                            variable& i_intType
+                            ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        i_intType = 0;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        result = i_objJSON.GetPropertyType(i_strName,i_intType);
+ 
+        if( result >= 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, IStr(i_intType), GetFunctionName());
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+        return(result);
+
+        Unexpected:
+        {
+          return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // GetPropertyType
+
+    // --------------------------------------------------------------------------------------
+    // function Release
+    // --------------------------------------------------------------------------------------
+    function Release(object&  i_objJSON
+                     ) variable
+    { 
+        variable result(1);
+
+        onerror goto Unexpected;
+
+        StatusTrace(CMD_START, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+
+        result = i_objJSON.ReleaseObject();
+ 
+
+        if( result != 0 )
+        {
+          StatusTrace(CMD_COMPLETE, TRACE_LEVEL_RELEASE, "", GetFunctionName());
+          result = 0;
+        } else {
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_RELEASE, "Error: ", GetFunctionName());
+        }
+
+
+        return(result);
+
+        Unexpected:
+        {
+         return(ASWGLOBAL::BOOL::TRUE);
+        } 
+
+    }  // Release
+
+
+    // --------------------------------------------------------------------------------------
+    // function StatusTrace
+    // --------------------------------------------------------------------------------------
+    private function StatusTrace(variable i_intState,
+                                 variable i_intTraceLevel,
+                                 variable i_strMessage,
+                                 variable i_strFunctionName) void
+    {
+      if(i_intTraceLevel <= _hslHSLJsonLib_intTraceLevel)
+      {
+        FormatTrace(HSLJSON_TRACE_SOURCE, i_strFunctionName, i_intState, " ", i_strMessage);
+      }
+    } // StatusTrace
+
+    // --------------------------------------------------------------------------------------
+    // function SetTraceLevel
+    // --------------------------------------------------------------------------------------
+    function SetTraceLevel(variable i_intTraceLevel) variable
+    {
+      variable strFunctionName("");
+
+      strFunctionName = GetFunctionName();
+
+      if(CheckIntegerRange(i_intTraceLevel, "i_intTraceLevel", TRACE_LEVEL_NONE, TRACE_LEVEL_DEBUG, strFunctionName) == ASWGLOBAL::BOOL::FALSE) return (ASWGLOBAL::BOOL::FALSE);
+
+      _hslHSLJsonLib_intTraceLevel = i_intTraceLevel;
+
+      return (ASWGLOBAL::BOOL::FALSE);
+    } // SetTraceLevel
+
+    //----------------------------------------------------------------------------------------------
+    // private function CheckString
+    //----------------------------------------------------------------------------------------------
+    private function CheckString(variable i_strVariableToCheck,
+                              variable i_strTraceEntry,
+                              variable i_strFunctionName) variable
+    {
+      if(GetType(i_strVariableToCheck) == "s")
+        return (ASWGLOBAL::BOOL::TRUE);
+      StatusTrace(CMD_ERRCOMPLETE, TRACE_LEVEL_NONE, "Parameter " + IStr(i_strTraceEntry) + " is not of type string!", i_strFunctionName);
+      return (ASWGLOBAL::BOOL::FALSE);
+    } // CheckString
+
+
+    //----------------------------------------------------------------------------------------------
+    // private function CheckIntegerRange
+    //----------------------------------------------------------------------------------------------
+    private function CheckIntegerRange(variable i_intVariableToCheck,
+                                       variable i_strTraceEntry,
+                                       variable i_intMin,
+                                       variable i_intMax,
+                                       variable i_strFunctionName) variable
+    {
+      if(GetType(i_intVariableToCheck) == "i")
+        if(i_intVariableToCheck >= i_intMin && i_intVariableToCheck <= i_intMax)
+          return (ASWGLOBAL::BOOL::TRUE);
+        else
+          StatusTrace(CMD_ERROR, TRACE_LEVEL_NONE, "Parameter " + i_strTraceEntry + " is out of range ("
+                      + IStr(i_intMin) + ".." + IStr(i_intMax) + ") !", i_strFunctionName);
+      else
+        StatusTrace(CMD_ERRCOMPLETE, TRACE_LEVEL_NONE, "Parameter " + i_strTraceEntry + " is not of type integer!", i_strFunctionName);
+      return (ASWGLOBAL::BOOL::FALSE);
+    } // CheckIntegerRange
+
+
+    //----------------------------------------------------------------------------------------------
+    // private function CheckInteger
+    //----------------------------------------------------------------------------------------------
+    private function CheckInteger(variable i_intVariableToCheck,
+                              variable i_strTraceEntry,
+                              variable i_strFunctionName) variable
+    {
+      if(GetType(i_intVariableToCheck) == "i")
+        return (ASWGLOBAL::BOOL::TRUE);
+      StatusTrace(CMD_ERRCOMPLETE, TRACE_LEVEL_NONE, "Parameter " + i_strTraceEntry + " is not of type integer!", i_strFunctionName);
+      return (ASWGLOBAL::BOOL::FALSE);
+    } // CheckInteger
+
+
+    //----------------------------------------------------------------------------------------------
+    // private function CheckIntGreaterThanZero
+    //----------------------------------------------------------------------------------------------
+    private function CheckIntGreaterThanZero(variable i_intVariableToCheck,
+                                             variable i_strTraceEntry,
+                                             variable i_strFunctionName) variable
+    {
+      if(GetType(i_intVariableToCheck) == "i")
+        if (i_intVariableToCheck > 0)
+          return (ASWGLOBAL::BOOL::TRUE);
+      StatusTrace(CMD_ERRCOMPLETE, TRACE_LEVEL_NONE, "Parameter " + i_strTraceEntry + " is not of type integer!", i_strFunctionName);
+      return (ASWGLOBAL::BOOL::FALSE);
+    } // CheckIntGreaterThanZero
+
+    //----------------------------------------------------------------------------------------------
+    // private function CheckFlt
+    //----------------------------------------------------------------------------------------------
+    private function CheckFlt(variable i_intVariableToCheck,
+                              variable i_strTraceEntry,
+                              variable i_strFunctionName) variable
+    {
+      if(GetType(i_intVariableToCheck) == "f")
+        return (ASWGLOBAL::BOOL::TRUE);
+      StatusTrace(CMD_ERRCOMPLETE, TRACE_LEVEL_NONE, "Parameter " + i_strTraceEntry + " is not of type float!", i_strFunctionName);
+      return (ASWGLOBAL::BOOL::FALSE);
+    } // CheckFlt
+
+    //----------------------------------------------------------------------------------------------
+    // private function CheckBool
+    //----------------------------------------------------------------------------------------------
+    private function CheckBool(variable i_blnVariableToCheck,
+                               variable i_strTraceEntry,
+                               variable i_strFunctionName) variable
+    {
+      if(GetType(i_blnVariableToCheck) == "i")
+        if(i_blnVariableToCheck == ASWGLOBAL::BOOL::TRUE || i_blnVariableToCheck == ASWGLOBAL::BOOL::FALSE)
+          return (ASWGLOBAL::BOOL::TRUE);
+      StatusTrace(CMD_ERRCOMPLETE, TRACE_LEVEL_NONE, "Parameter " + i_strTraceEntry + " is not of type boolean!", i_strFunctionName);
+      return (ASWGLOBAL::BOOL::FALSE);
+    } // CheckBool
+
+}
+
+#endif
+
+// $$author=Turman_w$$valid=1$$time=2017-05-04 09:19$$checksum=9f064aca$$length=085$$

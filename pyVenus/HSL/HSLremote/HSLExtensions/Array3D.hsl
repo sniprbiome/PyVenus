@@ -1,0 +1,412 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with 2-dimensional array functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2011.02.13   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_ARRAY3D__
+#define __HSLEXTENSIONS_ARRAY3D__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+#ifndef __HSLStrLib_hsl__
+   #include "HSLStrLib.hsl"
+#endif
+
+
+//============================== HSLExtension ==============================
+namespace HSLExtensions
+{
+   //============================== Array3D ==============================
+   namespace Array3D
+   {
+      //------------------------------------------------------
+      // Get the size of the array
+      //
+      // throws an exception if
+      // - input is not a 3d array      
+      //
+      // [in] i_arrValues: array
+      // [out] o_intSizeX: size of x dimension (1..x)
+      // [out] o_intSizeY: size of y dimension (1..x)
+      // [out] o_intSizeZ: size of z dimension (1..x)
+      //------------------------------------------------------
+      private function _GetSize(variable i_arrValues[], variable& o_intSizeX, variable& o_intSizeY, variable& o_intSizeZ) void
+      {
+         variable intSizeTotal;
+         variable varSizeX;
+         variable varSizeY;
+         variable varSizeZ;
+
+         //init
+         o_intSizeX = 0;
+         o_intSizeY = 0;
+         o_intSizeZ = 0;
+         
+         //get size total
+         intSizeTotal = i_arrValues.GetSize();
+
+         if(intSizeTotal < 4)
+         {
+            err.Raise(3,"The parameter 'i_arrValues[]' is not a 3D Array");
+         }
+
+         //get size x and y
+         varSizeX = i_arrValues[0];
+         varSizeY = i_arrValues[1];
+         varSizeZ = i_arrValues[2];
+         
+         if(HSLExtensions::Framework::Types::IsInteger(varSizeX) == hslFalse)
+         {
+            err.Raise(3,"The parameter 'i_arrValues[]' is not a 3D Array");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(varSizeY) == hslFalse)
+         {
+            err.Raise(3,"The parameter 'i_arrValues[]' is not a 3D Array");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(varSizeZ) == hslFalse)
+         {
+            err.Raise(3,"The parameter 'i_arrValues[]' is not a 3D Array");
+         }
+
+         if((varSizeX * varSizeY * varSizeZ + 3) != intSizeTotal)
+         {
+            err.Raise(3,"The parameter 'i_arrValues[]' is not a 3D Array");
+         }
+
+         //set return values
+         o_intSizeX = varSizeX;
+         o_intSizeY = varSizeY;
+         o_intSizeZ = varSizeZ;
+      }
+
+      //------------------------------------------------------
+      // Creates a 3 dimensional array
+      //
+      // throws an exception if
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in] i_intSizeX: size of x dimension (1..x)
+      // [in] i_intSizeY: size of y dimension (1..x)
+      // [in] i_intSizeZ: size of z dimension (1..x)
+      // [return] array
+      //------------------------------------------------------
+      function Create(variable i_intSizeX, variable i_intSizeY, variable i_intSizeZ) variable[]
+      {
+         variable strFunctionName(GetFunctionName());
+         variable arrValues[];
+
+         //init
+         arrValues.SetSize(0);
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intSizeX", i_intSizeX);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intSizeY", i_intSizeY);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intSizeZ", i_intSizeZ);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intSizeX) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intSizeX' has a wrong type");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intSizeY) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intSizeY' has a wrong type");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intSizeZ) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intSizeZ' has a wrong type");
+         }
+
+         if(i_intSizeX < 1)
+         {
+            err.Raise(2,"The parameter 'i_intSizeX' is out of range");
+         }
+
+         if(i_intSizeY < 1)
+         {
+            err.Raise(2,"The parameter 'i_intSizeY' is out of range");
+         }
+
+         if(i_intSizeZ < 1)
+         {
+            err.Raise(2,"The parameter 'i_intSizeZ' is out of range");
+         }
+
+         //create aray - add 3 header values and store dimensions
+         arrValues.SetSize(i_intSizeX * i_intSizeY * i_intSizeZ + 3);
+         arrValues[0] = i_intSizeX;
+         arrValues[1] = i_intSizeY;
+         arrValues[2] = i_intSizeZ;
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, arrValues);
+
+         return(arrValues);
+      }
+
+      //------------------------------------------------------
+      // Get the size of the array
+      //
+      // throws an exception if
+      // - input is not a 3d array      
+      //
+      // [in] i_arrValues: array
+      // [out] o_intSizeX: size of x dimension (1..x)
+      // [out] o_intSizeY: size of y dimension (1..x)
+      // [out] o_intSizeZ: size of z dimension (1..x)
+      //------------------------------------------------------
+      function GetSize(variable i_arrValues[], variable& o_intSizeX, variable& o_intSizeY, variable& o_intSizeZ) void
+      {
+         variable strFunctionName(GetFunctionName());
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrValues", i_arrValues);
+         
+         //get size 
+         _GetSize(i_arrValues, o_intSizeX, o_intSizeY, o_intSizeZ);
+         
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeX", o_intSizeX);
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeY", o_intSizeY);
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeZ", o_intSizeZ);
+      }
+
+      //------------------------------------------------------
+      // Initialies all values of the array by setting the given value
+      //
+      // throws an exception if
+      // - input is not a 3d array      
+      //
+      // [in] i_arrValues: array to initialze
+      // [in] i_varValue: value which shall be set (all types are allowed)
+      //------------------------------------------------------
+      function InitializeAllValues(variable& io_arrValues[], variable i_varValue) void
+      {
+         variable strFunctionName(GetFunctionName());
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+         variable intSizeZ;
+         variable i;
+
+         variable intSizeCheck;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrValues", io_arrValues);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //get size 
+         _GetSize(io_arrValues, intSizeX, intSizeY, intSizeZ);
+
+         //set values
+         intSizeTotal = intSizeX * intSizeY * intSizeZ + 3;
+
+         for(i=3; i<intSizeTotal; i++)
+         {
+            io_arrValues.SetAt(i, i_varValue);
+         }
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionResultArrayTrace(strFunctionName, io_arrValues);
+      }
+
+      //------------------------------------------------------
+      // Set the array value
+      //
+      // throws an exception if
+      // - input is not a 3d array  
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in/out] io_arrValues: array
+      // [in] i_intPositionX: position in x dimension (1..x)
+      // [in] i_intPositionY: position in y dimension (1..x)
+      // [in] i_intPositionZ: position in z dimension (1..x)
+      // [in] i_varValue: value to set
+      //------------------------------------------------------
+      function SetValue(variable& io_arrValues[], 
+                        variable i_intPositionX, 
+                        variable i_intPositionY, 
+                        variable i_intPositionZ, 
+                        variable i_varValue) void
+      {
+         variable strFunctionName(GetFunctionName());
+         variable arrValues[];
+
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+         variable intSizeZ;
+
+         variable intPosition;
+        
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "io_arrValues", io_arrValues);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionX", i_intPositionX);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionY", i_intPositionY);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionZ", i_intPositionZ);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_varValue", i_varValue);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionX) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionX' has a wrong type");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionY) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionY' has a wrong type");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionZ) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionZ' has a wrong type");
+         }
+
+         //get size 
+         _GetSize(io_arrValues, intSizeX, intSizeY, intSizeZ);
+
+         //check range
+         if( (i_intPositionX < 1) ||
+             (i_intPositionX > intSizeX) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionX' is out of range");
+         }
+
+         if( (i_intPositionY < 1) ||
+             (i_intPositionY > intSizeY) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionY' is out of range");
+         }
+
+         if( (i_intPositionZ < 1) ||
+             (i_intPositionZ > intSizeZ) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionZ' is out of range");
+         }
+
+         //calculate position
+         intPosition = (i_intPositionX - 1) * intSizeY * intSizeZ + (i_intPositionY - 1) * intSizeZ + i_intPositionZ + 2;
+
+         //set value
+         io_arrValues[intPosition] = i_varValue;
+
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputArrayTrace(strFunctionName, "io_arrValues", io_arrValues);
+      }
+
+      //------------------------------------------------------
+      // Get the array value
+      //
+      // throws an exception if
+      // - input is not a 3d array  
+      // - input has wrong type
+      // - input is out of range
+      //
+      // [in] io_arrValues: array
+      // [in] i_intPositionX: position in x dimension (1..x)
+      // [in] i_intPositionY: position in y dimension (1..x)
+      // [in] i_intPositionZ: position in z dimension (1..x)
+      // [return] value 
+      //------------------------------------------------------
+      function GetValue(variable i_arrValues[], 
+                        variable i_intPositionX, 
+                        variable i_intPositionY,
+                        variable i_intPositionZ) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         variable arrValues[];
+
+         variable intSizeTotal;
+         variable intSizeX;
+         variable intSizeY;
+         variable intSizeZ;
+
+         variable intPosition;
+
+         variable varValue;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputArrayTrace(strFunctionName, "i_arrValues", i_arrValues);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionX", i_intPositionX);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionY", i_intPositionY);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_intPositionZ", i_intPositionZ);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionX) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionX' has a wrong type");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionY) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionY' has a wrong type");
+         }
+
+         if(HSLExtensions::Framework::Types::IsInteger(i_intPositionZ) == hslFalse)
+         {
+            err.Raise(1,"The parameter 'i_intPositionZ' has a wrong type");
+         }
+
+         //get size 
+         _GetSize(i_arrValues, intSizeX, intSizeY, intSizeZ);
+
+         //check range
+         if( (i_intPositionX < 1) ||
+             (i_intPositionX > intSizeX) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionX' is out of range");
+         }
+
+         if( (i_intPositionY < 1) ||
+             (i_intPositionY > intSizeY) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionY' is out of range");
+         }
+
+         if( (i_intPositionZ < 1) ||
+             (i_intPositionZ > intSizeZ) )
+         {
+            err.Raise(2,"The parameter 'i_intPositionZ' is out of range");
+         }
+
+
+         //calculate position
+         intPosition = (i_intPositionX - 1) * intSizeY * intSizeZ + (i_intPositionY - 1) * intSizeZ + i_intPositionZ + 2;
+
+         //get value
+         varValue = i_arrValues[intPosition];
+
+         //trace result
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, varValue);
+
+         return(varValue);
+      }
+
+   } //end Array3D
+} //end HSLExtension
+
+#endif //end __HSLEXTENSION_ARRAY3D__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:48$$checksum=00caedf1$$length=083$$

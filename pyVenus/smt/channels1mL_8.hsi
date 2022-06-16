@@ -1,0 +1,119 @@
+// {{{ 2 "IncludeGuard" "PragmaOnce"
+#pragma once
+// }} ""
+/* {{ 2 "LibraryInsertLine" "" */ // }} ""
+// {{ 2 "TemplateIncludeBlock" ""
+#include "HSLMETEDLib.hs_"
+#include "HSLMECCLib.hs_"
+#include "HSLPTLLib.hsl"
+// }} ""
+// {{{ 2 "LibraryNamespace" "Begin"
+namespace CHANNELS1ML_8 {
+// }} ""
+/* {{ 2 "VariableInsertLine" "" */ // }} ""
+// {{{ 2 "SubmethodForwardDeclaration" ""
+function aspirate( device & ML_STAR, sequence & io_seqAspirate, variable i_fltVolume, variable i_strLiquidClass, variable i_blnIncrementSequence, variable i_blnLiquidFollowing, variable i_strChannelPattern, variable i_intSequenceUse, variable i_intcLLDSensitivity, variable i_fltSubmergeDepth, variable i_fltFixedHeight, variable i_fltRetractDistance, variable i_blnTouchOff, variable i_fltTouchOffHeight, variable i_intpLLDSensitivity, variable i_fltMaxHeightDifference, variable i_intAspirationMode, variable i_intMixCycles, variable i_fltMixPosition, variable i_fltMixVolume ) void ;
+function dispense( device & ML_STAR, sequence & io_seqDispense, variable i_fltVolume, variable i_blnDispenseRemaining, variable i_blnIncrementSequence, variable i_blnLiquidFollowing, variable i_strChannelPattern, variable i_intSequenceUse, variable i_intcLLDSensitivity, variable i_fltSubmergeDepth, variable i_fltFixedHeight, variable i_fltRetractDistance, variable i_blnTouchOff, variable i_fltTouchOffHeight, variable i_blnSideTouch, variable i_blnMinimizeZHeight, variable i_intMixCycles, variable i_fltMixPosition, variable i_fltMixVolume ) void ;
+function tip_eject( device & ML_STAR, sequence & io_seqEjectPosition, variable i_blnDefaultWaste, variable i_blnIncrementSequence, variable i_strChannelPattern, variable i_intSequenceUse ) void ;
+function tip_pickup( device & ML_STAR, sequence & io_seqTips, variable i_blnIncrementSequence, variable i_strChannelPattern, variable i_intSequenceUse ) void ;
+// }} ""
+function _InitLibrary() {
+// {{ 2 "AutoInitBlock" ""
+PTL::SetWashingStateDefault("RinseTime1", 5);
+PTL::SetWashingStateDefault("SoakTime1", 5);
+PTL::SetWashingStateDefault("FlowRate1", 11);
+PTL::SetWashingStateDefault("RinseTime2", 0);
+PTL::SetWashingStateDefault("SoakTime2", 0);
+PTL::SetWashingStateDefault("FlowRate2", 11);
+PTL::SetWashingStateDefault("DrainingTime", 10);
+PTL::SetWashingStateDefault("StartWashLiquid", 0);
+PTL::SetLoadingStateDefault("RecoveryOptionContinue", hslTrue);
+PTL::SetLoadingStateDefault("RecoveryOptionExclude", hslTrue);
+PTL::SetLoadingStateDefault("RecoveryOptionDefault", 0);
+PTL::SetLoadingStateDefault("KitLotCheckEnabled", hslFalse);
+// }} ""
+}
+function _ExitLibrary() {
+// {{ 2 "AutoExitBlock" ""
+// }} ""
+}
+// {{{ 5 "tip_pickup" "Begin"
+function tip_pickup( device & ML_STAR, sequence & io_seqTips, variable i_blnIncrementSequence, variable i_strChannelPattern, variable i_intSequenceUse ) void {
+// }} ""
+// {{ 5 "tip_pickup" "InitLocals"
+// }} ""
+// {{ 12 1 0 "725b21df_f352_403e_8343cf2049e1d6d9" "ML_STAR:{541143FA-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143FA_7FA2_11D3_AD85_0004ACB1DCB2("725b21df_f352_403e_8343cf2049e1d6d9"); // TipPickUp
+}
+// }} ""
+// {{{ 5 "tip_pickup" "End"
+}
+// }} ""
+// {{{ 5 "tip_eject" "Begin"
+function tip_eject( device & ML_STAR, sequence & io_seqEjectPosition, variable i_blnDefaultWaste, variable i_blnIncrementSequence, variable i_strChannelPattern, variable i_intSequenceUse ) void {
+// }} ""
+// {{ 5 "tip_eject" "InitLocals"
+// }} ""
+// {{ 10 1 0 "371aea2f_dafa_47ee_9225e00a75b32631" "ML_STAR:{541143FC-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143FC_7FA2_11D3_AD85_0004ACB1DCB2("371aea2f_dafa_47ee_9225e00a75b32631"); // TipEject
+}
+// }} ""
+// {{{ 5 "tip_eject" "End"
+}
+// }} ""
+// {{{ 5 "aspirate" "Begin"
+function aspirate( device & ML_STAR, sequence & io_seqAspirate, variable i_fltVolume, variable i_strLiquidClass, variable i_blnIncrementSequence, variable i_blnLiquidFollowing, variable i_strChannelPattern, variable i_intSequenceUse, variable i_intcLLDSensitivity, variable i_fltSubmergeDepth, variable i_fltFixedHeight, variable i_fltRetractDistance, variable i_blnTouchOff, variable i_fltTouchOffHeight, variable i_intpLLDSensitivity, variable i_fltMaxHeightDifference, variable i_intAspirationMode, variable i_intMixCycles, variable i_fltMixPosition, variable i_fltMixVolume ) void {
+// }} ""
+// {{ 5 "aspirate" "InitLocals"
+// }} ""
+// {{ 1 1 0 "daf13c1a_cc97_483e_b914756dc859c226" "ML_STAR:{541143F5-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2("daf13c1a_cc97_483e_b914756dc859c226"); // Aspirate
+}
+// }} ""
+// {{{ 5 "aspirate" "End"
+}
+// }} ""
+// {{{ 5 "dispense" "Begin"
+function dispense( device & ML_STAR, sequence & io_seqDispense, variable i_fltVolume, variable i_blnDispenseRemaining, variable i_blnIncrementSequence, variable i_blnLiquidFollowing, variable i_strChannelPattern, variable i_intSequenceUse, variable i_intcLLDSensitivity, variable i_fltSubmergeDepth, variable i_fltFixedHeight, variable i_fltRetractDistance, variable i_blnTouchOff, variable i_fltTouchOffHeight, variable i_blnSideTouch, variable i_blnMinimizeZHeight, variable i_intMixCycles, variable i_fltMixPosition, variable i_fltMixVolume ) void {
+// }} ""
+private variable intDispenseMode;
+// {{ 5 "dispense" "InitLocals"
+// }} ""
+// {{ 3 1 0 "68b8f4c0_486c_4ce3_b9c48475e65ce6b5" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
+if (i_blnDispenseRemaining == 1)
+{
+// }} ""
+// {{ 4 1 0 "5feb8a6e_4073_4d56_b1f9ee5f6f833e2b" "{B31F3543-5D80-11d4-A5EB-0050DA737D89}"
+intDispenseMode = 9;
+// }} ""
+// {{ 5 1 0 "68b8f4c0_486c_4ce3_b9c48475e65ce6b5" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
+}
+else
+{
+// }} ""
+// {{ 6 1 0 "dea0825a_3016_46e3_8310539e8e5bf40f" "{B31F3543-5D80-11d4-A5EB-0050DA737D89}"
+intDispenseMode = 8;
+// }} ""
+// {{ 7 1 0 "68b8f4c0_486c_4ce3_b9c48475e65ce6b5" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
+}
+// }} ""
+// {{ 8 1 0 "9efaecb9_3338_4e9c_b50ef3604d98a666" "ML_STAR:{541143F8-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2("9efaecb9_3338_4e9c_b50ef3604d98a666"); // Dispense
+}
+// }} ""
+// {{{ 5 "dispense" "End"
+}
+// }} ""
+/* {{ 2 "SubmethodInsertLine" "" */ // }} ""
+// {{{ 2 "LibraryNamespace" "End"
+} // library namespace
+// }} ""
+// $$author=BenjaminWohl$$valid=0$$time=2022-05-11 15:08$$checksum=a9c2c890$$length=091$$

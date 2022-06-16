@@ -1,0 +1,845 @@
+//----------------------------------------------------------------------------------------
+// Copyright (C) by HAMILTON Bonaduz AG, CH-7402 Bonaduz.
+// All rights reserved.
+//
+// Project              : HSL Extension Framework
+// Description          : Framework library with file functions
+//
+// Software Version     : 4.3
+//
+// Revision history:
+// - Oliver Funke   2010.11.04   library created
+//
+//----------------------------------------------------------------------------------------
+
+#ifndef __HSLEXTENSIONS_FILE__
+#define __HSLEXTENSIONS_FILE__ 1
+
+//============================== includes ==============================
+#ifndef __HSLEXTENSIONS_FRAMEWORK__
+   #include "HSLExtensions/Framework/HSLExtensionsFramework.hsl"
+#endif
+
+#ifndef __HSLEXTENSIONS_FRAMEWORK_ENUMS__
+   #include "HSLExtensions/Framework/Enumerators.hsl"
+#endif
+
+
+//============================== HSLExtensions ==============================
+namespace HSLExtensions
+{
+   //============================== File ==============================
+   namespace File
+   {
+      //---------------------------------------------------------
+      // Creates the full file name, adds a seperator between directory and file name if necessary
+      // NOTE: 
+      // - if 'i_strDirectory' or 'i_strShortFileName' is not a string or is an empty string then the function returns an empty string
+      // - the function dont checks whether the input contains valid directory and file names
+      // 
+      // [in] i_strDirectory: directory (with or without '//' at the end)
+      // [in] i_strShortFileName: short file name
+      // [returns] full file name or empty string
+      //---------------------------------------------------------
+      function CreateFullFileName(variable i_strDirectory, 
+                                    variable i_strShortFileName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable strFullFileName("");
+         variable blnInputError(hslFalse);
+         variable intIndex;
+         variable intLength;                 
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strDirectory", i_strDirectory);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strShortFileName", i_strShortFileName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strDirectory) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strDirectory);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsString(i_strShortFileName) == hslFalse)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strShortFileName);            
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strDirectory) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strDirectory' is an empty string");
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strShortFileName) == hslTrue)
+         {
+            blnInputError = hslTrue;
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strShortFileName' is an empty string");
+         }
+
+         //return if input is invalid
+         if(blnInputError == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFullFileName);
+            return(strFullFileName);
+         }
+
+         //search last "\\"
+         intLength = StrGetLength(i_strDirectory);
+         intIndex = StrReverseFind(i_strDirectory, "\\");
+
+         if(intIndex == intLength - 1)
+         {
+            strFullFileName = StrConcat2(i_strDirectory, i_strShortFileName);
+         }
+         else
+         {
+            strFullFileName = StrConcat4(i_strDirectory, "\\", i_strShortFileName, "");
+         }
+
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFullFileName);
+         return(strFullFileName);
+      } 
+
+      //---------------------------------------------------------
+      // Get the file name with the file extension
+      // NOTE: 
+      // - if 'i_strFullFileName' is not a string or contains no file name the function returns an empty string
+      // - returns the last component of specified path that is not part of the drive specification (e.g.: GetFileName("abc\\def\\") will return 'def'
+      // - the function does not attempt to resolve the path, nor does it check for the existence of the specified file
+      // 
+      // [in] i_strFullFileName: file name
+      // [returns] file name or empty string
+      //---------------------------------------------------------
+      function GetFileName(variable i_strFullFileName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable strFileName("");
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileName", i_strFullFileName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileName);
+            return(strFileName);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileName);
+            return(strFileName);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get file name
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         strFileName = objFileSystemObject.GetFileName(i_strFullFileName);
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileName);
+         return(strFileName);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            strFileName = "";
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileName);
+            return(strFileName);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Get the file name without the file extension
+      // NOTE: 
+      // - if 'i_strFullFileName' is not a string or contains no file name the function returns an empty string
+      // - returns the last component of specified path that is not part of the drive specification (e.g.: GetFileName("abc\\def\\") will return 'def'
+      // - the function does not attempt to resolve the path, nor does it check for the existence of the specified file
+      // 
+      // [in] i_strFullFileName: file name
+      // [returns] file name without extension or empty string
+      //---------------------------------------------------------
+      function GetFileNameWithoutExtension(variable i_strFullFileName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable strFileName("");
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileName", i_strFullFileName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileName);
+            return(strFileName);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileName);
+            return(strFileName);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get file name
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         strFileName = objFileSystemObject.GetBaseName(i_strFullFileName);
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileName);
+         return(strFileName);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            strFileName = "";
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileName);
+            return(strFileName);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Get the file extension
+      // NOTE: 
+      // - if 'i_strFullFileName' is not a string or contains no file name the function returns an empty string
+      // - returns the last component of specified path that is not part of the drive specification (e.g.: GetFileName("abc\\def\\") will return 'def'
+      // - the function does not attempt to resolve the path, nor does it check for the existence of the specified file
+      // 
+      // [in] i_strFullFileName: file name
+      // [returns] file extension or empty string
+      //---------------------------------------------------------
+      function GetFileExtension(variable i_strFullFileName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable strFileExtension("");
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileName", i_strFullFileName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileExtension);
+            return(strFileExtension);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileExtension);
+            return(strFileExtension);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get file name
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         strFileExtension = objFileSystemObject.GetExtensionName(i_strFullFileName);
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileExtension);
+         return(strFileExtension);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            strFileExtension = "";
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFileExtension);
+            return(strFileExtension);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Get the drive name
+      // NOTE: 
+      // - if 'i_strFullFileName' is not a string or contains no file name the function returns an empty string
+      // - the function does not attempt to resolve the path, nor does it check for the existence of the specified file
+      // 
+      // [in] i_strFullFileName: file name
+      // [returns] drive name or empty string
+      //---------------------------------------------------------
+      function GetDriveName(variable i_strFullFileName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable strDriveName("");
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileName", i_strFullFileName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strDriveName);
+            return(strDriveName);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strDriveName);
+            return(strDriveName);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get file name
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         strDriveName = objFileSystemObject.GetDriveName(i_strFullFileName);
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strDriveName);
+         return(strDriveName);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            strDriveName = "";
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strDriveName);
+            return(strDriveName);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Get the directory name
+      // NOTE: 
+      // - if 'i_strFullFileName' is not a string or contains no file name the function returns an empty string
+      // - the function does not attempt to resolve the path, nor does it check for the existence of the specified file
+      // 
+      // [in] i_strFullFileName: file name
+      // [returns] directory name or empty string
+      //---------------------------------------------------------
+      function GetDirectoryName(variable i_strFullFileName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable strFolderName("");
+         
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileName", i_strFullFileName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFolderName);
+            return(strFolderName);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFolderName);
+            return(strFolderName);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get file name
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         strFolderName = objFileSystemObject.GetParentFolderName(i_strFullFileName);
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFolderName);
+         return(strFolderName);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            strFolderName = "";
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFolderName);
+            return(strFolderName);
+         }
+      } 
+
+      //---------------------------------------------------------
+      // Creates a randomly generated temporary file name (short file name without directory)
+      // NOTE: the function does not create the file
+      // 
+      // [returns] file name
+      //---------------------------------------------------------
+      function CreateTemporaryFileName() variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable strFilaName("");
+         
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //create file name
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         strFilaName = objFileSystemObject.GetTempName();
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFilaName);
+         return(strFilaName);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            strFilaName = "";
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, strFilaName);
+            return(strFilaName);
+         }
+      }
+
+      //---------------------------------------------------------
+      // Check whether the file exists
+      // NOTE: if 'i_strFullFileName' is not a string the function returns 'false'
+      // 
+      // [in] i_strFullFileName: file name
+      // [returns] 'true' if file exists, otherwise 'false'
+      //---------------------------------------------------------
+      function Exists(variable i_strFullFileName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable blnFileExists;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileName", i_strFullFileName);
+
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //file exists?
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         blnFileExists = objFileSystemObject.FileExists(i_strFullFileName);
+         objFileSystemObject.ReleaseObject();
+
+         if(blnFileExists != hslFalse)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+         else
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }
+      
+      //---------------------------------------------------------
+      // Copy file
+      // NOTE: Wildcard characters can only be used in the last path component of the source argument. (eg. Copy("c:\mydocuments\letters\*.doc", "c:\tempfolder\", true))
+      // 
+      // [in] i_strFullFileNameSource: file name of source file
+      // [in] i_strFullFileNameTarget: file name of destination file
+      // [in] i_blnOverwriteExistingFile: 'true' to overwrite an already existing file, otherwise 'false'
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function Copy( variable i_strFullFileNameSource,
+                     variable i_strFullFileNameDestination,
+                     variable i_blnOverwriteExistingFile) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable blnInputError(hslFalse);
+
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileNameSource", i_strFullFileNameSource);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileNameDestination", i_strFullFileNameDestination);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_blnOverwriteExistingFile", i_blnOverwriteExistingFile);
+         
+         //check input         
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileNameSource) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileNameSource);
+            blnInputError = hslTrue;
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileNameSource) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strFullFileNameSource' is an empty string");
+            blnInputError = hslTrue;
+         }
+
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileNameDestination) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileNameDestination);
+            blnInputError = hslTrue;
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileNameDestination) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter 'i_strFullFileNameDestination' is an empty string");
+            blnInputError = hslTrue;
+         }
+
+         if(HSLExtensions::Framework::Types::IsBoolean(i_blnOverwriteExistingFile) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::Boolean, i_blnOverwriteExistingFile);
+            blnInputError = hslTrue;
+         }
+
+         //return on input error
+         if(blnInputError == hslTrue)
+         {
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //does the file exist?
+         if(Exists(i_strFullFileNameSource) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The file does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //source = destination, then return
+         if(i_strFullFileNameSource == i_strFullFileNameDestination)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "source file name is equal to destination file name");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //copy file
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objFileSystemObject.CopyFile(i_strFullFileNameSource, i_strFullFileNameDestination, i_blnOverwriteExistingFile);
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }     
+
+      //---------------------------------------------------------
+      // Delete file
+      // NOTE: if 'i_strFullFileName' is not a string the function returns 'false'
+      // 
+      // [in] i_strFullFileName: file name
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function Delete(variable i_strFullFileName) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileName", i_strFullFileName);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //does the file exist?
+         if(Exists(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The file does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //delete file
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objFileSystemObject.DeleteFile(i_strFullFileName);
+         objFileSystemObject.ReleaseObject();
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }      
+
+
+      //---------------------------------------------------------
+      // Move file
+      // NOTE: Wildcard characters can only be used in the last path component of the source argument. (eg. Copy("c:\mydocuments\letters\*.doc", "c:\tempfolder\", true))      
+      // 
+      // [in] i_strFullFileNameSource: file name of source file
+      // [in] i_strFullFileNameTarget: file name of destination file
+      // [in] i_blnOverwriteExistingFile: 'true' to overwrite an already existing file, otherwise 'false'
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function Move( variable i_strFullFileNameSource,
+                     variable i_strFullFileNameDestination,
+                     variable i_blnOverwriteExistingFile) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         variable blnInputError(hslFalse);
+
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileNameSource", i_strFullFileNameSource);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileNameDestination", i_strFullFileNameDestination);
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_blnOverwriteExistingFile", i_blnOverwriteExistingFile);
+         
+         //note: copy and delete the file, because the 'MoveFile' command does not support file movement between different drives
+         
+         //copy
+         if(Copy(i_strFullFileNameSource, i_strFullFileNameDestination, i_blnOverwriteExistingFile) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //source = destination, then return
+         if(i_strFullFileNameSource == i_strFullFileNameDestination)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "source file name is equal to destination file name");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+            return(hslTrue);
+         }
+         
+         //delete
+         if(Delete(i_strFullFileNameSource) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+      }
+
+      //---------------------------------------------------------
+      // Rename file
+      // NOTE: Wildcard characters can only be used in the last path component of the source argument. (eg. Copy("c:\mydocuments\letters\*.doc", "c:\tempfolder\", true))      
+      // 
+      // [in] i_strFullFileNameSource: file name of source file
+      // [in] i_strFullFileNameTarget: file name of destination file
+      // [in] i_blnOverwriteExistingFile: 'true' to overwrite an already existing file, otherwise 'false'
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function Rename( variable i_strFullFileNameSource,
+                     variable i_strFullFileNameDestination,
+                     variable i_blnOverwriteExistingFile) variable
+      {
+         return(Move(i_strFullFileNameSource, i_strFullFileNameDestination, i_blnOverwriteExistingFile));
+      }
+
+
+      //---------------------------------------------------------
+      // Get file information
+      // NOTE: if 'i_strFullFileName' is not a string or if the file not exists the function returns 'false'
+      // 
+      // [in] i_strFullFileName: file name
+      // [out] o_iSizeInBytes: size of the file in bytes
+      // [out] o_bIsReadOnly: 'true' if the file is read only, otherwise 'false'
+      // [returns] 'true' if success, otherwise 'false'
+      //---------------------------------------------------------
+      function GetFileInformation(variable i_strFullFileName,
+                                    variable& o_intSizeInBytes,                                    
+                                    variable& o_blnIsReadOnly
+                                    ) variable
+      {
+         variable strFunctionName(GetFunctionName());
+         object objFileSystemObject;
+         object objFile;
+
+         //init
+         o_intSizeInBytes = 0;                          
+         o_blnIsReadOnly = hslFalse;
+
+         //trace input
+         HSLExtensions::Framework::Trace::FunctionInputParameterTrace(strFunctionName, "i_strFullFileName", i_strFullFileName);
+         
+         //check input
+         if(HSLExtensions::Framework::Types::IsString(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::ParameterTypeErrorTrace(strFunctionName, HSLExtensions::Framework::Enumerators::Type::String, i_strFullFileName);
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         if(HSLExtensions::Framework::Types::IsEmptyString(i_strFullFileName) == hslTrue)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The input parameter is an empty string");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //does the file exist?
+         if(Exists(i_strFullFileName) == hslFalse)
+         {
+            HSLExtensions::Framework::Trace::WarningTrace(strFunctionName, "The file does not exist");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+
+         //register exception handler 
+         onerror goto ExceptionHandler;
+         
+         //get file
+         objFileSystemObject.CreateObject("Scripting.FileSystemObject");
+         objFile = objFileSystemObject.GetFile(i_strFullFileName);
+         
+         //read only?
+         if(objFile.attributes & 1)
+         {
+            o_blnIsReadOnly = hslTrue;
+         }
+
+         //size
+         o_intSizeInBytes = objFile.size;
+
+         //release objects
+         objFile.ReleaseObject();
+         objFileSystemObject.ReleaseObject();
+         
+         //trace output
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_intSizeInBytes", o_intSizeInBytes);
+         HSLExtensions::Framework::Trace::FunctionOutputParameterTrace(strFunctionName, "o_blnIsReadOnly", o_blnIsReadOnly);
+
+         HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslTrue);
+         return(hslTrue);
+
+         //exception
+         ExceptionHandler:
+         {
+            objFileSystemObject.ReleaseObject();
+
+            HSLExtensions::Framework::Trace::ErrorTrace(strFunctionName, "FileSystemObject error");
+
+            HSLExtensions::Framework::Trace::FunctionResultParameterTrace(strFunctionName, hslFalse);
+            return(hslFalse);
+         }
+      }      
+
+
+   } //end File
+} //end HSLExtensions
+
+#endif //end __HSLEXTENSIONS_FILE__
+
+// $$author=ofunke$$valid=1$$time=2013-01-31 10:49$$checksum=e0b39948$$length=083$$
