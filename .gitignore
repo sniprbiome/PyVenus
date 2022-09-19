@@ -1,6 +1,8 @@
 # pyVenus specific
 pyVenus/HSL/HSLremote/fromSystem/
 pyVenus/HSL/HSLremote/toSystem/
+~*.hsi
+~*.tmp
 
 # Visual Code
 .vscode/
