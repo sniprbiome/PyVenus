@@ -10,12 +10,19 @@ from jinja2 import Environment, PackageLoader, select_autoescape
 import pandas as pd
 
 class Resources:
-    def __init__(self):
-        pass
+    """Static class with functions to generate python classes from Venus resources
+    """         
 
-    def read_layout(self, layout):
+    def read_layout(layout: str):
+        """Reads in a Venus layout file (*.lay) and converts it to a python class.
+
+        The generated python class is located in /venus_resources/ and will be named the same as original layout file.
+
+        Args:
+            layout (str): Relative or absolute path to the layout file
+        """        
         # get output directory for resources
-        output_directory = os.path.join(sys.path[0], "hamilton_resources")
+        output_directory = os.path.join(sys.path[0], "venus_resources")
         os.makedirs(output_directory, exist_ok=True)
 
         # make sure we are working with an absolute path
@@ -23,8 +30,7 @@ class Resources:
 
         # set filenames and paths
         layout_ascii = os.path.join(output_directory, os.path.splitext(os.path.split(layout)[1])[0] + ".txt")
-        layout_py = os.path.join(output_directory, "deck_layout.py")
-        #layout_template = os.path.join(os.path.abspath(os.path.dirname(__file__)), "templates/_DeckLayout.py")
+        layout_py = os.path.join(output_directory, os.path.splitext(os.path.split(layout)[1])[0] + ".py")
 
         # create a copy of original deck layout
         shutil.copyfile(layout, layout_ascii)
@@ -56,11 +62,29 @@ class Resources:
             f.write(str(template.render(sequences=sequences, layout_file=layout)))
 
 
-    def read_liquid_classes(self, include_1ml_channels=True, include_5ml_channels=False, include_96head=True,
-                            include_384head=False, include_washstations=False,
-                            database=r'C:\Program Files (x86)\HAMILTON\Config\ML_STARLiquids.mdb'):
+    def read_liquid_classes(
+        include_1ml_channels: bool = True, 
+        include_5ml_channels: bool = False, 
+        include_96head: bool = True,
+        include_384head: bool = False, 
+        include_washstations: bool = False,
+        database: str = r'C:\Program Files (x86)\HAMILTON\Config\ML_STARLiquids.mdb'):
+        """Reads in the default Venus liquid class database and converts it to a python class.
+
+        It is possible to restrict the list of liquid classes to those fitting the system configuration.
+        The generated python class is located at /venus_resources/liquid_classes.py
+
+        Args:
+            include_1ml_channels (bool, optional): Load liquid classes for 1 mL channels. Defaults to True.
+            include_5ml_channels (bool, optional): Load liquid classes for 5 mL channels. Defaults to False.
+            include_96head (bool, optional): Load liquid classes for the 96 multiprobe head. Defaults to True.
+            include_384head (bool, optional): Load liquid classes for the 384 multiprobe head. Defaults to False.
+            include_washstations (bool, optional): Load liquid classes for the wash stations. Defaults to False.
+            database (str, optional): Path to a non-standard liquid class database file. Defaults to r'C:\Program Files (x86)\HAMILTON\Config\ML_STARLiquids.mdb'.
+        """        
+
         # get output directory for resources
-        output_directory = os.path.join(sys.path[0], "hamilton_resources")
+        output_directory = os.path.join(sys.path[0], "venus_resources")
         os.makedirs(output_directory, exist_ok=True)
 
         # set filenames and paths
@@ -112,13 +136,21 @@ class Resources:
             f.write(template)
 
 
-    def read_submethods(self, directory=""):
+    def read_submethods(directory: str = ""):
+        """Reads in all the submethod files at the specified folder and converts them to python classes.
+
+        An empty string for the directory parameter (default) loads from /smt/
+
+        Args:
+            directory (str, optional): The path to directory with smt files. Defaults to "".
+        """        
+
         # set default directory with SMTs
         if directory == "":
             directory = os.path.join(sys.path[0], "smt")
 
         # get output directory for resources
-        output_directory = os.path.join(sys.path[0], "hamilton_resources")
+        output_directory = os.path.join(sys.path[0], "venus_resources")
         os.makedirs(output_directory, exist_ok=True)
 
         # set filenames and paths
@@ -138,7 +170,7 @@ class Resources:
                 content = f.read()
 
             # get comments of submethod and its parameters
-            smt_definition = self.__parse_hxcfg(os.path.join(path.parent, path.stem + ".smt"))
+            smt_definition = Resources.__parse_hxcfg(os.path.join(path.parent, path.stem + ".smt"))
 
 
             # setup regex expressions
@@ -157,7 +189,7 @@ class Resources:
                 parameters = []
 
                 # extract comments from SMT definition
-                submethod_comment, parameter_comments = self.__get_comments(smt_definition, f.group(1))
+                submethod_comment, parameter_comments = Resources.__get_comments(smt_definition, f.group(1))
 
                 # extract information for each parameter
                 for p in match_parameters:
@@ -245,10 +277,8 @@ class Resources:
         for smt in submethods:
             with open(os.path.join(output_directory,smt['name'] + ".py"), 'w') as f:
                 f.write(str(template.render(submethods=[smt])))
-        #with open(file_python, 'w') as f:
-        #    f.write(str(template.render(submethods=submethods)))
 
-    def __parse_hxcfg(self, file):
+    def __parse_hxcfg(file):
         # convert .smt from binary to ascii
         process = subprocess.Popen([
             "C:\\Program Files (x86)\\HAMILTON\\Bin\\HxCfgFilConverter.exe",
@@ -301,7 +331,7 @@ class Resources:
 
         return json.loads(json_string)
 
-    def __get_comments(self, smt_definition, submethod):
+    def __get_comments(smt_definition, submethod):
         df = pd.DataFrame.from_dict(smt_definition['HxMetEd_Submethods']['-533725162'], orient="index")
         df = df[df['1-533725161'] == submethod]
         submethod_comment = df['1-533725170'].values[0]
