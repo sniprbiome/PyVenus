@@ -5,15 +5,17 @@ import time
 import atexit
 
 class Connection:
-    def __init__(self, run_environment=r"C:\Program Files (x86)\HAMILTON\Bin\HxRun.exe", start_minimized=False):
-        """
-        Python function generated from submethod 'Transfer' in 'smtTest.smt'
-            :param ML_STAR: Device (in_out)
-            :param i_seqSource: Sequence (in)
-            :param i_seqTarget: Sequence (in)
-            :param i_seqTips: Sequence (in_out)
-            :param i_fltVolume: Variable (in)
-        """
+    """Connection class that starts the Venus run environment and takes care of data exchange to python environment
+    """    
+
+    def __init__(self, run_environment: str = r"C:\Program Files (x86)\HAMILTON\Bin\HxRun.exe", start_minimized: bool = False) -> None:
+        """Initialize run environment
+
+        Args:
+            run_environment (str, optional): Path to the Venus run environment executable. Defaults to r"C:\Program Files (x86)\HAMILTON\Bin\HxRun.exe".
+            start_minimized (bool, optional): Start the window minimized. Defaults to False.
+        """        
+
         
         # setup variables
         self.__command_counter = 1
@@ -47,7 +49,16 @@ class Connection:
         # register abort handler that closes the run environment
         atexit.register(self.close)
 
-    def execute(self, HSLcode="", definitions=""):
+    def execute(self, HSLcode: str = "", definitions:str = "") -> int:      
+        """Send HSL code and/or variable/object defintions to the Venus environment and execute them
+
+        Args:
+            HSLcode (str, optional): HSL code to execute. Defaults to "".
+            definitions (str, optional): Variable or object definitions. Defaults to "".
+        
+        Returns:
+            int: Command counter ID for this execution
+        """        
         current_counter = self.__command_counter
         self.__command_counter += 1
 
@@ -62,7 +73,16 @@ class Connection:
         return current_counter
 
 
-    def get_return(self, command_counter, wait_for_return=True):
+    def get_return(self, command_counter: int, wait_for_return: bool = True) -> str:
+        """Get the data returned from the Venus environment for a previous execution command based on its command counter ID
+
+        Args:
+            command_counter (int): The command counter ID for the execution data should be retrieved for
+            wait_for_return (bool, optional): Pause execution until the data has been received? Defaults to True.
+
+        Returns:
+            str: The returned data (JSON)
+        """        
         file = os.path.join(self.__path_HSLremote, "fromSystem", str(command_counter) + ".json")
 
         if not os.path.exists(file):
@@ -78,4 +98,6 @@ class Connection:
 
 
     def close(self):
+        """Close connection and shut down run environment
+        """        
         self.execute("___SHUTDOWN___ = 1;")
