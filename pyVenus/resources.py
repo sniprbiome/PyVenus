@@ -13,7 +13,7 @@ class Resources:
     """Static class with functions to generate python classes from Venus resources
     """         
 
-    def read_layout(layout: str):
+    def read_layout(layout: str) -> None:
         """Reads in a Venus layout file (*.lay) and converts it to a python class.
 
         The generated python class is located in /venus_resources/ and will be named the same as original layout file.
@@ -68,7 +68,7 @@ class Resources:
         include_96head: bool = True,
         include_384head: bool = False, 
         include_washstations: bool = False,
-        database: str = r'C:\Program Files (x86)\HAMILTON\Config\ML_STARLiquids.mdb'):
+        database: str = r'C:\Program Files (x86)\HAMILTON\Config\ML_STARLiquids.mdb') -> None:
         """Reads in the default Venus liquid class database and converts it to a python class.
 
         It is possible to restrict the list of liquid classes to those fitting the system configuration.
@@ -136,7 +136,7 @@ class Resources:
             f.write(template)
 
 
-    def read_submethods(directory: str = ""):
+    def read_submethods(directory: str = "") -> None:
         """Reads in all the submethod files at the specified folder and converts them to python classes.
 
         An empty string for the directory parameter (default) loads from /smt/
