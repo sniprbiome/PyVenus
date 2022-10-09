@@ -324,7 +324,14 @@ class Device:
         return self.__name
 
 class Liquidclass:
+    """Python class representing a Venus liquid class
+    """    
     def __init__(self, name):
+        """Initialize the liquid class
+
+        Args:
+            name (_type_): Name of the liquid class in the liquid class database
+        """        
         self.__name = name
     
     @property
