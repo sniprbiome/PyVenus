@@ -1,13 +1,31 @@
 import json
 import pandas as pd
+from uuid import uuid4
+from typing import Union
 from . import Connection
 
 
 class Variable:
-    def __init__(self, con: Connection, name, value=0):
+    """Replicates functionality of basic Venus variables (i.e. string, integer, float) in python
+    """    
+    def __init__(self, con: Connection, name: str = "", value: Union[int,float,str] = 0):
+        """Initialize a new variable
+
+        An empty string for the name parameter (default) will generate a unique ID for this variable in the Venus environment.
+        By setting a name explicitly the generated HSL code is easier to read/debug.
+
+        Args:
+            con (Connection): Connection object to Venus environment
+            name (str, optional): Name the variable should carry in Venus environment. Defaults to "" which will generate a random name.
+            value (Union[int, float, str], optional): Starting value for variable. Defaults to 0.
+        """        
         self.__con = con
-        self.__name = name
         self.value = value
+
+        if name == "":
+            name = "variable_" + str(uuid4()).replace("-","")
+        self.__name = name
+
         self.__con.execute(definitions=f'variable {self.__name} ({self.value});')
 
     def __str__(self):
@@ -26,23 +44,44 @@ class Variable:
         self.__value = value
 
     def push(self):
+        """Push the current state of the variable to the Venus environment
+        """        
         value_string = f'"{self.value}"' if isinstance(self.value, str) else str(self.value)
         self.__con.execute(f"{self.__name} = {value_string};")
 
     def pull(self):
+        """Pull the current state of the variable from the Venus environment
+        """        
         i = self.__con.execute(f'addJSON_variable(___JSON___, {self.__name}, "{self.__name}");')
         ret = json.loads(self.__con.get_return(i))
         self.value = ret[self.__name]
 
 
 class Array(list):
-    def __init__(self, con: Connection, name, value=None):
+    """Replicates functionality of Venus arrays in python. Expands basic list type from python.
+    """
+    def __init__(self, con: Connection, name: str = "", value: list = None):
+        """Intialize a new array
+
+        An empty string for the name parameter (default) will generate a unique ID for this array in the Venus environment.
+        By setting a name explicitly the generated HSL code is easier to read/debug.
+
+        Args:
+            con (Connection): Connection object to Venus environment
+            name (str, optional): Name the array should carry in the Venus environment. Defaults to "" which will generate a random name.
+            value (list, optional): Starting value of the array in the form of a python list. Defaults to None which generates an empty array.
+        """        
+        
         list.__init__([])
         if value is None:
             value = []
         self.extend(value)
         self.__con = con
+
+        if name == "":
+            name = "array_" + str(uuid4()).replace("-","")
         self.__name = name
+
         self.__con.execute(definitions=f'variable {self.__name}[];')
         self.push()
 
@@ -51,6 +90,8 @@ class Array(list):
         return self.__name
 
     def push(self):
+        """Push current state of the array to the Venus environment
+        """        
         code = f"{self.__name}.SetSize(0);\n"
         for item in self.copy():
             value_string = f'"{item}"' if isinstance(item, str) else str(item)
@@ -58,6 +99,8 @@ class Array(list):
         self.__con.execute(code)
 
     def pull(self):
+        """Pull current state of the array from the Venus environment
+        """        
         i = self.__con.execute(f'addJSON_array(___JSON___, {self.__name}, "{self.__name}");')
         ret = json.loads(self.__con.get_return(i))
         self.clear()
@@ -65,11 +108,26 @@ class Array(list):
 
 
 class Sequence:
-    def __init__(self, con, name, copy=None):
+    """Replicates functionality of a Venus sequence in python
+    """    
+    def __init__(self, con: Connection, name: str = "", copy: Union['Sequence', str] = None):
+        """Initialize a new sequence 
+
+        An empty string for the name parameter (default) will generate a unique ID for this sequence in the Venus environment.
+        By setting a name explicitly the generated HSL code is easier to read/debug.
+
+        Args:
+            con (Connection): Connection object to Venus environment
+            name (str, optional): Name the sequence should carry in Venus environment. Defaults to "" which will generate a random name.
+            copy (Union[Sequence, str], optional): Either an existing Sequence object or a string referencing an existing Venus sequence (e.g. deck sequence), the content of which will be copied. Defaults to None which generates an empty sequence.
+        """        
         self.__con = con
-        self.__name = name
         self.__current = 0
         self.__end = 0
+
+        if name == "":
+            name = "sequence_" + str(uuid4()).replace("-","")
+        self.__name = name
 
         if isinstance(copy, Sequence):
             do_pull = True
@@ -150,6 +208,8 @@ class Sequence:
         return len(self.__df.index)
 
     def push(self):
+        """Push the current state of the sequence to the Venus environment
+        """        
         code = f'{{ sequence __temp; {self.__name} = __temp; }}\n'
         for row in self.__df.itertuples():
             code += f'{self.__name}.Add("{row.labware}", "{row.position}");\n'
@@ -158,6 +218,8 @@ class Sequence:
         self.__con.execute(code)
 
     def pull(self):
+        """Pull the current state of the sequence to the Venus environment
+        """        
         i = self.__con.execute(f'addJSON_sequence(___JSON___, {self.__name}, "{self.__name}");')
         ret = json.loads(self.__con.get_return(i))
         self.__df = pd.DataFrame(
@@ -169,7 +231,17 @@ class Sequence:
         self.end = ret[self.__name]["end"]
         self.current = ret[self.__name]["current"]
 
-    def add(self, labware, position, at_index=None):
+    def add(self, labware: str, position: str, at_index: int = None):
+        """Add a new item (defined by labware ID and position) to the sequence
+
+        If the ad_index parameter is omitted the new item is appended at the end.
+
+        Args:
+            labware (str): Venus labware ID
+            position (str): Position on the labware
+            at_index (int, optional): One-based position index where the item should be added. Defaults to None which will append to the end.
+        """    
+
         old_total = self.total
         
         if at_index is None:
@@ -203,7 +275,13 @@ class Sequence:
         if self.current == 0:
             self.current = 1
 
-    def remove(self, at_index):
+    def remove(self, at_index: int):
+        """Remove an item from the sequence at the specified index (one-based)
+
+        Args:
+            at_index (int): One-based index of the position to remove
+        """
+
         if isinstance(at_index, int):
             # remove a single row with the specified index
             self.__df.drop([at_index-1], inplace=True).reset_index(inplace=True)
@@ -211,18 +289,32 @@ class Sequence:
             # remove multiple list from list of indexes
             self.__df.drop([x - 1 for x in at_index], inplace=True).reset_index(inplace=True)
 
-        # make sure current and end position are meaningful
+        # make sure current and end position are meaningful (the setting functions will take care of this)
         self.end = self.end
         self.current = self.current
 
     def clear(self):
+        """Remove all items from a sequence
+        """        
+
         self.__df = self.__df.iloc[0:0]
         self.current = 0
         self.end = 0
 
 
 class Device:
-    def __init__(self, con: Connection, layout_file, name="ML_STAR"):
+    """Replicate the functionality of a Venus device object in python
+    """    
+
+    def __init__(self, con: Connection, layout_file: str, name: str = "ML_STAR"):
+        """Initialize the device object
+
+        Args:
+            con (Connection): Connection object to Venus environment
+            layout_file (str): Path to Venus deck layout file
+            name (str, optional): Name of the device in Venus (e.g. ML_STAR, HxFan). Defaults to "ML_STAR".
+        """        
+
         self.__con = con
         self.__name = name
         self.__con.execute(definitions=f'device {name}("{layout_file}", "{name}", hslTrue);')
@@ -232,9 +324,10 @@ class Device:
         return self.__name
 
 class Liquidclass:
-        def __init__(self, name):
-            self.__name = name
-        
-        @property
-        def name(self):
-            return self.__name
+    def __init__(self, name):
+        self.__name = name
+    
+    @property
+    def name(self):
+        return self.__name
+
