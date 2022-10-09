@@ -326,7 +326,7 @@ class Device:
 class Liquidclass:
     """Python class representing a Venus liquid class
     """    
-    def __init__(self, name):
+    def __init__(self, name: str):
         """Initialize the liquid class
 
         Args:
