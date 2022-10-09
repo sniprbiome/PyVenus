@@ -110,22 +110,28 @@ class Array(list):
 class Sequence:
     """Replicates functionality of a Venus sequence in python
     """    
-    def __init__(self, con: Connection, name: str = "", copy: Union['Sequence', str] = None):
+    def __init__(self, con: Connection, name: str = "", copy: Union['Sequence', str] = None, deck_sequence: bool = False):
         """Initialize a new sequence 
 
         An empty string for the name parameter (default) will generate a unique ID for this sequence in the Venus environment.
         By setting a name explicitly the generated HSL code is easier to read/debug.
+        If deck_sequence is set to True (and copy is None) the sequence is not initiated in the Venus environment (i.e. it already exists)
+        For deck sequences the name parameter is required!
 
         Args:
             con (Connection): Connection object to Venus environment
             name (str, optional): Name the sequence should carry in Venus environment. Defaults to "" which will generate a random name.
             copy (Union[Sequence, str], optional): Either an existing Sequence object or a string referencing an existing Venus sequence (e.g. deck sequence), the content of which will be copied. Defaults to None which generates an empty sequence.
+            deck_sequence (bool, optional): Is this a reference to a deck sequence?
         """        
         self.__con = con
         self.__current = 0
-        self.__end = 0
+        self.__end = 0    
 
         if name == "":
+            if deck_sequence:
+                raise Exception("For deck sequences the name parameter is required (i.e. name of the sequence on the deck layout)")
+
             name = "sequence_" + str(uuid4()).replace("-","")
         self.__name = name
 
@@ -160,8 +166,9 @@ class Sequence:
             self.end = 0
             self.current = 0
 
-        self.__con.execute(definitions=f'sequence {self.__name};')
-        self.push()
+        if not deck_sequence:
+            self.__con.execute(definitions=f'sequence {self.__name};')
+            self.push()
 
     def __str__(self):
         return f"Current: {self.current}\n" \
