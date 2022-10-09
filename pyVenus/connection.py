@@ -19,10 +19,10 @@ class Connection:
         
         # setup variables
         self.__command_counter = 1
-        self.__path_HSLremote = os.path.join(os.path.abspath(os.path.dirname(__file__)), "HSL", "HSLremote")
+        self.__path_HSLremote = os.path.join(os.path.abspath(os.path.dirname(__file__)), "HSL")
 
         # remove old command files
-        path_to = os.path.join(self.__path_HSLremote, "toSystem")
+        path_to = os.path.join(self.__path_HSLremote,  "toSystem")
         path_from = os.path.join(self.__path_HSLremote, "fromSystem")
         if os.path.exists(path_to):
             shutil.rmtree(path_to)
