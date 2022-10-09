@@ -1,7 +1,9 @@
 # pyVenus specific
-pyVenus/HSL/HSLremote/fromSystem/
-pyVenus/HSL/HSLremote/toSystem/
+pyVenus/HSL/fromSystem/
+pyVenus/HSL/toSystem/
+venus_resources/
 ~*.hsi
+~*.hsl
 ~*.tmp
 
 # Visual Code
