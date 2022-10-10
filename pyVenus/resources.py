@@ -30,7 +30,7 @@ class Resources:
 
         # set filenames and paths
         layout_ascii = os.path.join(output_directory, os.path.splitext(os.path.split(layout)[1])[0] + ".txt")
-        layout_py = os.path.join(output_directory, "layout_" + os.path.splitext(os.path.split(layout)[1])[0].lower() + ".py")
+        layout_py = os.path.join(output_directory, "__layout__" + os.path.splitext(os.path.split(layout)[1])[0].lower() + ".py")
 
         # create a copy of original deck layout
         shutil.copyfile(layout, layout_ascii)
@@ -64,6 +64,9 @@ class Resources:
         # cleanup
         os.remove(layout_ascii)
 
+        # generate __init__.py
+        Resources.__generate_init()
+
 
     def read_liquid_classes(
         include_1ml_channels: bool = True, 
@@ -91,8 +94,7 @@ class Resources:
         os.makedirs(output_directory, exist_ok=True)
 
         # set filenames and paths
-        database_py = os.path.join(output_directory, "liquid_classes.py")
-        database_template = os.path.join(os.path.abspath(os.path.dirname(__file__)), "templates/_LiquidClasses.py")
+        database_py = os.path.join(output_directory, "__liquid_classes__.py")
 
         # connect to Access DB with liquid classes
         conn = pyodbc.connect(r'Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=' + database + ';')
@@ -137,6 +139,9 @@ class Resources:
         # write python definition to file
         with open(database_py, 'w') as f:
             f.write(str(template.render(liquid_classes=liquid_classes)))
+
+        # generate __init__.py
+        Resources.__generate_init()
 
 
     def read_submethods(directory: str = "") -> None:
@@ -275,8 +280,11 @@ class Resources:
 
         # write python definition to file
         for smt in submethods:
-            with open(os.path.join(output_directory,smt['name'] + ".py").lower(), 'w') as f:
+            with open(os.path.join(output_directory,"__smt__" + smt['name'] + ".py").lower(), 'w') as f:
                 f.write(str(template.render(submethods=[smt])))
+
+        # generate __init__.py
+        Resources.__generate_init()
 
     def __parse_hxcfg(file):
         # get output directory for resources
@@ -353,4 +361,26 @@ class Resources:
         
         return submethod_comment, parameter_comments
 
+    def __generate_init():
+        # get output directory for resources
+        output_directory = os.path.join(sys.path[0], "venus_resources")
 
+        # loop over all submethod libraries
+        init_code = ""
+        pathlist = Path(output_directory).rglob('*.py')
+        for path in pathlist:
+            if path.stem == "__liquid_classes__":
+                init_code += f"from .{path.stem} import LiquidClasses\n" 
+
+            if "__layout__" in path.stem:
+                layout_name = path.stem.replace("__layout__", "")
+                init_code += f"from .{path.stem} import DeckLayout as Layout_{layout_name[0].upper()}{layout_name[1:].lower()} \n"
+
+            if "__smt__" in path.stem:
+                smt_name = path.stem.replace("__smt__", "")
+                init_code += f"from .{path.stem} import {smt_name[0].upper()}{smt_name[1:].lower()} \n"
+
+        with open(os.path.join(output_directory, "__init__.py"), 'w') as f:
+            f.write(init_code)
+
+        
