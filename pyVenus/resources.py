@@ -58,7 +58,7 @@ class Resources:
         template = env.get_template('deck_layout.py.j2')
 
         # write python definition to file
-        with open(layout_py, 'w') as f: # TODO: strip leading underscores from sequence name for python
+        with open(layout_py, 'w') as f:
             f.write(str(template.render(sequences=sequences, layout_file=layout)))
 
 
@@ -104,8 +104,8 @@ class Resources:
         if include_384head: selected_devices.append(8)
         if include_washstations: selected_devices.extend([9, 3, 5, 6, 4])
 
-        # generate python definition of liquid classes
-        code = "# Generated code to initialize liquid classes\n"
+        # gather all liquid classes
+        liquid_classes = []
         for row in cursor.fetchall():
             select = False
 
@@ -122,18 +122,19 @@ class Resources:
 
             # process this row?
             if select:
-                code += "        self.lc" + row[1] + " = Liquidclass('" + row[1] + "')\n"
+                liquid_classes.append(row[1])
+                #code += "        self.lc" + row[1] + " = Liquidclass('" + row[1] + "')\n"
 
-        # read template for python definition of liquid classes
-        with open(database_template, "r") as f:
-            template = f.read()
+        # setup template environement
+        env = Environment(
+            loader=PackageLoader('pyVenus', 'templates'),
+            autoescape=select_autoescape(['html', 'xml'])
+        )
+        template = env.get_template('liquid_classes.py.j2')
 
-        # add code to template
-        template = template.replace("#((*LIQUIDCLASS_PLACEHOLDER*))#", code)
-
-        # write template to file
+        # write python definition to file
         with open(database_py, 'w') as f:
-            f.write(template)
+            f.write(str(template.render(liquid_classes=liquid_classes)))
 
 
     def read_submethods(directory: str = "") -> None:
