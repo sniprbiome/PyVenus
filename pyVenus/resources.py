@@ -30,7 +30,7 @@ class Resources:
 
         # set filenames and paths
         layout_ascii = os.path.join(output_directory, os.path.splitext(os.path.split(layout)[1])[0] + ".txt")
-        layout_py = os.path.join(output_directory, os.path.splitext(os.path.split(layout)[1])[0] + ".py")
+        layout_py = os.path.join(output_directory, "layout_" + os.path.splitext(os.path.split(layout)[1])[0].lower() + ".py")
 
         # create a copy of original deck layout
         shutil.copyfile(layout, layout_ascii)
@@ -60,6 +60,9 @@ class Resources:
         # write python definition to file
         with open(layout_py, 'w') as f:
             f.write(str(template.render(sequences=sequences, layout_file=layout)))
+
+        # cleanup
+        os.remove(layout_ascii)
 
 
     def read_liquid_classes(
@@ -123,7 +126,6 @@ class Resources:
             # process this row?
             if select:
                 liquid_classes.append(row[1])
-                #code += "        self.lc" + row[1] + " = Liquidclass('" + row[1] + "')\n"
 
         # setup template environement
         env = Environment(
@@ -153,9 +155,6 @@ class Resources:
         # get output directory for resources
         output_directory = os.path.join(sys.path[0], "venus_resources")
         os.makedirs(output_directory, exist_ok=True)
-
-        # set filenames and paths
-        file_python = os.path.join(output_directory, "submethods.py")
 
         # loop over all submethod libraries
         pathlist = Path(directory).rglob('*.hsi')
@@ -276,22 +275,32 @@ class Resources:
 
         # write python definition to file
         for smt in submethods:
-            with open(os.path.join(output_directory,smt['name'] + ".py"), 'w') as f:
+            with open(os.path.join(output_directory,smt['name'] + ".py").lower(), 'w') as f:
                 f.write(str(template.render(submethods=[smt])))
 
     def __parse_hxcfg(file):
+        # get output directory for resources
+        output_directory = os.path.join(sys.path[0], "venus_resources")
+        os.makedirs(output_directory, exist_ok=True)
+
+        # make a copy of the file
+        file_ascii = os.path.join(output_directory, os.path.splitext(os.path.split(file)[1])[0] + ".txt")
+        shutil.copy(file, file_ascii)
+
         # convert .smt from binary to ascii
         process = subprocess.Popen([
             "C:\\Program Files (x86)\\HAMILTON\\Bin\\HxCfgFilConverter.exe",
             "/t",
-            file],
+            file_ascii],
             stdout=subprocess.PIPE,
             universal_newlines=True)
         process.communicate()
 
         # read file content
-        with open(file, 'r',) as f:
+        with open(file_ascii, 'r',) as f:
             content = f.read()
+
+        os.remove(file_ascii)
         
         pattern_blocks = re.compile("DataDef,HxPars,3,(\w+),\n\[\n([\s\S]*?)\"\)\"\n\];")
         pattern_line = re.compile("\"([\(\)]?)(.*)\",")
