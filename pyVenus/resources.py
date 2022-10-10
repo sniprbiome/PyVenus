@@ -5,6 +5,7 @@ import os
 import pyodbc
 import sys
 import json
+from operator import itemgetter
 from pathlib import Path
 from jinja2 import Environment, PackageLoader, select_autoescape
 import pandas as pd
@@ -16,7 +17,7 @@ class Resources:
     def read_layout(layout: str) -> None:
         """Reads in a Venus layout file (*.lay) and converts it to a python class.
 
-        The generated python class is located in /venus_resources/ and will be named the same as original layout file.
+        The generated python class is located in /venus_resources/ and will be named the same as original layout file prefixed with __layout__.
 
         Args:
             layout (str): Relative or absolute path to the layout file
@@ -78,7 +79,7 @@ class Resources:
         """Reads in the default Venus liquid class database and converts it to a python class.
 
         It is possible to restrict the list of liquid classes to those fitting the system configuration.
-        The generated python class is located at /venus_resources/liquid_classes.py
+        The generated python class is located at /venus_resources/__liquid_classes__.py
 
         Args:
             include_1ml_channels (bool, optional): Load liquid classes for 1 mL channels. Defaults to True.
@@ -148,6 +149,8 @@ class Resources:
         """Reads in all the submethod files at the specified folder and converts them to python classes.
 
         An empty string for the directory parameter (default) loads from /smt/
+
+        All python classes are generated in venus_resources/ and are given the same name as the original smt file, prefixed with __smt__
 
         Args:
             directory (str, optional): The path to directory with smt files. Defaults to "".
@@ -255,6 +258,9 @@ class Resources:
                         raise Exception("Default values are currently only supported for variables!")
                     if parameters[-1]["direction"] != "in" and parameters[-1]["default_value"] is not None:
                         raise Exception("Default values are currently only supported for input variables!")
+
+                # sort so all parameters with default values are listed at the end
+                parameters = [e for e in parameters if e['default_value'] is not None] + [e for e in parameters if e['default_value'] is None]               
 
                 # add to list of functions
                 functions.append({
