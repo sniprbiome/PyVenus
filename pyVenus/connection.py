@@ -50,7 +50,7 @@ class Connection:
         # register abort handler that closes the run environment
         atexit.register(self.close)
 
-    def execute(self, HSLcode: str = "", definitions:str = "") -> int:      
+    def execute(self, HSLcode: str = "", definitions:str = "") -> str:      
         """Send HSL code and/or variable/object defintions to the Venus environment and execute them
 
         Args:
@@ -71,40 +71,34 @@ class Connection:
         with open(os.path.join(self.__path_HSLremote, "toSystem", str(current_counter) + ".hsl"), "w") as f:
             f.write(code)
 
-        return current_counter
-
-
-    def get_return(self, command_counter: int, wait_for_return: bool = True) -> str:
-        """Get the data returned from the Venus environment for a previous execution command based on its command counter ID
-
-        Args:
-            command_counter (int): The command counter ID for the execution data should be retrieved for
-            wait_for_return (bool, optional): Pause execution until the data has been received? Defaults to True.
-
-        Returns:
-            str: The returned data (JSON). If wait_for_return is False and data not availabe then it returns None.
-        """        
-        file = os.path.join(self.__path_HSLremote, "fromSystem", str(command_counter) + ".json")
-
-        if not os.path.exists(file):
-            if wait_for_return:
-                while not os.path.exists(file):
-                    time.sleep(0.2)
-            else:
-                return None
-
-        with open(file, "r") as f:
-            content = f.read()
-
-        ret = json.loads(content)
-        if "___ERROR_ID___" in ret:
-            print(ret["___ERROR_DATA___"])
-            raise Exception(ret["___ERROR_DESCRIPTION___"])
-
-        return content
-
+        return self.__get_return(current_counter)
 
     def close(self):
         """Close connection and shut down run environment
         """        
         self.execute("___SHUTDOWN___ = 1;")
+
+    def __get_return(self, command_counter: int) -> str:
+            """Get the data returned from the Venus environment for a previous execution command based on its command counter ID
+
+            If an HSL error occured an exception is raised in python with the error description from Venus.
+
+            Args:
+                command_counter (int): The command counter ID for the execution data should be retrieved for
+
+            Returns:
+                str: The returned data (JSON).
+            """        
+            file = os.path.join(self.__path_HSLremote, "fromSystem", str(command_counter) + ".json")
+
+            while not os.path.exists(file):
+                time.sleep(0.2)
+
+            with open(file, "r") as f:
+                content = f.read()
+
+            ret = json.loads(content)
+            if "___ERROR_ID___" in ret:
+                raise Exception(ret["___ERROR_DESCRIPTION___"])
+
+            return content
