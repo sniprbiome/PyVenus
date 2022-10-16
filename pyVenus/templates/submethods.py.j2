@@ -54,7 +54,10 @@ class {{ smt.name[0]|upper}}{{smt.name[1:]|lower }}:
         {% endfor -%}
 
         # call the HSL function
-        self.__con.execute("{{ smt.name|upper }}::{{ f.name }}(" + parameter_string + ");")
+        i = self.__con.execute("{{ smt.name|upper }}::{{ f.name }}(" + parameter_string + ");")
+
+        # wait for return data from venus
+        self.__con.get_return(i)
 
         # pull all variables there were returned by the submethod
         {%- for p in f.parameters %}

@@ -16,9 +16,18 @@ namespace HSLremote
 variable ___SHUTDOWN___(0);
 variable ___ARRAY___[];
 variable ___JSON___;
+variable ___ERROR___(0);
 
 
+function StrEscape(variable strString) variable {
+   StrReplace(strString, "\\", "\\\\");
+   StrReplace(strString, "\n", "\\\\n");
+   StrReplace(strString, "\"", "\\\\\"");
+   StrReplace(strString, "\'", "\\\\\'");
 
+   return(strString);
+
+}
 
 
 function JSONobject_start(variable & strJSON, variable strName) void {
@@ -40,7 +49,7 @@ function JSONproperty(variable & strJSON, variable strName, variable value) void
    if(GetType(value) == "f")
       strJSON = strJSON + "\n\"" + strName + "\": " + FStr(value) + ",";
    if(GetType(value) == "s")
-      strJSON = strJSON + "\n\"" + strName + "\": \"" + value + "\",";
+      strJSON = strJSON + "\n\"" + strName + "\": \"" + StrEscape(value) + "\",";
 }
 
 
@@ -150,17 +159,27 @@ method main()
     
       AddCheckSum(HSLremote::strFilename, "//");
       
-      // import command file
-      << HSLremote::strFilename;
+      // all errors are passed to error handler
+      onerror goto __ERROR_HANDLER__;
       
       // setup JSON object for return information
       ___JSON___ = "";
       JSONobject_start(___JSON___, "");
+      
+      // import command file
+      << HSLremote::strFilename;
 
-      // execute new HSL code
-      #ifdef HSL_RUNTIME
-         __EvalExpr__();
-      #endif
+      
+      if(___ERROR___ == 0)
+      {
+         // execute new HSL code
+         #ifdef HSL_RUNTIME
+            __EvalExpr__();
+         #endif
+      }
+      
+      // stop passing errors to error handler
+      onerror goto 0;
 
       // generate return file
       Trace("Generating return file (", HSLremote::strFromSystem + IStr(HSLremote::intCommandCounter) + ".json", ")");
@@ -173,5 +192,27 @@ method main()
 
    // shut down
    return;
+
+   // global error handler that returns data to python and then shuts down run environment
+   __ERROR_HANDLER__ : 
+   {
+      variable ___ERROR_DESCRIPTION___;
+      // set global error flag
+      ___ERROR___ = 1;
+      
+      // pass error information to JSON object
+      addJSON_variable(___JSON___, err.GetId(), "___ERROR_ID___");
+      ___ERROR_DESCRIPTION___ = err.GetDescription();
+      StrReplace(___ERROR_DESCRIPTION___, "\n", " ");
+      addJSON_variable(___JSON___, ___ERROR_DESCRIPTION___, "___ERROR_DESCRIPTION___");
+      addJSON_array(___JSON___, err.GetData(), "___ERROR_DATA___");
+      
+      // initiate shutdown
+      ___SHUTDOWN___ = 1;
+      
+      // return to main method
+      resume next;
+   }
+      
 }
-// $$author=BenjaminWohl$$valid=0$$time=2022-05-11 16:25$$checksum=fd96f2dd$$length=089$$
+// $$author=BenjaminWohl$$valid=0$$time=2022-10-16 22:15$$checksum=fc5ce433$$length=089$$

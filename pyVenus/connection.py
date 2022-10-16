@@ -3,6 +3,7 @@ import os
 import shutil
 import time
 import atexit
+import json
 
 class Connection:
     """Connection class that starts the Venus run environment and takes care of data exchange to python environment
@@ -81,7 +82,7 @@ class Connection:
             wait_for_return (bool, optional): Pause execution until the data has been received? Defaults to True.
 
         Returns:
-            str: The returned data (JSON)
+            str: The returned data (JSON). If wait_for_return is False and data not availabe then it returns None.
         """        
         file = os.path.join(self.__path_HSLremote, "fromSystem", str(command_counter) + ".json")
 
@@ -94,6 +95,12 @@ class Connection:
 
         with open(file, "r") as f:
             content = f.read()
+
+        ret = json.loads(content)
+        if "___ERROR_ID___" in ret:
+            print(ret["___ERROR_DATA___"])
+            raise Exception(ret["___ERROR_DESCRIPTION___"])
+
         return content
 
 
