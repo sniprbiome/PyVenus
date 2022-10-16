@@ -22,11 +22,19 @@ class Variable:
         self.__con = con
         self.value = value
 
+        if type(value) not in [int, str, float]:
+            raise Exception("Only values of type int, str, or float are accepted")
+
         if name == "":
             name = "variable_" + str(uuid4()).replace("-","")
         self.__name = name
 
-        self.__con.execute(definitions=f'variable {self.__name} ({self.value});')
+        if isinstance(self.value, str):
+            value_string = f"\"{self.value}\""
+        else:
+            value_string = str(self.value)
+
+        self.__con.execute(definitions=f'variable {self.__name} ({value_string});')
 
     def __str__(self):
         return str(self.value)
