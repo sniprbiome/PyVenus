@@ -152,7 +152,7 @@ method main()
       Trace("Waiting for next command file...");
       while (HSLExtensions::File::Exists(HSLremote::strFilename) == 0)
       {  
-         HSLremote::hdlTimer.SetTimer(1);
+         HSLremote::hdlTimer.SetTimer(0.1);
          HSLremote::hdlTimer.WaitTimer(hslFalse, hslFalse);
       }
       Trace("New command file found (", HSLremote::strFilename, ") >> Executing...");
@@ -178,8 +178,9 @@ method main()
          #endif
       }
       
-      // stop passing errors to error handler
+      // stop passing errors to error handler and reset error flag
       onerror goto 0;
+      ___ERROR___ = 0;
 
       // generate return file
       Trace("Generating return file (", HSLremote::strFromSystem + IStr(HSLremote::intCommandCounter) + ".json", ")");
@@ -207,12 +208,12 @@ method main()
       addJSON_variable(___JSON___, ___ERROR_DESCRIPTION___, "___ERROR_DESCRIPTION___");
       addJSON_array(___JSON___, err.GetData(), "___ERROR_DATA___");
       
-      // initiate shutdown
-      ___SHUTDOWN___ = 1;
+      // clear error data
+      err.Clear();
       
       // return to main method
       resume next;
    }
       
 }
-// $$author=BenjaminWohl$$valid=0$$time=2022-10-16 22:15$$checksum=fc5ce433$$length=089$$
+// $$author=BenjaminWohl$$valid=0$$time=2022-10-16 23:02$$checksum=1407769e$$length=089$$

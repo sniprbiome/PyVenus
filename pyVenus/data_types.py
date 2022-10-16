@@ -60,8 +60,8 @@ class Variable:
     def pull(self):
         """Pull the current state of the variable from the Venus environment
         """        
-        i = self.__con.execute(f'addJSON_variable(___JSON___, {self.__name}, "{self.__name}");')
-        ret = json.loads(self.__con.get_return(i))
+        ret = self.__con.execute(f'addJSON_variable(___JSON___, {self.__name}, "{self.__name}");')
+        ret = json.loads(ret)
         self.value = ret[self.__name]
 
 
@@ -109,8 +109,8 @@ class Array(list):
     def pull(self):
         """Pull current state of the array from the Venus environment
         """        
-        i = self.__con.execute(f'addJSON_array(___JSON___, {self.__name}, "{self.__name}");')
-        ret = json.loads(self.__con.get_return(i))
+        ret = self.__con.execute(f'addJSON_array(___JSON___, {self.__name}, "{self.__name}");')
+        ret = json.loads(ret)
         self.clear()
         self.extend(ret[self.__name])
 
@@ -154,8 +154,8 @@ class Sequence:
             seq_name = ""
 
         if do_pull:
-            i = self.__con.execute(f'addJSON_sequence(___JSON___, {seq_name}, "{seq_name}");')
-            ret = json.loads(self.__con.get_return(i))
+            ret = self.__con.execute(f'addJSON_sequence(___JSON___, {seq_name}, "{seq_name}");')
+            ret = json.loads(ret)
             self.__df = pd.DataFrame(
                 {
                     'labware': ret[seq_name]["labware"],
@@ -235,8 +235,8 @@ class Sequence:
     def pull(self):
         """Pull the current state of the sequence to the Venus environment
         """        
-        i = self.__con.execute(f'addJSON_sequence(___JSON___, {self.__name}, "{self.__name}");')
-        ret = json.loads(self.__con.get_return(i))
+        ret = self.__con.execute(f'addJSON_sequence(___JSON___, {self.__name}, "{self.__name}");')
+        ret = json.loads(ret)
         self.__df = pd.DataFrame(
             {
                 'labware': ret[self.__name]["labware"],

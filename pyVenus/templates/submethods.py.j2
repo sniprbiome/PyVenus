@@ -23,11 +23,13 @@ class {{ smt.name[0]|upper}}{{smt.name[1:]|lower }}:
                 , {{ p.name }}: {{ p.py_type }}
             {%- endif -%}
         {% endfor -%}):
-        """
-        Python function generated from submethod '{{ f.name }}' in '{{ smt.name }}.smt'
+        """Python function generated from submethod '{{ f.name }}' in '{{ smt.name }}.smt'
+
         {{ f.comment }}
+
+        Args:
         {%- for p in f.parameters %}
-            :param {{ p.name }}: {{ p.py_type }} ({{ p. direction }}) - {{ p.comment }}
+            {{ p.name }} ({{ p.py_type }}{% if p.default_value is not none %}, optional{% endif %}) ({{ p. direction }}): {{ p.comment }}
         {%- endfor %}
         """
 
@@ -54,10 +56,7 @@ class {{ smt.name[0]|upper}}{{smt.name[1:]|lower }}:
         {% endfor -%}
 
         # call the HSL function
-        i = self.__con.execute("{{ smt.name|upper }}::{{ f.name }}(" + parameter_string + ");")
-
-        # wait for return data from venus
-        self.__con.get_return(i)
+        self.__con.execute("{{ smt.name|upper }}::{{ f.name }}(" + parameter_string + ");")
 
         # pull all variables there were returned by the submethod
         {%- for p in f.parameters %}
