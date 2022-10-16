@@ -260,7 +260,7 @@ class Resources:
                         raise Exception("Default values are currently only supported for input variables!")
 
                 # sort so all parameters with default values are listed at the end
-                parameters = [e for e in parameters if e['default_value'] is not None] + [e for e in parameters if e['default_value'] is None]               
+                parameters = [e for e in parameters if e['default_value'] is None] + [e for e in parameters if e['default_value'] is not None]               
 
                 # add to list of functions
                 functions.append({
