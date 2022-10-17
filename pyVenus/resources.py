@@ -286,8 +286,9 @@ class Resources:
 
         # write python definition to file
         for smt in submethods:
-            with open(os.path.join(output_directory,"__smt__" + smt['name'] + ".py").lower(), 'w') as f:
-                f.write(str(template.render(submethods=[smt])))
+            with open(os.path.join(output_directory,"__smt__" + smt['name'] + ".py").lower(), 'wb') as f:
+                output = template.render(submethods=[smt]).encode("utf-8")
+                f.write(output)
 
         # generate __init__.py
         Resources.__generate_init()
@@ -315,6 +316,10 @@ class Resources:
             content = f.read()
 
         os.remove(file_ascii)
+
+        # some special characters (e.g. µ) are not converted correctly but left as hex codes.
+        content = re.sub(r"\\0x([A-Za-z0-9]{2})", Resources.__hex_converter, content)
+        #content = content.encode("utf8").decode("unicode-escape")
         
         pattern_blocks = re.compile("DataDef,HxPars,3,(\w+),\n\[\n([\s\S]*?)\"\)\"\n\];")
         pattern_line = re.compile("\"([\(\)]?)(.*)\",")
@@ -388,5 +393,8 @@ class Resources:
 
         with open(os.path.join(output_directory, "__init__.py"), 'w') as f:
             f.write(init_code)
+    
+    def __hex_converter(match):
+        return chr(int(match.group(1), 16))
 
         
