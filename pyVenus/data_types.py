@@ -68,7 +68,7 @@ class Variable:
 class Array(list):
     """Replicates functionality of Venus arrays in python. Expands basic list type from python.
     """
-    def __init__(self, con: Connection, name: str = "", value: list = None):
+    def __init__(self, con: Connection, name: str = None, value: list = None):
         """Intialize a new array
 
         An empty string for the name parameter (default) will generate a unique ID for this array in the Venus environment.
@@ -86,7 +86,7 @@ class Array(list):
         self.extend(value)
         self.__con = con
 
-        if name == "":
+        if name is None:
             name = "array_" + str(uuid4()).replace("-","")
         self.__name = name
 
@@ -118,7 +118,7 @@ class Array(list):
 class Sequence:
     """Replicates functionality of a Venus sequence in python
     """    
-    def __init__(self, con: Connection, name: str = "", copy: Union['Sequence', str] = None, deck_sequence: bool = False):
+    def __init__(self, con: Connection, name: str = None, copy: Union['Sequence', str] = None, deck_sequence: bool = False):
         """Initialize a new sequence 
 
         An empty string for the name parameter (default) will generate a unique ID for this sequence in the Venus environment.
@@ -136,22 +136,22 @@ class Sequence:
         self.__current = 0
         self.__end = 0    
 
-        if name == "":
+        if name is None:
+            name = "sequence_" + str(uuid4()).replace("-","")
             if deck_sequence:
                 raise Exception("For deck sequences the name parameter is required (i.e. name of the sequence on the deck layout)")
 
-            name = "sequence_" + str(uuid4()).replace("-","")
         self.__name = name
 
         if isinstance(copy, Sequence):
             do_pull = True
             seq_name = copy.name
-        elif copy != "":
+        elif copy is not None:
             do_pull = True
             seq_name = copy
         else:
             do_pull = False
-            seq_name = ""
+            seq_name = None
 
         if do_pull:
             ret = self.__con.execute(f'addJSON_sequence(___JSON___, {seq_name}, "{seq_name}");')
