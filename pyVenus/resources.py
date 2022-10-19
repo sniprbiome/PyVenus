@@ -48,8 +48,14 @@ class Resources:
         # read deck layout file
         with open(layout_ascii, 'r') as f:
             content = f.read()
-            p = re.compile('Seq.\\d*.Name, "([A-Za-z0-9_]*)",\\n')
-            sequences = p.findall(content)
+        
+        # extract names of all the deck sequences
+        p = re.compile('Seq.\\d*.Name, "([A-Za-z0-9_]*)",\\n')
+        sequences = p.findall(content)
+
+        # extract names of all labware items
+        p = re.compile('Labware.\\d*.Id, "([A-Za-z0-9_]*)",\\n')
+        labware = p.findall(content)
 
         # setup template environement
         env = Environment(
@@ -60,7 +66,7 @@ class Resources:
 
         # write python definition to file
         with open(layout_py, 'w') as f:
-            f.write(str(template.render(sequences=sequences, layout_file=layout)))
+            f.write(str(template.render(sequences=sequences, layout_file=layout, labware=labware)))
 
         # cleanup
         os.remove(layout_ascii)

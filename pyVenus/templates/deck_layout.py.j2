@@ -10,3 +10,8 @@ class DeckLayout:
         {% for s in sequences -%}
             {{ s }} = "ML_STAR.{{ s }}"
         {% endfor %}
+
+    class Labware:
+        {% for l in labware -%}
+            {{ l }} = "{{ l }}"
+        {% endfor %}
