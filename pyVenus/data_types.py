@@ -8,7 +8,7 @@ from . import Connection
 class Variable:
     """Replicates functionality of basic Venus variables (i.e. string, integer, float) in python
     """    
-    def __init__(self, con: Connection, name: str = "", value: Union[int,float,str] = 0):
+    def __init__(self, con: Connection, value: Union[int,float,str] = 0, name: str = ""):
         """Initialize a new variable
 
         An empty string for the name parameter (default) will generate a unique ID for this variable in the Venus environment.
@@ -68,7 +68,7 @@ class Variable:
 class Array(list):
     """Replicates functionality of Venus arrays in python. Expands basic list type from python.
     """
-    def __init__(self, con: Connection, name: str = None, value: list = None):
+    def __init__(self, con: Connection, value: list = None, name: str = None):
         """Intialize a new array
 
         An empty string for the name parameter (default) will generate a unique ID for this array in the Venus environment.
@@ -121,14 +121,14 @@ class Sequence:
     def __init__(self, con: Connection, name: str = None, copy: Union['Sequence', str] = None, deck_sequence: bool = False):
         """Initialize a new sequence 
 
-        An empty string for the name parameter (default) will generate a unique ID for this sequence in the Venus environment.
+        None as value for the name parameter (default) will generate a unique ID for this sequence in the Venus environment.
         By setting a name explicitly the generated HSL code is easier to read/debug.
         If deck_sequence is set to True (and copy is None) the sequence is not initiated in the Venus environment (i.e. it already exists)
         For deck sequences the name parameter is required!
 
         Args:
             con (Connection): Connection object to Venus environment
-            name (str, optional): Name the sequence should carry in Venus environment. Defaults to "" which will generate a random name.
+            name (str, optional): Name the sequence should carry in Venus environment. Defaults to None which will generate a random name.
             copy (Union[Sequence, str], optional): Either an existing Sequence object or a string referencing an existing Venus sequence (e.g. deck sequence), the content of which will be copied. Defaults to None which generates an empty sequence.
             deck_sequence (bool, optional): Is this a reference to a deck sequence?
         """        
