@@ -8,16 +8,16 @@ from . import Connection
 class Variable:
     """Replicates functionality of basic Venus variables (i.e. string, integer, float) in python
     """    
-    def __init__(self, con: Connection, value: Union[int,float,str] = 0, name: str = ""):
+    def __init__(self, con: Connection, value: Union[int,float,str] = 0, name: str = None):
         """Initialize a new variable
 
-        An empty string for the name parameter (default) will generate a unique ID for this variable in the Venus environment.
+        None as value for the name parameter (default) will generate a unique ID for this variable in the Venus environment.
         By setting a name explicitly the generated HSL code is easier to read/debug.
 
         Args:
             con (Connection): Connection object to Venus environment
-            name (str, optional): Name the variable should carry in Venus environment. Defaults to "" which will generate a random name.
             value (Union[int, float, str], optional): Starting value for variable. Defaults to 0.
+            name (str, optional): Name the variable should carry in Venus environment. Defaults to None which will generate a random name.
         """        
         self.__con = con
         self.value = value
@@ -71,13 +71,13 @@ class Array(list):
     def __init__(self, con: Connection, value: list = None, name: str = None):
         """Intialize a new array
 
-        An empty string for the name parameter (default) will generate a unique ID for this array in the Venus environment.
+        None as value for the name parameter (default) will generate a unique ID for this array in the Venus environment.
         By setting a name explicitly the generated HSL code is easier to read/debug.
 
         Args:
             con (Connection): Connection object to Venus environment
-            name (str, optional): Name the array should carry in the Venus environment. Defaults to "" which will generate a random name.
             value (list, optional): Starting value of the array in the form of a python list. Defaults to None which generates an empty array.
+            name (str, optional): Name the array should carry in the Venus environment. Defaults to None which will generate a random name.
         """        
         
         list.__init__([])
@@ -174,7 +174,9 @@ class Sequence:
             self.end = 0
             self.current = 0
 
-        if not deck_sequence:
+        if deck_sequence:
+            self.pull()
+        else:
             self.__con.execute(definitions=f'sequence {self.__name};')
             self.push()
 
