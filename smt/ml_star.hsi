@@ -12,7 +12,7 @@ namespace ML_STAR {
 // }} ""
 /* {{ 2 "VariableInsertLine" "" */ // }} ""
 // {{{ 2 "SubmethodForwardDeclaration" ""
-function Initialize( device & ML_STAR, variable i_blnAlwaysInitialize ) void ;
+function initialize( device & ML_STAR, variable always_initialize ) void ;
 // }} ""
 function _InitLibrary() {
 // {{ 2 "AutoInitBlock" ""
@@ -34,22 +34,22 @@ function _ExitLibrary() {
 // {{ 2 "AutoExitBlock" ""
 // }} ""
 }
-// {{{ 5 "Initialize" "Begin"
-function Initialize( device & ML_STAR, variable i_blnAlwaysInitialize ) void {
+// {{{ 5 "initialize" "Begin"
+function initialize( device & ML_STAR, variable always_initialize ) void {
 // }} ""
-// {{ 5 "Initialize" "InitLocals"
+// {{ 5 "initialize" "InitLocals"
 // }} ""
-// {{ 1 1 0 "cb643b52_2a01_4611_92045effed85d3f3" "ML_STAR:{1C0C0CB0-7C87-11D3-AD83-0004ACB1DCB2}"
+// {{ 1 1 0 "c018c1a5_f165_4744_b6a29fc66c892221" "ML_STAR:{1C0C0CB0-7C87-11D3-AD83-0004ACB1DCB2}"
 {
 	variable arrRetValues[];
-	arrRetValues = ML_STAR._1C0C0CB0_7C87_11D3_AD83_0004ACB1DCB2("cb643b52_2a01_4611_92045effed85d3f3"); // Initialize
+	arrRetValues = ML_STAR._1C0C0CB0_7C87_11D3_AD83_0004ACB1DCB2("c018c1a5_f165_4744_b6a29fc66c892221"); // Initialize
 }
 // }} ""
-// {{{ 5 "Initialize" "End"
+// {{{ 5 "initialize" "End"
 }
 // }} ""
 /* {{ 2 "SubmethodInsertLine" "" */ // }} ""
 // {{{ 2 "LibraryNamespace" "End"
 } // library namespace
 // }} ""
-// $$author=BenjaminWohl$$valid=0$$time=2022-04-13 13:46$$checksum=fa6aa559$$length=091$$
+// $$author=BenjaminWohl$$valid=0$$time=2022-10-22 22:21$$checksum=8372fe3a$$length=091$$

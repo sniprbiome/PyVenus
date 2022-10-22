@@ -1,17 +1,17 @@
 
 // this ALWAYS GENERATED file contains the sub-method library header
-// Generated at 13/04/2022 13:46:50
+// Generated at 22/10/2022 22:21:25
 
 #pragma once
 #ifndef HSL_RUNTIME
 namespace ML_STAR {
 function _InitLibrary() { }
 function _ExitLibrary() { }
-function Initialize( device & ML_STAR, variable i_blnAlwaysInitialize ) void { }
+function initialize( device & ML_STAR, variable always_initialize ) void { }
 } // namespace
 #endif
 
 #ifdef HSL_RUNTIME
 #include __filename__ ".hsi"
 #endif
-// $$author=BenjaminWohl$$valid=0$$time=2022-04-13 13:46$$checksum=d4fddbe6$$length=089$$
+// $$author=BenjaminWohl$$valid=0$$time=2022-10-22 22:21$$checksum=8669fbef$$length=089$$

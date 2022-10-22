@@ -12,10 +12,10 @@ namespace CHANNELS1ML_8 {
 // }} ""
 /* {{ 2 "VariableInsertLine" "" */ // }} ""
 // {{{ 2 "SubmethodForwardDeclaration" ""
-function aspirate( device & ML_STAR, sequence & io_seqAspirate, variable i_fltVolume, variable i_strLiquidClass, variable i_blnIncrementSequence, variable i_blnLiquidFollowing, variable i_strChannelPattern, variable i_intSequenceUse, variable i_intcLLDSensitivity, variable i_fltSubmergeDepth, variable i_fltFixedHeight, variable i_fltRetractDistance, variable i_blnTouchOff, variable i_fltTouchOffHeight, variable i_intpLLDSensitivity, variable i_fltMaxHeightDifference, variable i_intAspirationMode, variable i_intMixCycles, variable i_fltMixPosition, variable i_fltMixVolume ) void ;
-function dispense( device & ML_STAR, sequence & io_seqDispense, variable i_fltVolume, variable i_blnDispenseRemaining, variable i_blnIncrementSequence, variable i_blnLiquidFollowing, variable i_strChannelPattern, variable i_intSequenceUse, variable i_intcLLDSensitivity, variable i_fltSubmergeDepth, variable i_fltFixedHeight, variable i_fltRetractDistance, variable i_blnTouchOff, variable i_fltTouchOffHeight, variable i_blnSideTouch, variable i_blnMinimizeZHeight, variable i_intMixCycles, variable i_fltMixPosition, variable i_fltMixVolume ) void ;
-function tip_eject( device & ML_STAR, sequence & io_seqEjectPosition, variable i_blnDefaultWaste, variable i_blnIncrementSequence, variable i_strChannelPattern, variable i_intSequenceUse ) void ;
-function tip_pickup( device & ML_STAR, sequence & io_seqTips, variable i_blnIncrementSequence, variable i_strChannelPattern, variable i_intSequenceUse ) void ;
+function aspirate( device & ML_STAR, sequence & positions, variable volume, variable liquid_class, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable trouch_off_height, variable pLLD_sensitivity, variable max_height_difference, variable aspiration_mode, variable mix_cycles, variable mix_position, variable mix_volume ) void ;
+function dispense( device & ML_STAR, sequence & positions, variable volume, variable dispense_remaining, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable touch_off_height, variable side_touch, variable minimize_z_height, variable mix_cycles, variable mix_position, variable mix_volume ) void ;
+function tip_eject( device & ML_STAR, sequence & positions, variable default_waste, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void ;
+function tip_pickup( device & ML_STAR, sequence & positions, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void ;
 // }} ""
 function _InitLibrary() {
 // {{ 2 "AutoInitBlock" ""
@@ -38,75 +38,75 @@ function _ExitLibrary() {
 // }} ""
 }
 // {{{ 5 "tip_pickup" "Begin"
-function tip_pickup( device & ML_STAR, sequence & io_seqTips, variable i_blnIncrementSequence, variable i_strChannelPattern, variable i_intSequenceUse ) void {
+function tip_pickup( device & ML_STAR, sequence & positions, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void {
 // }} ""
 // {{ 5 "tip_pickup" "InitLocals"
 // }} ""
-// {{ 12 1 0 "725b21df_f352_403e_8343cf2049e1d6d9" "ML_STAR:{541143FA-7FA2-11D3-AD85-0004ACB1DCB2}"
+// {{ 12 1 0 "37cced4c_b4ad_478e_bce5233f5576ab7c" "ML_STAR:{541143FA-7FA2-11D3-AD85-0004ACB1DCB2}"
 {
 	variable arrRetValues[];
-	arrRetValues = ML_STAR._541143FA_7FA2_11D3_AD85_0004ACB1DCB2("725b21df_f352_403e_8343cf2049e1d6d9"); // TipPickUp
+	arrRetValues = ML_STAR._541143FA_7FA2_11D3_AD85_0004ACB1DCB2("37cced4c_b4ad_478e_bce5233f5576ab7c"); // TipPickUp
 }
 // }} ""
 // {{{ 5 "tip_pickup" "End"
 }
 // }} ""
 // {{{ 5 "tip_eject" "Begin"
-function tip_eject( device & ML_STAR, sequence & io_seqEjectPosition, variable i_blnDefaultWaste, variable i_blnIncrementSequence, variable i_strChannelPattern, variable i_intSequenceUse ) void {
+function tip_eject( device & ML_STAR, sequence & positions, variable default_waste, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void {
 // }} ""
 // {{ 5 "tip_eject" "InitLocals"
 // }} ""
-// {{ 10 1 0 "371aea2f_dafa_47ee_9225e00a75b32631" "ML_STAR:{541143FC-7FA2-11D3-AD85-0004ACB1DCB2}"
+// {{ 10 1 0 "5d4747da_5264_4788_a42e68c52106e51f" "ML_STAR:{541143FC-7FA2-11D3-AD85-0004ACB1DCB2}"
 {
 	variable arrRetValues[];
-	arrRetValues = ML_STAR._541143FC_7FA2_11D3_AD85_0004ACB1DCB2("371aea2f_dafa_47ee_9225e00a75b32631"); // TipEject
+	arrRetValues = ML_STAR._541143FC_7FA2_11D3_AD85_0004ACB1DCB2("5d4747da_5264_4788_a42e68c52106e51f"); // TipEject
 }
 // }} ""
 // {{{ 5 "tip_eject" "End"
 }
 // }} ""
 // {{{ 5 "aspirate" "Begin"
-function aspirate( device & ML_STAR, sequence & io_seqAspirate, variable i_fltVolume, variable i_strLiquidClass, variable i_blnIncrementSequence, variable i_blnLiquidFollowing, variable i_strChannelPattern, variable i_intSequenceUse, variable i_intcLLDSensitivity, variable i_fltSubmergeDepth, variable i_fltFixedHeight, variable i_fltRetractDistance, variable i_blnTouchOff, variable i_fltTouchOffHeight, variable i_intpLLDSensitivity, variable i_fltMaxHeightDifference, variable i_intAspirationMode, variable i_intMixCycles, variable i_fltMixPosition, variable i_fltMixVolume ) void {
+function aspirate( device & ML_STAR, sequence & positions, variable volume, variable liquid_class, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable trouch_off_height, variable pLLD_sensitivity, variable max_height_difference, variable aspiration_mode, variable mix_cycles, variable mix_position, variable mix_volume ) void {
 // }} ""
 // {{ 5 "aspirate" "InitLocals"
 // }} ""
-// {{ 1 1 0 "daf13c1a_cc97_483e_b914756dc859c226" "ML_STAR:{541143F5-7FA2-11D3-AD85-0004ACB1DCB2}"
+// {{ 1 1 0 "e6c2654c_5795_4187_aa5ebe70b91af660" "ML_STAR:{541143F5-7FA2-11D3-AD85-0004ACB1DCB2}"
 {
 	variable arrRetValues[];
-	arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2("daf13c1a_cc97_483e_b914756dc859c226"); // Aspirate
+	arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2("e6c2654c_5795_4187_aa5ebe70b91af660"); // Aspirate
 }
 // }} ""
 // {{{ 5 "aspirate" "End"
 }
 // }} ""
 // {{{ 5 "dispense" "Begin"
-function dispense( device & ML_STAR, sequence & io_seqDispense, variable i_fltVolume, variable i_blnDispenseRemaining, variable i_blnIncrementSequence, variable i_blnLiquidFollowing, variable i_strChannelPattern, variable i_intSequenceUse, variable i_intcLLDSensitivity, variable i_fltSubmergeDepth, variable i_fltFixedHeight, variable i_fltRetractDistance, variable i_blnTouchOff, variable i_fltTouchOffHeight, variable i_blnSideTouch, variable i_blnMinimizeZHeight, variable i_intMixCycles, variable i_fltMixPosition, variable i_fltMixVolume ) void {
+function dispense( device & ML_STAR, sequence & positions, variable volume, variable dispense_remaining, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable touch_off_height, variable side_touch, variable minimize_z_height, variable mix_cycles, variable mix_position, variable mix_volume ) void {
 // }} ""
-private variable intDispenseMode;
+private variable dispense_mode;
 // {{ 5 "dispense" "InitLocals"
 // }} ""
-// {{ 3 1 0 "68b8f4c0_486c_4ce3_b9c48475e65ce6b5" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
-if (i_blnDispenseRemaining == 1)
+// {{ 3 1 0 "ee4c4666_120d_43c5_acab3eddc1a86846" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
+if (dispense_remaining == 1)
 {
 // }} ""
-// {{ 4 1 0 "5feb8a6e_4073_4d56_b1f9ee5f6f833e2b" "{B31F3543-5D80-11d4-A5EB-0050DA737D89}"
-intDispenseMode = 9;
+// {{ 4 1 0 "b0348ecc_3950_460b_a0a30df55ffa9b37" "{B31F3543-5D80-11d4-A5EB-0050DA737D89}"
+dispense_mode = 9;
 // }} ""
-// {{ 5 1 0 "68b8f4c0_486c_4ce3_b9c48475e65ce6b5" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
+// {{ 5 1 0 "ee4c4666_120d_43c5_acab3eddc1a86846" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
 }
 else
 {
 // }} ""
-// {{ 6 1 0 "dea0825a_3016_46e3_8310539e8e5bf40f" "{B31F3543-5D80-11d4-A5EB-0050DA737D89}"
-intDispenseMode = 8;
+// {{ 6 1 0 "9521444c_e8b3_4238_ab1b2d7134efe73e" "{B31F3543-5D80-11d4-A5EB-0050DA737D89}"
+dispense_mode = 8;
 // }} ""
-// {{ 7 1 0 "68b8f4c0_486c_4ce3_b9c48475e65ce6b5" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
+// {{ 7 1 0 "ee4c4666_120d_43c5_acab3eddc1a86846" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
 }
 // }} ""
-// {{ 8 1 0 "9efaecb9_3338_4e9c_b50ef3604d98a666" "ML_STAR:{541143F8-7FA2-11D3-AD85-0004ACB1DCB2}"
+// {{ 8 1 0 "379423f5_9379_4eef_bdf2a71303452827" "ML_STAR:{541143F8-7FA2-11D3-AD85-0004ACB1DCB2}"
 {
 	variable arrRetValues[];
-	arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2("9efaecb9_3338_4e9c_b50ef3604d98a666"); // Dispense
+	arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2("379423f5_9379_4eef_bdf2a71303452827"); // Dispense
 }
 // }} ""
 // {{{ 5 "dispense" "End"
@@ -116,4 +116,4 @@ intDispenseMode = 8;
 // {{{ 2 "LibraryNamespace" "End"
 } // library namespace
 // }} ""
-// $$author=BenjaminWohl$$valid=0$$time=2022-05-11 15:08$$checksum=a9c2c890$$length=091$$
+// $$author=BenjaminWohl$$valid=0$$time=2022-10-22 21:53$$checksum=6add6ad0$$length=091$$
