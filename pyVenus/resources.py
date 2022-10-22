@@ -81,6 +81,8 @@ class Resources:
         include_96head: bool = True,
         include_384head: bool = False, 
         include_washstations: bool = False,
+        include_default: bool = True,
+        include_custom: bool = True,
         database: str = r'C:\Program Files (x86)\HAMILTON\Config\ML_STARLiquids.mdb') -> None:
         """Reads in the default Venus liquid class database and converts it to a python class.
 
@@ -93,6 +95,8 @@ class Resources:
             include_96head (bool, optional): Load liquid classes for the 96 multiprobe head. Defaults to True.
             include_384head (bool, optional): Load liquid classes for the 384 multiprobe head. Defaults to False.
             include_washstations (bool, optional): Load liquid classes for the wash stations. Defaults to False.
+            include_default (bool, optional): Load default liquid classes (all LCs that ship with Venus). Defaults to True.
+            include_custom (bool, optional): Load user created liquid classes. Defaults to True.
             database (str, optional): Path to a non-standard liquid class database file. Defaults to r'C:\Program Files (x86)\HAMILTON\Config\ML_STARLiquids.mdb'.
         """        
 
@@ -116,6 +120,11 @@ class Resources:
         if include_384head: selected_devices.append(8)
         if include_washstations: selected_devices.extend([9, 3, 5, 6, 4])
 
+        # set allowed liquid class types (default/custom)
+        selected_types = []
+        if include_default: selected_types.append(1)
+        if include_custom: selected_types.append(0)    
+
         # gather all liquid classes
         liquid_classes = []
         for row in cursor.fetchall():
@@ -127,10 +136,14 @@ class Resources:
                 select = True
             # deselect old tip types
             if row[8] in [6, 7, 8]: select = False
-            # deselect weird standard tip types
+            # deselect weird standard liquid classes that nobody needs
             if row[1] in ['a', 'abc', 'abcd', '1']: select = False
             # deselect old dispense modes
             if row[7] in [0, 1]: select = False
+            # only allow selected type
+            if select:
+                if row[6] not in selected_types:
+                    select = False
 
             # process this row?
             if select:
