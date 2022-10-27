@@ -61,8 +61,7 @@ class {{ smt.name[0]|upper}}{{smt.name[1:]|lower }}:
 
         # pull all variables there were returned by the submethod
         {%- for p in f.parameters %}
-        {%- if p.pass_mode == "variable"
-        and p.hsl_type != "device" %}
+        {%- if p.pass_mode == "variable" and p.hsl_type != "device" and p.direction in ["out", "in_out"] %}
         {{ p.name }}.pull()
         {% endif -%}
         {% endfor %}
