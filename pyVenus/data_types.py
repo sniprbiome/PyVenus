@@ -218,6 +218,14 @@ class Sequence:
         return len(self.__df.index)
 
     def set_current(self, current: int) -> "Sequence":
+        """Update the current position of the sequence
+
+        Args:
+            current (int): New value for current position
+
+        Returns:
+            Sequence: Returns the updated sequence
+        """        
         if current > self.end or current < 0:
             current = 0
         self.__current = current
@@ -225,6 +233,14 @@ class Sequence:
         return self
 
     def set_end(self, end: int) -> "Sequence":
+        """Update the end position of the sequence
+
+        Args:
+            end (int): New value for end position
+
+        Returns:
+            Sequence: Returns the updated sequence
+        """        
         if end < 0:
             end = 0
         if end > self.total:
@@ -235,7 +251,7 @@ class Sequence:
 
         return self
 
-    def from_list(self, labware: list, positions: list) -> "Sequence":
+    def from_list(self, labware: list, positions: list, append:bool = False) -> "Sequence":
         """Update the content of the sequence to the give lists of labware and positions
 
         If the two lists do not have the same length then the shorter one is recycled to the full length.
@@ -243,29 +259,51 @@ class Sequence:
         Args:
             labware (list): List of Venus labware IDs
             positions (list): List of position IDs on the specified labware IDs
+            append (Optional, bool): Append to the existing sequence (instead of replacing its content)?
 
         Returns:
             Sequence: Returns the updated the sequence
-        """        
+        """   
 
-        length = max(len(labware), len(positions))
+        old_total = self.total
 
-        self.__df = pd.DataFrame(
-            {
-                'labware': np.resize(labware, length),
-                'position': np.resize(positions, length)
-            }
+        if not append:
+            self.__df = pd.DataFrame(
+                {
+                    'labware': [],
+                    'position': []
+                }
+            )         
+
+        self.__df = self.__df.append(
+            pd.DataFrame(
+                {
+                    'labware': np.resize(labware, length),
+                    'position': np.resize(positions, length)
+                }
+            ),
+            ignore_index=True
         )
-        self.set_end(length)
-        self.set_current(1)
+
+        # if the end position of the sequence was on the last position before then also set the end position on the last position for the updated sequence
+        if self.end == old_total:
+            self.set_end(self.total)
+
+        # adding elements to a sequence resets the current position (always annoyed me in Venus that I have to do this explicitly)
+        if self.current == 0:
+            self.set_current(1)
+
+        # make sure current position is valid
+        self.set_current(self.current)
 
         return self
 
-    def from_dataframe(self, dataframe: pd.DataFrame) -> "Sequence":
+    def from_dataframe(self, dataframe: pd.DataFrame, append: bool = False) -> "Sequence":
         """Update the content of the sequence with the information from the dataframe
 
         Args:
-            dataframe (pd.DataFrame): The dataframe to use for the update. The dataframe needs to contain two columns labelled 'labware' and 'position'
+            dataframe (Pandas.DataFrame): The dataframe to use for the update. The dataframe needs to contain two columns labelled 'labware' and 'position'
+            append (Optional, bool): Append to the existing sequence (instead of replacing its content)?
 
         Returns:
             Sequence: Returns the updated sequence
@@ -273,14 +311,36 @@ class Sequence:
         if not all(x in dataframe.columns for x in ['labware', 'position']):
             raise Exception("The dataframe needs to contain two columns called 'labware' and 'position'")
 
-        self.__df = pd.DataFrame(
-            {
-                'labware': dataframe['labware'].to_list(),
-                'position': dataframe['position'].to_list()
-            }
+        old_total = self.total
+
+        if not append:
+            self.__df = pd.DataFrame(
+                {
+                    'labware': [],
+                    'position': []
+                }
+            )     
+        
+        self.__df = self.__df.append(
+            pd.DataFrame(
+                {
+                    'labware': dataframe['labware'].to_list(),
+                    'position': dataframe['position'].to_list()
+                }
+            ),
+            ignore_index = True
         )
-        self.set_end(len(dataframe.index))
-        self.set_current(1)
+
+        # if the end position of the sequence was on the last position before then also set the end position on the last position for the updated sequence
+        if self.end == old_total:
+            self.set_end(self.total)
+
+        # adding elements to a sequence resets the current position (always annoyed me in Venus that I have to do this explicitly)
+        if self.current == 0:
+            self.set_current(1)
+
+        # make sure current position is valid
+        self.set_current(self.current)
 
         return self
 
@@ -317,6 +377,9 @@ class Sequence:
             labware (str): Venus labware ID
             position (str): Position on the labware
             at_index (int, optional): One-based position index where the item should be added. Defaults to None which will append to the end.
+        
+        Returns:
+            Sequence: Returns the updated sequence
         """    
 
         old_total = self.total
@@ -359,6 +422,9 @@ class Sequence:
 
         Args:
             at_index (int): One-based index of the position to remove
+
+        Returns:
+            Sequence: Returns the updated sequence
         """
 
         if isinstance(at_index, int):
@@ -378,6 +444,9 @@ class Sequence:
 
     def clear(self) -> "Sequence":
         """Remove all items from a sequence
+
+        Returns:
+            Sequence: Returns the updated sequence
         """        
 
         self.__df = self.__df.iloc[0:0]
