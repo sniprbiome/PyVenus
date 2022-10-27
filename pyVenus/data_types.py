@@ -1,4 +1,5 @@
 import json
+import numpy as np
 import pandas as pd
 from uuid import uuid4
 from typing import Union
@@ -25,7 +26,7 @@ class Variable:
         if type(value) not in [int, str, float]:
             raise Exception("Only values of type int, str, or float are accepted")
 
-        if name == "":
+        if name is None:
             name = "variable_" + str(uuid4()).replace("-","")
         self.__name = name
 
@@ -34,7 +35,7 @@ class Variable:
         else:
             value_string = str(self.value)
 
-        self.__con.execute(definitions=f'variable {self.__name} ({value_string});')
+        self.__con.execute(definitions=f'variable {self.name} ({value_string});')
 
     def __str__(self):
         return str(self.value)
@@ -224,6 +225,30 @@ class Sequence:
     def total(self):
         return len(self.__df.index)
 
+    def from_list(self, labware: list, positions: list) -> "Sequence":
+        """Update the content of the sequence to the give lists of labware and positions
+
+        If the two lists do not have the same length then the shorter one is recycled to the full length.
+
+        Returns the updated sequence
+
+        Args:
+            labware (list): List of Venus labware IDs
+            positions (list): List of position IDs on the specified labware IDs
+        """        
+        length = max(len(labware), len(positions))
+
+        self.__df = pd.DataFrame(
+            {
+                'labware': np.resize(labware, length),
+                'position': np.resize(positions, length)
+            }
+        )
+        self.end = length
+        self.current = 0
+
+        return self
+
     def push(self):
         """Push the current state of the sequence to the Venus environment
         """        
@@ -323,18 +348,22 @@ class Device:
     """Replicate the functionality of a Venus device object in python
     """    
 
-    def __init__(self, con: Connection, layout_file: str, name: str = "ML_STAR"):
+    def __init__(self, con: Connection, layout_file: str, name: str = "ML_STAR", main: bool = True):
         """Initialize the device object
 
         Args:
             con (Connection): Connection object to Venus environment
             layout_file (str): Path to Venus deck layout file
             name (str, optional): Name of the device in Venus (e.g. ML_STAR, HxFan). Defaults to "ML_STAR".
+            main (bool, optional): Is this the main device object (e.g. ML_STAR). Set to False for e.g. HxFan. Defaults to True.
         """        
 
         self.__con = con
         self.__name = name
         self.__con.execute(definitions=f'device {name}("{layout_file}", "{name}", hslTrue);')
+
+        if main:
+            self.__con.execute(f"__DEVICE__ = {name};")
 
     @property
     def name(self):
