@@ -240,12 +240,14 @@ class Sequence:
 
         If the two lists do not have the same length then the shorter one is recycled to the full length.
 
-        Returns the updated sequence
-
         Args:
             labware (list): List of Venus labware IDs
             positions (list): List of position IDs on the specified labware IDs
+
+        Returns:
+            Sequence: Returns the updated the sequence
         """        
+
         length = max(len(labware), len(positions))
 
         self.__df = pd.DataFrame(
@@ -259,8 +261,28 @@ class Sequence:
 
         return self
 
-    """     def from_dataframe(self, dataframe: pd.DataFrame) -> "Sequence":
-        pass """
+    def from_dataframe(self, dataframe: pd.DataFrame) -> "Sequence":
+        """Update the content of the sequence with the information from the dataframe
+
+        Args:
+            dataframe (pd.DataFrame): The dataframe to use for the update. The dataframe needs to contain two columns labelled 'labware' and 'position'
+
+        Returns:
+            Sequence: Returns the updated sequence
+        """        
+        if not all(x in dataframe.columns for x in ['labware', 'position']):
+            raise Exception("The dataframe needs to contain two columns called 'labware' and 'position'")
+
+        self.__df = pd.DataFrame(
+            {
+                'labware': dataframe['labware'].to_list(),
+                'position': dataframe['position'].to_list()
+            }
+        )
+        self.set_end(len(dataframe.index))
+        self.set_current(1)
+
+        return self
 
     def push(self):
         """Push the current state of the sequence to the Venus environment
