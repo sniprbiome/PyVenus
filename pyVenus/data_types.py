@@ -428,6 +428,25 @@ class Sequence:
         self.set_end(0)
 
         return self
+
+    def get_dataframe(self, include_position_data:bool = False) -> pd.DataFrame:
+        if include_position_data:
+            ret = self.__con.execute(f'addJSON_sequence_xyz(___JSON___, {self.__name}, "{self.__name}");')
+            ret = json.loads(ret)
+            df = pd.DataFrame(
+                {
+                    'labware': ret[self.__name]["labware"],
+                    'position': ret[self.__name]["position"],
+                    'x': ret[self.__name]["x"],
+                    'y': ret[self.__name]["y"],
+                    'z': ret[self.__name]["z"],
+                    'angle': ret[self.__name]["angle"],
+                }
+            )
+        else:
+            df = self.__df
+
+        return df
     
     def push(self):
         """Push the current state of the sequence to the Venus environment
