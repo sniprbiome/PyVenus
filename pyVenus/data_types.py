@@ -245,7 +245,7 @@ class Sequence:
             }
         )
         self.end = length
-        self.current = 0
+        self.current = 1
 
         return self
 
