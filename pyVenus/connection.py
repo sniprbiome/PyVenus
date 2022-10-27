@@ -75,7 +75,8 @@ class Connection:
 
     def close(self):
         """Close connection and shut down run environment
-        """        
+        """     
+        atexit.unregister(self.close)   
         self.execute("___SHUTDOWN___ = 1;")
 
     def __get_return(self, command_counter: int) -> str:
