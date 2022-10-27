@@ -29,9 +29,12 @@ class Resources:
         # make sure we are working with an absolute path
         layout = os.path.abspath(layout)
 
+        # generate a safe and readable layout name
+        layout_name = Resources.__sanitize_identifier(os.path.splitext(os.path.split(layout)[1])[0].lower().replace(" ","_"))
+
         # set filenames and paths
         layout_ascii = os.path.join(output_directory, os.path.splitext(os.path.split(layout)[1])[0] + ".txt")
-        layout_py = os.path.join(output_directory, "__layout__" + os.path.splitext(os.path.split(layout)[1])[0].lower() + ".py")
+        layout_py = os.path.join(output_directory, "__layout__" + layout_name + ".py")
 
         # create a copy of original deck layout
         shutil.copyfile(layout, layout_ascii)
@@ -66,7 +69,7 @@ class Resources:
 
         # write python definition to file
         with open(layout_py, 'w') as f:
-            f.write(str(template.render(sequences=sequences, layout_file=layout, labware=labware)))
+            f.write(str(template.render(layout_file=layout, layout_name=layout_name, sequences=sequences, labware=labware)))
 
         # cleanup
         os.remove(layout_ascii)
@@ -291,7 +294,7 @@ class Resources:
 
             #add to list of SMT files
             submethods.append({
-                "name": path.stem,
+                "name": Resources.__sanitize_identifier(path.stem.replace(" ", "_")),
                 "file": os.path.splitext(file)[0] + ".hs_",
                 "functions": functions
             })
@@ -404,7 +407,7 @@ class Resources:
 
             if "__layout__" in path.stem:
                 layout_name = path.stem.replace("__layout__", "")
-                init_code += f"from .{path.stem} import DeckLayout as Layout_{layout_name[0].upper()}{layout_name[1:].lower()} \n"
+                init_code += f"from .{path.stem} import {layout_name[0].upper()}{layout_name[1:].lower()} \n"
 
             if "__smt__" in path.stem:
                 smt_name = path.stem.replace("__smt__", "")
@@ -415,5 +418,21 @@ class Resources:
     
     def __hex_converter(match):
         return chr(int(match.group(1), 16))
+
+    def __gen_valid_identifier(seq):
+        # get an iterator
+        itr = iter(seq)
+        # pull characters until we get a legal one for first in identifer
+        for ch in itr:
+            if ch == '_' or ch.isalpha():
+                yield ch
+                break
+        # pull remaining characters and yield legal ones for identifier
+        for ch in itr:
+            if ch == '_' or ch.isalpha() or ch.isdigit():
+                yield ch
+
+    def __sanitize_identifier(name):
+        return ''.join(Resources.__gen_valid_identifier(name))
 
         
