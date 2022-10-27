@@ -344,30 +344,6 @@ class Sequence:
 
         return self
 
-    def push(self):
-        """Push the current state of the sequence to the Venus environment
-        """        
-        code = f'{{ sequence __temp; {self.__name} = __temp; }}\n'
-        for row in self.__df.itertuples():
-            code += f'{self.__name}.Add("{row.labware}", "{row.position}");\n'
-        code += f'{self.__name}.SetCount({self.end});\n'
-        code += f'{self.__name}.SetCurrentPosition({self.current});\n'
-        self.__con.execute(code)
-
-    def pull(self):
-        """Pull the current state of the sequence to the Venus environment
-        """        
-        ret = self.__con.execute(f'addJSON_sequence(___JSON___, {self.__name}, "{self.__name}");')
-        ret = json.loads(ret)
-        self.__df = pd.DataFrame(
-            {
-                'labware': ret[self.__name]["labware"],
-                'position': ret[self.__name]["position"]
-            }
-        )
-        self.set_end(ret[self.__name]["end"])
-        self.set_current(ret[self.__name]["current"])
-
     def add(self, labware: str, position: str, at_index: int = None) -> "Sequence":
         """Add a new item (defined by labware ID and position) to the sequence
 
@@ -440,8 +416,6 @@ class Sequence:
 
         return self
 
-
-
     def clear(self) -> "Sequence":
         """Remove all items from a sequence
 
@@ -454,6 +428,30 @@ class Sequence:
         self.set_end(0)
 
         return self
+    
+    def push(self):
+        """Push the current state of the sequence to the Venus environment
+        """        
+        code = f'{{ sequence __temp; {self.__name} = __temp; }}\n'
+        for row in self.__df.itertuples():
+            code += f'{self.__name}.Add("{row.labware}", "{row.position}");\n'
+        code += f'{self.__name}.SetCount({self.end});\n'
+        code += f'{self.__name}.SetCurrentPosition({self.current});\n'
+        self.__con.execute(code)
+
+    def pull(self):
+        """Pull the current state of the sequence to the Venus environment
+        """        
+        ret = self.__con.execute(f'addJSON_sequence(___JSON___, {self.__name}, "{self.__name}");')
+        ret = json.loads(ret)
+        self.__df = pd.DataFrame(
+            {
+                'labware': ret[self.__name]["labware"],
+                'position': ret[self.__name]["position"]
+            }
+        )
+        self.set_end(ret[self.__name]["end"])
+        self.set_current(ret[self.__name]["current"])
 
 
 class Device:
