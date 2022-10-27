@@ -99,6 +99,7 @@ class Connection:
 
             ret = json.loads(content)
             if "___ERROR_ID___" in ret:
-                raise Exception(ret["___ERROR_DESCRIPTION___"])
+                raise Exception(f"{ret['___ERROR_DESCRIPTION___']}, Error code: {ret['___ERROR_ID___']}, Additional data: {*ret['___ERROR_DATA___'],}")
+                
 
             return content
