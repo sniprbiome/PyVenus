@@ -1,7 +1,18 @@
+
+
+
+
+
+
+
+
+
+
+
+
 from pyVenus import Resources
 
-
-Resources.read_layout("Example1.lay")
+Resources.read_layout("example_layout.lay")
 Resources.read_submethods()
-Resources.read_liquid_classes(True,False,True,False,False)
+Resources.read_liquid_classes(True,False,True,False,False, include_custom=False)
 

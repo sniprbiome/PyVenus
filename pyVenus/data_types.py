@@ -196,9 +196,7 @@ class Sequence:
 
     @current.setter
     def current(self, current):
-        if current > self.end or current < 0:
-            current = 0
-        self.__current = current
+        self.set_current(current)
 
     @property
     def end(self):
@@ -206,13 +204,7 @@ class Sequence:
 
     @end.setter
     def end(self, end):
-        if end < 0:
-            end = 0
-        if end > self.total:
-            end = self.total
-        self.__end = end
-
-        self.current = self.current
+        self.set_end(end)
 
     @property
     def remaining(self):
@@ -224,6 +216,24 @@ class Sequence:
     @property
     def total(self):
         return len(self.__df.index)
+
+    def set_current(self, current: int) -> "Sequence":
+        if current > self.end or current < 0:
+            current = 0
+        self.__current = current
+
+        return self
+
+    def set_end(self, end: int) -> "Sequence":
+        if end < 0:
+            end = 0
+        if end > self.total:
+            end = self.total
+        self.__end = end
+
+        self.set_current(self.current)
+
+        return self
 
     def from_list(self, labware: list, positions: list) -> "Sequence":
         """Update the content of the sequence to the give lists of labware and positions
@@ -244,10 +254,13 @@ class Sequence:
                 'position': np.resize(positions, length)
             }
         )
-        self.end = length
-        self.current = 1
+        self.set_end(length)
+        self.set_current(1)
 
         return self
+
+    """     def from_dataframe(self, dataframe: pd.DataFrame) -> "Sequence":
+        pass """
 
     def push(self):
         """Push the current state of the sequence to the Venus environment
@@ -270,10 +283,10 @@ class Sequence:
                 'position': ret[self.__name]["position"]
             }
         )
-        self.end = ret[self.__name]["end"]
-        self.current = ret[self.__name]["current"]
+        self.set_end(ret[self.__name]["end"])
+        self.set_current(ret[self.__name]["current"])
 
-    def add(self, labware: str, position: str, at_index: int = None):
+    def add(self, labware: str, position: str, at_index: int = None) -> "Sequence":
         """Add a new item (defined by labware ID and position) to the sequence
 
         If the ad_index parameter is omitted the new item is appended at the end.
@@ -311,13 +324,15 @@ class Sequence:
 
         # if the end position of the sequence as on the last position before then also set the end position on the last position for the updated sequence
         if self.end == old_total:
-            self.end = self.total
+            self.set_end(self.total)
 
         # adding elements to a sequence resets the current position (always annoyed me in Venus that I have to do this explicitly)
         if self.current == 0:
-            self.current = 1
+            self.set_current(1)
 
-    def remove(self, at_index: int):
+        return self
+
+    def remove(self, at_index: int) -> "Sequence":
         """Remove an item from the sequence at the specified index (one-based)
 
         Args:
@@ -332,16 +347,22 @@ class Sequence:
             self.__df.drop([x - 1 for x in at_index], inplace=True).reset_index(inplace=True)
 
         # make sure current and end position are meaningful (the setting functions will take care of this)
-        self.end = self.end
-        self.current = self.current
+        self.set_end(self.end)
+        self.set_current(self.current)
 
-    def clear(self):
+        return self
+
+
+
+    def clear(self) -> "Sequence":
         """Remove all items from a sequence
         """        
 
         self.__df = self.__df.iloc[0:0]
-        self.current = 0
-        self.end = 0
+        self.set_current(0)
+        self.set_end(0)
+
+        return self
 
 
 class Device:
