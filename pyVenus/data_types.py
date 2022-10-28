@@ -275,6 +275,7 @@ class Sequence:
                 }
             )         
 
+        length = max(len(labware), len(positions))
         self.__df = self.__df.append(
             pd.DataFrame(
                 {
@@ -430,6 +431,9 @@ class Sequence:
         return self
 
     def get_dataframe(self, include_position_data:bool = False) -> pd.DataFrame:
+        # ensure we have the newest version present in Venus
+        self.push()
+        
         if include_position_data:
             ret = self.__con.execute(f'addJSON_sequence_xyz(___JSON___, {self.__name}, "{self.__name}");')
             ret = json.loads(ret)
