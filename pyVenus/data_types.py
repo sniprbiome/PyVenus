@@ -276,13 +276,14 @@ class Sequence:
             )         
 
         length = max(len(labware), len(positions))
-        self.__df = self.__df.append(
+        self.__df = pd.concat([
+            self.__df,
             pd.DataFrame(
                 {
                     'labware': np.resize(labware, length),
                     'position': np.resize(positions, length)
                 }
-            ),
+            )],
             ignore_index=True
         )
 
@@ -322,13 +323,14 @@ class Sequence:
                 }
             )     
         
-        self.__df = self.__df.append(
+        self.__df = pd.concat([
+            self.__df,
             pd.DataFrame(
                 {
                     'labware': dataframe['labware'].to_list(),
                     'position': dataframe['position'].to_list()
                 }
-            ),
+            )],
             ignore_index = True
         )
 
@@ -362,15 +364,16 @@ class Sequence:
         old_total = self.total
         
         if at_index is None:
-            self.__df = self.__df.append(
+            self.__df = pd.concat([
+                self.__df,
                 pd.DataFrame(
                     {
                         "labware": [labware] if isinstance(labware, str) else labware,
                         "position": [position] if isinstance(position, str) else position,
                     }
-                ),
-                ignore_index=True
-            )
+                )
+            ],
+            ignore_index=True)
         else:
             self.__df = pd.concat([
                 self.__df.iloc[:at_index-2],
