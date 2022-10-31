@@ -95,14 +95,43 @@ function addJSON_array(variable & strJSON, variable arr[], variable strName) voi
    variable intIndex;
 
    JSONarray_start(strJSON, strName);
-   Trace("start");
-   Trace( arr.GetSize());
    for(intIndex = 0; intIndex < arr.GetSize(); intIndex++)
       JSONarray_element(strJSON, arr.ElementAt(intIndex));
    JSONarray_end(strJSON);   
 }
 
 function addJSON_sequence(variable & strJSON, sequence seq, variable strName) void {
+   variable intIndex, strJSON_labware(""), strJSON_position("");
+
+   JSONobject_start(strJSON, strName);
+
+   JSONproperty(strJSON, "current", seq.GetCurrentPosition());
+   JSONproperty(strJSON, "end", seq.GetCount());
+
+   seq.SetCurrentPosition(1);
+   seq.SetCount(seq.GetTotal());
+
+   JSONarray_start(strJSON_labware, "labware");
+   JSONarray_start(strJSON_position, "position");
+
+   for(intIndex = 0; intIndex < seq.GetTotal();) {
+
+      JSONarray_element(strJSON_labware, seq.GetLabwareId());
+      JSONarray_element(strJSON_position, seq.GetPositionId());
+
+      seq.Increment(1);
+      intIndex = intIndex + 1;
+   }
+
+   JSONarray_end(strJSON_labware);
+   JSONarray_end(strJSON_position);
+
+   strJSON = strJSON + strJSON_labware + strJSON_position;
+
+   JSONobject_end(strJSON);
+}
+
+function addJSON_sequence_xyz(variable & strJSON, sequence seq, variable strName) void {
    variable intIndex, strJSON_labware(""), strJSON_position(""), strJSON_x(""), strJSON_y(""), strJSON_z(""), strJSON_angle(""), arrFltPositionData[];
 
    JSONobject_start(strJSON, strName);
@@ -224,28 +253,21 @@ method main()
       // setup JSON object for return information
       ___JSON___ = "";
       JSONobject_start(___JSON___, "");
-
-      Trace(1);
       
       // pass error information to JSON object
       addJSON_variable(___JSON___, err.GetId(), "___ERROR_ID___");
-      Trace(2);
       ___ERROR_DESCRIPTION___ = err.GetDescription();
-      Trace(3);
       StrReplace(___ERROR_DESCRIPTION___, "\n", " ");
       addJSON_variable(___JSON___, ___ERROR_DESCRIPTION___, "___ERROR_DESCRIPTION___");
-      Trace(4);
       
       addJSON_array(___JSON___, err.GetData(), "___ERROR_DATA___");
-      Trace(5);
       
       // clear error data
       err.Clear();
       
       // return to main method
-      Trace("resuming next");
       resume next;
    }
       
 }
-// $$author=BenjaminWohl$$valid=0$$time=2022-10-26 13:02$$checksum=6ffb532b$$length=089$$
+// $$author=BenjaminWohl$$valid=0$$time=2022-10-28 23:32$$checksum=86d41a79$$length=089$$
