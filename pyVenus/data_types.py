@@ -42,10 +42,14 @@ class Variable:
 
     @property
     def name(self):
+        """Get the name of the variable in the Venus environment
+        """
         return self.__name
 
     @property
     def value(self):
+        """Get and set the value of the variable
+        """
         return self.__value
 
     @value.setter
@@ -96,6 +100,8 @@ class Array(list):
 
     @property
     def name(self):
+        """Get the name of the array in the Venus environment
+        """
         return self.__name
 
     def push(self):
@@ -188,10 +194,14 @@ class Sequence:
 
     @property
     def name(self):
+        """Get the name of the sequence in the Venus environment
+        """
         return self.__name
 
     @property
     def current(self):
+        """Get or set the current position of the sequence (i.e. next available position)
+        """
         return self.__current
 
     @current.setter
@@ -200,6 +210,8 @@ class Sequence:
 
     @property
     def end(self):
+        """Get or set the end position of the sequence (i.e. the last position to process)
+        """
         return self.__end
 
     @end.setter
@@ -208,6 +220,8 @@ class Sequence:
 
     @property
     def remaining(self):
+        """Get the remaining positions in the sequence (end - (current - 1))
+        """
         if self.current > 0:
             return self.end - (self.current - 1)
         else:
@@ -215,6 +229,8 @@ class Sequence:
 
     @property
     def total(self):
+        """Get the total number of positions in the sequence (regardless of current and end position)
+        """
         return len(self.__df.index)
 
     def set_current(self, current: int) -> "Sequence":
@@ -434,10 +450,16 @@ class Sequence:
         return self
 
     def get_dataframe(self, include_position_data:bool = False) -> pd.DataFrame:
-        # ensure we have the newest version present in Venus
-        self.push()
+        """Returns the current content of the sequence as a pandas dataframe
+
+        Args:
+            include_position_data (bool, optional): Include for each item in the sequence the x,y,z deck coordinate and rotational angle? Defaults to False.
+        """
         
         if include_position_data:
+            # ensure we have the newest version present in Venus
+            self.push()
+
             ret = self.__con.execute(f'addJSON_sequence_xyz(___JSON___, {self.__name}, "{self.__name}");')
             ret = json.loads(ret)
             df = pd.DataFrame(
@@ -503,6 +525,8 @@ class Device:
 
     @property
     def name(self):
+        """Get the name of the device in the Venus environment
+        """
         return self.__name
 
 class Liquidclass:
@@ -512,12 +536,14 @@ class Liquidclass:
         """Initialize the liquid class
 
         Args:
-            name (_type_): Name of the liquid class in the liquid class database
+            name (str): Name of the liquid class in the liquid class database
         """        
         self.__name = name
     
     @property
     def name(self):
+        """Get the name of the liquid class in the liquid class database
+        """
         return self.__name
 
     def __str__(self):
