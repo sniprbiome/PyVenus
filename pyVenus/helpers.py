@@ -4,7 +4,9 @@ from typing import Union
 class Helpers:
     """Various helper functions for making the method setup easier
     """    
-    def numeric_to_alphanumeric(well_number: Union[int, str], plate_type: Union[int, str], sorting_mode: str = "column-by-column", zero_padding: bool = False) -> str:
+    
+    @classmethod
+    def numeric_to_alphanumeric(cls, well_number: Union[int, str], plate_type: Union[int, str], sorting_mode: str = "column-by-column", zero_padding: bool = False) -> str:
         """Convert a well number to a alphanumeric well ID (e.g. 1 to A1 / 96 to H12)
 
         Args:
@@ -17,7 +19,7 @@ class Helpers:
             str: Alphanumeric well ID (e.g. A1)
         """    
         well_number = int(well_number)
-        rows, cols = Helpers.__get_plate_dimensions(plate_type)
+        rows, cols = cls.__get_plate_dimensions(plate_type)
 
         if sorting_mode == "column-by-column":
             if zero_padding:
@@ -33,8 +35,8 @@ class Helpers:
             raise ValueError("Sorting mode has to be either 'column-by-column' or 'row-by-row'")
 
 
-
-    def get_well_map(plate_type: Union[int, str], sorting_mode: str = "column-by-column", zero_padding: bool = False) -> list:
+    @classmethod
+    def get_well_map(cls, plate_type: Union[int, str], sorting_mode: str = "column-by-column", zero_padding: bool = False) -> list:
         """Generate a list of alphanumeric well IDs for the specified plate type and sorting (e.g. [A1, B2, etc.])
 
         Args:
@@ -49,11 +51,11 @@ class Helpers:
 
         map = []
         for w in range(1, plate_type+1):
-            map.append(Helpers.numeric_to_alphanumeric(w, plate_type, sorting_mode, zero_padding))
+            map.append(cls.numeric_to_alphanumeric(w, plate_type, sorting_mode, zero_padding))
 
         return map
 
-
+    @staticmethod
     def __get_plate_dimensions(plate_type: int) -> tuple[int, int]:
         """Return the number of rows and column for a specific plate type
 

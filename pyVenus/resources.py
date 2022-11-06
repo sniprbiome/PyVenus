@@ -14,7 +14,8 @@ class Resources:
     """Static class with functions to generate python classes from Venus resources
     """         
 
-    def read_layout(layout: str) -> None:
+    @classmethod
+    def read_layout(cls, layout: str) -> None:
         """Reads in a Venus layout file (*.lay) and converts it to a python class.
 
         The generated python class is located in /venus_resources/ and will be named the same as original layout file prefixed with __layout__.
@@ -30,7 +31,7 @@ class Resources:
         layout = os.path.abspath(layout)
 
         # generate a safe and readable layout name
-        layout_name = Resources.__sanitize_identifier(os.path.splitext(os.path.split(layout)[1])[0].lower().replace(" ","_"))
+        layout_name = cls.__sanitize_identifier(os.path.splitext(os.path.split(layout)[1])[0].lower().replace(" ","_"))
 
         # set filenames and paths
         layout_ascii = os.path.join(output_directory, os.path.splitext(os.path.split(layout)[1])[0] + ".txt")
@@ -75,10 +76,11 @@ class Resources:
         os.remove(layout_ascii)
 
         # generate __init__.py
-        Resources.__generate_init()
+        cls.__generate_init()
 
-
+    @classmethod
     def read_liquid_classes(
+        cls,
         include_1ml_channels: bool = True, 
         include_5ml_channels: bool = False, 
         include_96head: bool = True,
@@ -164,10 +166,10 @@ class Resources:
             f.write(str(template.render(liquid_classes=liquid_classes)))
 
         # generate __init__.py
-        Resources.__generate_init()
+        cls.__generate_init()
 
-
-    def read_submethods(directory: str = "") -> None:
+    @classmethod
+    def read_submethods(cls, directory: str = "") -> None:
         """Reads in all the submethod files at the specified folder and converts them to python classes.
 
         An empty string for the directory parameter (default) loads from /smt/
@@ -200,7 +202,7 @@ class Resources:
                 content = f.read()
 
             # get comments of submethod and its parameters
-            smt_definition = Resources.__parse_hxcfg(os.path.join(path.parent, path.stem + ".smt"))
+            smt_definition = cls.__parse_hxcfg(os.path.join(path.parent, path.stem + ".smt"))
 
 
             # setup regex expressions
@@ -313,8 +315,9 @@ class Resources:
                 f.write(output)
 
         # generate __init__.py
-        Resources.__generate_init()
+        cls.__generate_init()
 
+    @staticmethod
     def __parse_hxcfg(file):
         # get output directory for resources
         output_directory = os.path.join(sys.path[0], "venus_resources")
@@ -382,6 +385,7 @@ class Resources:
 
         return json.loads(json_string)
 
+    @staticmethod
     def __get_comments(smt_definition, submethod):
         df = pd.DataFrame.from_dict(smt_definition['HxMetEd_Submethods']['-533725162'], orient="index")
         df = df[df['1-533725161'] == submethod]
@@ -394,6 +398,7 @@ class Resources:
         
         return submethod_comment, parameter_comments
 
+    @staticmethod
     def __generate_init():
         # get output directory for resources
         output_directory = os.path.join(sys.path[0], "venus_resources")
@@ -416,9 +421,11 @@ class Resources:
         with open(os.path.join(output_directory, "__init__.py"), 'w') as f:
             f.write(init_code)
     
+    @staticmethod
     def __hex_converter(match):
         return chr(int(match.group(1), 16))
 
+    @staticmethod
     def __gen_valid_identifier(seq):
         # get an iterator
         itr = iter(seq)
@@ -432,7 +439,8 @@ class Resources:
             if ch == '_' or ch.isalpha() or ch.isdigit():
                 yield ch
 
-    def __sanitize_identifier(name):
-        return ''.join(Resources.__gen_valid_identifier(name))
+    @classmethod
+    def __sanitize_identifier(cls, name):
+        return ''.join(cls.__gen_valid_identifier(name))
 
         
