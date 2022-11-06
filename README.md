@@ -69,9 +69,27 @@ As you can see pyVenus is build to work well with IDEs like Visual Studio Code o
 
 ## Installation
 
+As pyVenus is an early release it has not yet been build to be a proper Python package. The best is currently to clone/download the full repository to your harddrive and then replace the example methods with your own code.
+
+Of course you need to have Venus and Python installed on your computer. 
+
+pyVenus has a few dependencies that need to be installed and this is best done in a virtual environment. Here is an example using venv, but other solutions would work as well. 
+
+Run the following commands in the terminal to install all dependencies. 
+
     python -m venv .venv
     ".venv/Scripts/activate.bat"
     pip install -r requirements.txt
+
+To be able to run the example method you need to generate python classes from the example deck layout and submethod libraries. The ```update_resources.py``` script is setup to just that ([more details here](#updating-generated-code)).
+
+Run this command in the same terminal window:
+
+    py update_resources.py
+
+After this you should see a new folder called ```venus_resources``` and you are ready to start the example method. 
+
+As explained above pyVenus works best when used together with an IDE like [VS code](https://code.visualstudio.com/) or [PyCharm](https://www.jetbrains.com/pycharm/). 
 
 ## Example method
 
