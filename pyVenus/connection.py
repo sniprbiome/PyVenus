@@ -7,7 +7,9 @@ import json
 
 class Connection:
     """Connection class that starts the Venus run environment and takes care of data exchange to python environment
-    """    
+    """
+
+    __connected = False    
 
     def __init__(self, run_environment: str = r"C:\Program Files (x86)\HAMILTON\Bin\HxRun.exe", start_minimized: bool = False) -> None:
         """Initialize run environment
@@ -46,6 +48,7 @@ class Connection:
             universal_newlines=True,
             startupinfo=info
         )
+        self.__connected = True
 
         # register abort handler that closes the run environment
         atexit.register(self.close)
@@ -59,7 +62,10 @@ class Connection:
         
         Returns:
             int: Command counter ID for this execution
-        """        
+        """
+
+        self.__guard()
+        
         current_counter = self.__command_counter
         self.__command_counter += 1
 
@@ -78,29 +84,42 @@ class Connection:
         """     
         atexit.unregister(self.close)   
         self.execute("___SHUTDOWN___ = 1;")
+        self.__runenvironment.wait()
+        self.__connected = False
 
     def __get_return(self, command_counter: int) -> str:
-            """Get the data returned from the Venus environment for a previous execution command based on its command counter ID
+        """Get the data returned from the Venus environment for a previous execution command based on its command counter ID
 
-            If an HSL error occured an exception is raised in python with the error description from Venus.
+        If an HSL error occured an exception is raised in python with the error description from Venus.
 
-            Args:
-                command_counter (int): The command counter ID for the execution data should be retrieved for
+        Args:
+            command_counter (int): The command counter ID for the execution data should be retrieved for
 
-            Returns:
-                str: The returned data (JSON).
-            """        
-            file = os.path.join(self.__path_HSLremote, "fromSystem", str(command_counter) + ".json")
+        Returns:
+            str: The returned data (JSON).
+        """ 
 
-            while not os.path.exists(file):
-                time.sleep(0.2)
+        self.__guard()
 
-            with open(file, "r") as f:
-                content = f.read()
+        file = os.path.join(self.__path_HSLremote, "fromSystem", str(command_counter) + ".json")
 
-            ret = json.loads(content)
-            if "___ERROR_ID___" in ret:
-                raise Exception(f"{ret['___ERROR_DESCRIPTION___']}, Error code: {ret['___ERROR_ID___']}, Additional data: {*ret['___ERROR_DATA___'],}")
-                
+        while not os.path.exists(file):
+            time.sleep(0.2)
 
-            return content
+        with open(file, "r") as f:
+            content = f.read()
+
+        ret = json.loads(content)
+        if "___ERROR_ID___" in ret:
+            raise Exception(f"{ret['___ERROR_DESCRIPTION___']}, Error code: {ret['___ERROR_ID___']}, Additional data: {*ret['___ERROR_DATA___'],}")
+            
+        return content
+
+    def __guard(self):
+        if not self.__connected:
+            raise Exception("Connection to Hamilton run environment is closed. Initialize the connection before executing commands.")
+        
+        if not self.__runenvironment.poll() is None:
+            raise Exception("Connection to Hamilton run environment has aborted unexpectedly. Check the Hamilton log file for details.")
+
+        
