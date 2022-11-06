@@ -50,20 +50,25 @@ The beauty is that you do not need to know how pyVenus works in the background, 
 ## Basic example
 
 Assume you have the following simple submethod in a library that transfers buffer to a target:
+
 ![](/pyVenus/images/submethod_example1.png)
 
 The submethod has a number of input and output parameters as shown here:
+
 ![](/pyVenus/images/submethod_example2.png)
 
 pyVenus generates a python class from the submethod library that has a function of the same name as the submethod:
+
 ![](/pyVenus/images/smt_class_example1.png)
 
 The different data types of Venus are implemented through [corresponding python classes](#data-types).
 
 As you can see pyVenus is build to work well with IDEs like Visual Studio Code or PyCharm, giving you all the relevant information through IntelliSense as you type your code.
+
 ![](/pyVenus/images/example_intellisense.gif)
 
 ## Installation
+
     python -m venv .venv
     ".venv/Scripts/activate.bat"
     pip install -r requirements.txt
@@ -97,6 +102,7 @@ from venus_resources import Pipetting
 
 Both the liquid and deck layout classes are not meant for executing any code, but simple are helpers to access information from these files in your method. For example, instead of writing out the name of a liquid class you can simply include a reference to it via the liquid class object, removing the need for guesswork or copying strings in-between Venus and Python. 
 It also allows for easy searching via Intellisense, as shown in the example below.
+
 ![](/pyVenus/images/example_intellisenseLC.gif)
 
 ### Initiate objects
@@ -175,6 +181,7 @@ smt_pip.add_buffer(star_device, buffer, plate_dilution, tips_1000F, 100)
 It is of course also possible to define output parameters on submethods and use them to return data from Venus to Python. This simple submethods transfers multiple 96-well plates into a single plate and returns the number of plates transferred as an output parameter. 
 
 ![](/pyVenus/images/output_example_1.png)
+
 ![](/pyVenus/images/output_example_2.png)
 
 To receive a value back from Venus you need to define it as one of the pyVenus data types (Sequence, Variable, Array), that mirror the corresponding data types in Venus. 
@@ -210,6 +217,7 @@ smt_pip.input_to_dilution(
 ```
 
 The sequence class internally uses the pandas dataframe to store all the positions in a sequence. Another way to setup a sequence is using the ```.from_dataframe()``` method, which takes a pandas dataframe as input. 
+
 This makes it easy to load a correctly formatted worklist file for e.g. hitpicking:
 
 ```python
@@ -286,6 +294,7 @@ In principle, pyVenus should also work for a Nimbus or Vantage where the robot d
 ### Sequence
 
 Just as in Venus a sequence is at it's core a table with two columns (labware ID, position ID), as well as a current and end position. In Python this is implemented by using a Pandas dataframe. 
+
 More information on how to work with sequences can be found in the discussion of the [example method](#example-method) above.
 
 ### Variable
@@ -345,7 +354,6 @@ from pyVenus import Resources
 Resources.read_layout("example_layout.lay")
 Resources.read_liquid_classes(True,False,True,False,False, include_custom=False)
 Resources.read_submethods()
-
 ```
 
 This will have to be customized to your method and system configuration:
@@ -386,6 +394,7 @@ con.close()
 ## How does it work
 
 When a method is designed in the graphical interface of Venus an underlying method is generated in HSL (Hamilton Standard Language). pyVenus works by passing new HSL code to an already running method and letting it execute it on the fly. Since HSL underlies the Venus environment it gives you the same capabilities as the graphical interface. 
+
 The core module of pyVenus (the ```Connection``` class) takes care sending HSL code to the Venus environment and receiving results formatted in JSON. 
 
 ![](/pyVenus/images/pyvenus_schematic.png)
