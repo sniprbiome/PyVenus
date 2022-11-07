@@ -1,0 +1,549 @@
+
+<!DOCTYPE html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pyVenus.resources &#8212; pyVenus  documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/alabaster.css" />
+    <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/_sphinx_javascript_frameworks_compat.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <script src="../../_static/sphinx_highlight.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+   
+  <link rel="stylesheet" href="../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <h1>Source code for pyVenus.resources</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">re</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">pyodbc</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">from</span> <span class="nn">operator</span> <span class="kn">import</span> <span class="n">itemgetter</span>
+<span class="kn">from</span> <span class="nn">pathlib</span> <span class="kn">import</span> <span class="n">Path</span>
+<span class="kn">from</span> <span class="nn">jinja2</span> <span class="kn">import</span> <span class="n">Environment</span><span class="p">,</span> <span class="n">PackageLoader</span><span class="p">,</span> <span class="n">select_autoescape</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<div class="viewcode-block" id="Resources"><a class="viewcode-back" href="../../pyVenus.html#pyVenus.resources.Resources">[docs]</a><span class="k">class</span> <span class="nc">Resources</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;Static class with functions to generate python classes from Venus resources</span>
+<span class="sd">    &quot;&quot;&quot;</span>         
+
+<div class="viewcode-block" id="Resources.read_layout"><a class="viewcode-back" href="../../pyVenus.html#pyVenus.resources.Resources.read_layout">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">read_layout</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">layout</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reads in a Venus layout file (*.lay) and converts it to a python class.</span>
+
+<span class="sd">        The generated python class is located in /venus_resources/ and will be named the same as original layout file prefixed with __layout__.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            layout (str): Relative or absolute path to the layout file</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+        <span class="c1"># get output directory for resources</span>
+        <span class="n">output_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;venus_resources&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># make sure we are working with an absolute path</span>
+        <span class="n">layout</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">layout</span><span class="p">)</span>
+
+        <span class="c1"># generate a safe and readable layout name</span>
+        <span class="n">layout_name</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__sanitize_identifier</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">layout</span><span class="p">)[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span><span class="s2">&quot;_&quot;</span><span class="p">))</span>
+
+        <span class="c1"># set filenames and paths</span>
+        <span class="n">layout_ascii</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">layout</span><span class="p">)[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span><span class="p">)</span>
+        <span class="n">layout_py</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span> <span class="s2">&quot;__layout__&quot;</span> <span class="o">+</span> <span class="n">layout_name</span> <span class="o">+</span> <span class="s2">&quot;.py&quot;</span><span class="p">)</span>
+
+        <span class="c1"># create a copy of original deck layout</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfile</span><span class="p">(</span><span class="n">layout</span><span class="p">,</span> <span class="n">layout_ascii</span><span class="p">)</span>
+
+        <span class="c1"># convert deck layout from binary to ascii</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span>
+            <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Program Files (x86)</span><span class="se">\\</span><span class="s2">HAMILTON</span><span class="se">\\</span><span class="s2">Bin</span><span class="se">\\</span><span class="s2">HxCfgFilConverter.exe&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;/t&quot;</span><span class="p">,</span>
+            <span class="n">layout_ascii</span><span class="p">],</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+
+        <span class="c1"># read deck layout file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">layout_ascii</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+        
+        <span class="c1"># extract names of all the deck sequences</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;Seq.</span><span class="se">\\</span><span class="s1">d*.Name, &quot;([A-Za-z0-9_]*)&quot;,</span><span class="se">\\</span><span class="s1">n&#39;</span><span class="p">)</span>
+        <span class="n">sequences</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+        <span class="c1"># extract names of all labware items</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s1">&#39;Labware.</span><span class="se">\\</span><span class="s1">d*.Id, &quot;([A-Za-z0-9_]*)&quot;,</span><span class="se">\\</span><span class="s1">n&#39;</span><span class="p">)</span>
+        <span class="n">labware</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+        <span class="c1"># setup template environement</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span>
+            <span class="n">loader</span><span class="o">=</span><span class="n">PackageLoader</span><span class="p">(</span><span class="s1">&#39;pyVenus&#39;</span><span class="p">,</span> <span class="s1">&#39;templates&#39;</span><span class="p">),</span>
+            <span class="n">autoescape</span><span class="o">=</span><span class="n">select_autoescape</span><span class="p">([</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;xml&#39;</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s1">&#39;deck_layout.py.j2&#39;</span><span class="p">)</span>
+
+        <span class="c1"># write python definition to file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">layout_py</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">layout_file</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">layout_name</span><span class="o">=</span><span class="n">layout_name</span><span class="p">,</span> <span class="n">sequences</span><span class="o">=</span><span class="n">sequences</span><span class="p">,</span> <span class="n">labware</span><span class="o">=</span><span class="n">labware</span><span class="p">)))</span>
+
+        <span class="c1"># cleanup</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">layout_ascii</span><span class="p">)</span>
+
+        <span class="c1"># generate __init__.py</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__generate_init</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Resources.read_liquid_classes"><a class="viewcode-back" href="../../pyVenus.html#pyVenus.resources.Resources.read_liquid_classes">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">read_liquid_classes</span><span class="p">(</span>
+        <span class="bp">cls</span><span class="p">,</span>
+        <span class="n">include_1ml_channels</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+        <span class="n">include_5ml_channels</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+        <span class="n">include_96head</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">include_384head</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> 
+        <span class="n">include_washstations</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">include_default</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">include_custom</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span>
+        <span class="n">database</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="sa">r</span><span class="s1">&#39;C:\Program Files (x86)\HAMILTON\Config\ML_STARLiquids.mdb&#39;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reads in the default Venus liquid class database and converts it to a python class.</span>
+
+<span class="sd">        It is possible to restrict the list of liquid classes to those fitting the system configuration.</span>
+<span class="sd">        The generated python class is located at /venus_resources/__liquid_classes__.py</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            include_1ml_channels (bool, optional): Load liquid classes for 1 mL channels. Defaults to True.</span>
+<span class="sd">            include_5ml_channels (bool, optional): Load liquid classes for 5 mL channels. Defaults to False.</span>
+<span class="sd">            include_96head (bool, optional): Load liquid classes for the 96 multiprobe head. Defaults to True.</span>
+<span class="sd">            include_384head (bool, optional): Load liquid classes for the 384 multiprobe head. Defaults to False.</span>
+<span class="sd">            include_washstations (bool, optional): Load liquid classes for the wash stations. Defaults to False.</span>
+<span class="sd">            include_default (bool, optional): Load default liquid classes (all LCs that ship with Venus). Defaults to True.</span>
+<span class="sd">            include_custom (bool, optional): Load user created liquid classes. Defaults to True.</span>
+<span class="sd">            database (str, optional): Path to a non-standard liquid class database file. Defaults to r&#39;C:\Program Files (x86)\HAMILTON\Config\ML_STARLiquids.mdb&#39;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+
+        <span class="c1"># get output directory for resources</span>
+        <span class="n">output_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;venus_resources&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># set filenames and paths</span>
+        <span class="n">database_py</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span> <span class="s2">&quot;__liquid_classes__.py&quot;</span><span class="p">)</span>
+
+        <span class="c1"># connect to Access DB with liquid classes</span>
+        <span class="n">conn</span> <span class="o">=</span> <span class="n">pyodbc</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="sa">r</span><span class="s1">&#39;Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=&#39;</span> <span class="o">+</span> <span class="n">database</span> <span class="o">+</span> <span class="s1">&#39;;&#39;</span><span class="p">)</span>
+        <span class="n">cursor</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">cursor</span><span class="p">()</span>
+        <span class="n">cursor</span><span class="o">.</span><span class="n">execute</span><span class="p">(</span><span class="s1">&#39;select * from LiquidClass&#39;</span><span class="p">)</span>
+
+        <span class="c1"># generate list with appropriate device IDs</span>
+        <span class="n">selected_devices</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">include_1ml_channels</span><span class="p">:</span> <span class="n">selected_devices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">include_5ml_channels</span><span class="p">:</span> <span class="n">selected_devices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">include_96head</span><span class="p">:</span> <span class="n">selected_devices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">include_384head</span><span class="p">:</span> <span class="n">selected_devices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">include_washstations</span><span class="p">:</span> <span class="n">selected_devices</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="mi">9</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">])</span>
+
+        <span class="c1"># set allowed liquid class types (default/custom)</span>
+        <span class="n">selected_types</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">include_default</span><span class="p">:</span> <span class="n">selected_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">include_custom</span><span class="p">:</span> <span class="n">selected_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>    
+
+        <span class="c1"># gather all liquid classes</span>
+        <span class="n">liquid_classes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">row</span> <span class="ow">in</span> <span class="n">cursor</span><span class="o">.</span><span class="n">fetchall</span><span class="p">():</span>
+            <span class="n">select</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># select only the liquid classes for the appropriate devices</span>
+            <span class="n">devices</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">row</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;;&#39;</span><span class="p">)]</span>
+            <span class="k">if</span> <span class="nb">any</span><span class="p">(</span><span class="n">item</span> <span class="ow">in</span> <span class="n">devices</span> <span class="k">for</span> <span class="n">item</span> <span class="ow">in</span> <span class="n">selected_devices</span><span class="p">):</span>
+                <span class="n">select</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1"># deselect old tip types</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">8</span><span class="p">]:</span> <span class="n">select</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># deselect weird standard liquid classes that nobody needs</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;a&#39;</span><span class="p">,</span> <span class="s1">&#39;abc&#39;</span><span class="p">,</span> <span class="s1">&#39;abcd&#39;</span><span class="p">,</span> <span class="s1">&#39;1&#39;</span><span class="p">]:</span> <span class="n">select</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># deselect old dispense modes</span>
+            <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">7</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span> <span class="n">select</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="c1"># only allow selected type</span>
+            <span class="k">if</span> <span class="n">select</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">row</span><span class="p">[</span><span class="mi">6</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">selected_types</span><span class="p">:</span>
+                    <span class="n">select</span> <span class="o">=</span> <span class="kc">False</span>
+
+            <span class="c1"># process this row?</span>
+            <span class="k">if</span> <span class="n">select</span><span class="p">:</span>
+                <span class="n">liquid_classes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">row</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># setup template environement</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span>
+            <span class="n">loader</span><span class="o">=</span><span class="n">PackageLoader</span><span class="p">(</span><span class="s1">&#39;pyVenus&#39;</span><span class="p">,</span> <span class="s1">&#39;templates&#39;</span><span class="p">),</span>
+            <span class="n">autoescape</span><span class="o">=</span><span class="n">select_autoescape</span><span class="p">([</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;xml&#39;</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s1">&#39;liquid_classes.py.j2&#39;</span><span class="p">)</span>
+
+        <span class="c1"># write python definition to file</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">database_py</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">liquid_classes</span><span class="o">=</span><span class="n">liquid_classes</span><span class="p">)))</span>
+
+        <span class="c1"># generate __init__.py</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__generate_init</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Resources.read_submethods"><a class="viewcode-back" href="../../pyVenus.html#pyVenus.resources.Resources.read_submethods">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">read_submethods</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">directory</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Reads in all the submethod files at the specified folder and converts them to python classes.</span>
+
+<span class="sd">        An empty string for the directory parameter (default) loads from /smt/</span>
+
+<span class="sd">        All python classes are generated in venus_resources/ and are given the same name as the original smt file, prefixed with __smt__</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            directory (str, optional): The path to directory with smt files. Defaults to &quot;&quot;.</span>
+<span class="sd">        &quot;&quot;&quot;</span>        
+
+        <span class="c1"># set default directory with SMTs</span>
+        <span class="k">if</span> <span class="n">directory</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+            <span class="n">directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;smt&quot;</span><span class="p">)</span>
+
+        <span class="c1"># get output directory for resources</span>
+        <span class="n">output_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;venus_resources&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># loop over all submethod libraries</span>
+        <span class="n">pathlist</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">directory</span><span class="p">)</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s1">&#39;*.hsi&#39;</span><span class="p">)</span>
+        <span class="n">submethods</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">pathlist</span><span class="p">:</span>
+            <span class="c1"># ignore temp files</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;~&quot;</span><span class="p">):</span>
+                <span class="k">continue</span>
+
+            <span class="c1"># read file content</span>
+            <span class="n">file</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">resolve</span><span class="p">())</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+            <span class="c1"># get comments of submethod and its parameters</span>
+            <span class="n">smt_definition</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">__parse_hxcfg</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">parent</span><span class="p">,</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span> <span class="o">+</span> <span class="s2">&quot;.smt&quot;</span><span class="p">))</span>
+
+
+            <span class="c1"># setup regex expressions</span>
+            <span class="n">pattern_function</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\/\/ {{{ \d+ </span><span class="se">\&quot;</span><span class="s2">([\w\d_]+)</span><span class="se">\&quot;</span><span class="s2"> </span><span class="se">\&quot;</span><span class="s2">Begin</span><span class="se">\&quot;</span><span class="s2">\nfunction \1\( ([\w\d\s&amp;,\[\]]*) \)\s(\w+)\s{\n\/\/ }} </span><span class="se">\&quot;\&quot;</span><span class="s2">\n[\w\d\s;\[\]\n]*\/\/ {{ \d+ </span><span class="se">\&quot;</span><span class="s2">\1</span><span class="se">\&quot;</span><span class="s2"> </span><span class="se">\&quot;</span><span class="s2">InitLocals</span><span class="se">\&quot;</span><span class="s2">\n([\w\s\d\(\)&amp;,\[\]</span><span class="si">{}</span><span class="s2">\/</span><span class="se">\&quot;</span><span class="s2">;=\.]*?)\n?\/\/ }} </span><span class="se">\&quot;\&quot;</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">pattern_parameter</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;(\w+)\s(&amp;?)\s?([\w\d&amp;]+)([\[\]]*)[,]*&quot;</span><span class="p">)</span>
+            <span class="n">pattern_defaultvalue</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;\{\{default:(.*?)\}\}(.*)&quot;</span><span class="p">)</span>
+
+            <span class="c1"># find all functions in file</span>
+            <span class="n">match_functions</span> <span class="o">=</span> <span class="n">pattern_function</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+            <span class="c1"># extract information for each function</span>
+            <span class="n">functions</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">match_functions</span><span class="p">:</span>
+                <span class="c1"># find all function parameters</span>
+                <span class="n">match_parameters</span> <span class="o">=</span> <span class="n">pattern_parameter</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">))</span>
+                <span class="n">parameters</span> <span class="o">=</span> <span class="p">[]</span>
+
+                <span class="c1"># extract comments from SMT definition</span>
+                <span class="n">submethod_comment</span><span class="p">,</span> <span class="n">parameter_comments</span> <span class="o">=</span> <span class="n">Resources</span><span class="o">.</span><span class="n">__get_comments</span><span class="p">(</span><span class="n">smt_definition</span><span class="p">,</span> <span class="n">f</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">))</span>
+
+                <span class="c1"># extract information for each parameter</span>
+                <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">match_parameters</span><span class="p">:</span>
+                    <span class="c1"># direction: in, out, in_out</span>
+                    <span class="k">if</span> <span class="n">p</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="ow">in</span> <span class="n">f</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+                        <span class="n">direction</span> <span class="o">=</span> <span class="s2">&quot;out&quot;</span>
+                    <span class="k">elif</span> <span class="n">p</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;&amp;&quot;</span><span class="p">:</span>
+                        <span class="n">direction</span> <span class="o">=</span> <span class="s2">&quot;in_out&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">direction</span> <span class="o">=</span> <span class="s2">&quot;in&quot;</span>
+
+                    <span class="c1"># is this an array (e.g. array of variables, array of sequences</span>
+                    <span class="n">is_array</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;[]&quot;</span>
+
+                    <span class="c1"># define datatype in HSL and python</span>
+                    <span class="n">hsl_type</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">hsl_type</span> <span class="o">==</span> <span class="s2">&quot;variable&quot;</span> <span class="ow">and</span> <span class="n">is_array</span><span class="p">:</span>
+                        <span class="n">py_type</span> <span class="o">=</span> <span class="s2">&quot;Array&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">py_type</span> <span class="o">=</span> <span class="n">hsl_type</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+
+                    <span class="c1"># define how the parameter is passed to the HSL function</span>
+                    <span class="c1"># variable: variable is pushed to HSL and then the name of the variable is passed to function</span>
+                    <span class="c1"># value: the value is directly passed to the function</span>
+                    <span class="k">if</span> <span class="n">py_type</span> <span class="o">==</span> <span class="s2">&quot;Variable&quot;</span> <span class="ow">and</span> <span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;in&quot;</span><span class="p">:</span>
+                        <span class="n">pass_mode</span> <span class="o">=</span> <span class="s2">&quot;value&quot;</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">pass_mode</span> <span class="o">=</span> <span class="s2">&quot;variable&quot;</span>
+
+                    <span class="c1"># get comment for this parameter</span>
+                    <span class="n">comment</span> <span class="o">=</span> <span class="n">parameter_comments</span><span class="p">[</span><span class="n">parameter_comments</span><span class="o">.</span><span class="n">parameter</span><span class="o">.</span><span class="n">eq</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">))][</span><span class="s1">&#39;comment&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+                    <span class="c1"># is a default value set?</span>
+                    <span class="n">default_value</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="n">match</span> <span class="o">=</span> <span class="n">pattern_defaultvalue</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">comment</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">match</span><span class="p">:</span>
+                        <span class="n">default_value</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                        <span class="n">comment</span> <span class="o">=</span> <span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+                        
+                    <span class="c1"># add to list of parameters</span>
+                    <span class="n">parameters</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                        <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+                        <span class="s2">&quot;hsl_type&quot;</span><span class="p">:</span> <span class="n">hsl_type</span><span class="p">,</span>
+                        <span class="s2">&quot;py_type&quot;</span><span class="p">:</span> <span class="n">py_type</span><span class="p">,</span>
+                        <span class="s2">&quot;is_array&quot;</span><span class="p">:</span> <span class="n">is_array</span><span class="p">,</span>
+                        <span class="s2">&quot;direction&quot;</span><span class="p">:</span> <span class="n">direction</span><span class="p">,</span>
+                        <span class="s2">&quot;pass_mode&quot;</span><span class="p">:</span> <span class="n">pass_mode</span><span class="p">,</span>
+                        <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="n">comment</span><span class="p">,</span>
+                        <span class="s2">&quot;default_value&quot;</span><span class="p">:</span> <span class="n">default_value</span>
+                    <span class="p">})</span>
+
+                    <span class="c1"># throw an error on currently unsupported data types</span>
+                    <span class="k">if</span> <span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;hsl_type&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;sequence&quot;</span> <span class="ow">and</span> <span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;is_array&quot;</span><span class="p">]:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Arrays of sequences are currently not yet supported!&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;hsl_type&quot;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;file&quot;</span><span class="p">,</span> <span class="s2">&quot;timer&quot;</span><span class="p">,</span> <span class="s2">&quot;event&quot;</span><span class="p">,</span> <span class="s2">&quot;object&quot;</span><span class="p">,</span> <span class="s2">&quot;resource&quot;</span><span class="p">]:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;HSL datatype &#39;&quot;</span> <span class="o">+</span> <span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;hsl_type&quot;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;&#39; is not yet supported!&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;hsl_type&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;variable&quot;</span> <span class="ow">and</span> <span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;default_value&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Default values are currently only supported for variables!&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;direction&quot;</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">&quot;in&quot;</span> <span class="ow">and</span> <span class="n">parameters</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">][</span><span class="s2">&quot;default_value&quot;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Default values are currently only supported for input variables!&quot;</span><span class="p">)</span>
+
+                <span class="c1"># sort so all parameters with default values are listed at the end</span>
+                <span class="n">parameters</span> <span class="o">=</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">parameters</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s1">&#39;default_value&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="n">e</span> <span class="k">for</span> <span class="n">e</span> <span class="ow">in</span> <span class="n">parameters</span> <span class="k">if</span> <span class="n">e</span><span class="p">[</span><span class="s1">&#39;default_value&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>               
+
+                <span class="c1"># add to list of functions</span>
+                <span class="n">functions</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                    <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                    <span class="s2">&quot;hasReturn&quot;</span><span class="p">:</span> <span class="n">f</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;variable&quot;</span><span class="p">,</span>
+                    <span class="s2">&quot;parameters&quot;</span><span class="p">:</span> <span class="n">parameters</span><span class="p">,</span>
+                    <span class="s2">&quot;comment&quot;</span><span class="p">:</span> <span class="n">submethod_comment</span>
+                <span class="p">})</span>
+
+            <span class="c1">#add to list of SMT files</span>
+            <span class="n">submethods</span><span class="o">.</span><span class="n">append</span><span class="p">({</span>
+                <span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">Resources</span><span class="o">.</span><span class="n">__sanitize_identifier</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)),</span>
+                <span class="s2">&quot;file&quot;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">file</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.hs_&quot;</span><span class="p">,</span>
+                <span class="s2">&quot;functions&quot;</span><span class="p">:</span> <span class="n">functions</span>
+            <span class="p">})</span>
+
+        <span class="c1"># setup template environement</span>
+        <span class="n">env</span> <span class="o">=</span> <span class="n">Environment</span><span class="p">(</span>
+            <span class="n">loader</span><span class="o">=</span><span class="n">PackageLoader</span><span class="p">(</span><span class="s1">&#39;pyVenus&#39;</span><span class="p">,</span> <span class="s1">&#39;templates&#39;</span><span class="p">),</span>
+            <span class="n">autoescape</span><span class="o">=</span><span class="n">select_autoescape</span><span class="p">([</span><span class="s1">&#39;html&#39;</span><span class="p">,</span> <span class="s1">&#39;xml&#39;</span><span class="p">])</span>
+        <span class="p">)</span>
+        <span class="n">template</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">get_template</span><span class="p">(</span><span class="s1">&#39;submethods.py.j2&#39;</span><span class="p">)</span>
+
+        <span class="c1"># write python definition to file</span>
+        <span class="k">for</span> <span class="n">smt</span> <span class="ow">in</span> <span class="n">submethods</span><span class="p">:</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span><span class="s2">&quot;__smt__&quot;</span> <span class="o">+</span> <span class="n">smt</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.py&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">(),</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">output</span> <span class="o">=</span> <span class="n">template</span><span class="o">.</span><span class="n">render</span><span class="p">(</span><span class="n">submethods</span><span class="o">=</span><span class="p">[</span><span class="n">smt</span><span class="p">])</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s2">&quot;utf-8&quot;</span><span class="p">)</span>
+                <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+
+        <span class="c1"># generate __init__.py</span>
+        <span class="bp">cls</span><span class="o">.</span><span class="n">__generate_init</span><span class="p">()</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__parse_hxcfg</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+        <span class="c1"># get output directory for resources</span>
+        <span class="n">output_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;venus_resources&quot;</span><span class="p">)</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span> <span class="n">exist_ok</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># make a copy of the file</span>
+        <span class="n">file_ascii</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">file</span><span class="p">)[</span><span class="mi">1</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;.txt&quot;</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">file_ascii</span><span class="p">)</span>
+
+        <span class="c1"># convert .smt from binary to ascii</span>
+        <span class="n">process</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">([</span>
+            <span class="s2">&quot;C:</span><span class="se">\\</span><span class="s2">Program Files (x86)</span><span class="se">\\</span><span class="s2">HAMILTON</span><span class="se">\\</span><span class="s2">Bin</span><span class="se">\\</span><span class="s2">HxCfgFilConverter.exe&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;/t&quot;</span><span class="p">,</span>
+            <span class="n">file_ascii</span><span class="p">],</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span>
+            <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">process</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+
+        <span class="c1"># read file content</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_ascii</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">,)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">content</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
+
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">file_ascii</span><span class="p">)</span>
+
+        <span class="c1"># some special characters (e.g. µ) are not converted correctly but left as hex codes.</span>
+        <span class="n">content</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">sub</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;</span><span class="se">\\</span><span class="s2">0x([A-Za-z0-9]</span><span class="si">{2}</span><span class="s2">)&quot;</span><span class="p">,</span> <span class="n">Resources</span><span class="o">.</span><span class="n">__hex_converter</span><span class="p">,</span> <span class="n">content</span><span class="p">)</span>
+        <span class="c1">#content = content.encode(&quot;utf8&quot;).decode(&quot;unicode-escape&quot;)</span>
+        
+        <span class="n">pattern_blocks</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;DataDef,HxPars,3,(\w+),</span><span class="se">\n</span><span class="s2">\[</span><span class="se">\n</span><span class="s2">([\s\S]*?)</span><span class="se">\&quot;</span><span class="s2">\)</span><span class="se">\&quot;\n</span><span class="s2">\];&quot;</span><span class="p">)</span>
+        <span class="n">pattern_line</span> <span class="o">=</span> <span class="n">re</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2">([\(\)]?)(.*)</span><span class="se">\&quot;</span><span class="s2">,&quot;</span><span class="p">)</span>
+
+        <span class="n">match_blocks</span> <span class="o">=</span> <span class="n">pattern_blocks</span><span class="o">.</span><span class="n">finditer</span><span class="p">(</span><span class="n">content</span><span class="p">)</span>
+
+        <span class="n">json_string</span> <span class="o">=</span> <span class="s2">&quot;{</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">value_line</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">match_blocks</span><span class="p">:</span>
+            <span class="n">json_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">b</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">{{\n</span><span class="s2">&quot;</span>
+
+            <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">b</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">splitlines</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">l</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span><span class="p">:</span>
+                    <span class="k">continue</span>
+
+                <span class="n">match_line</span> <span class="o">=</span> <span class="n">pattern_line</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">l</span><span class="p">)</span>
+                
+                <span class="k">if</span> <span class="n">value_line</span><span class="p">:</span>
+                    <span class="n">json_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">match_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="n">value_line</span> <span class="o">=</span> <span class="kc">False</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">match_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;(&quot;</span><span class="p">:</span>
+                    <span class="n">json_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">match_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">: </span><span class="se">{{</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">match_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="s2">&quot;)&quot;</span><span class="p">:</span>
+                    <span class="n">json_string</span> <span class="o">=</span> <span class="n">json_string</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;,</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">json_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\n}}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+                    <span class="k">continue</span>
+                
+                <span class="n">json_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="si">{</span><span class="n">match_line</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span><span class="si">}</span><span class="se">\&quot;</span><span class="s2">: &quot;</span>
+                <span class="n">value_line</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">json_string</span> <span class="o">=</span> <span class="n">json_string</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;,</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="n">json_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">}}</span><span class="s2">,</span><span class="se">\n</span><span class="s2">&quot;</span>
+        <span class="n">json_string</span> <span class="o">=</span> <span class="n">json_string</span><span class="o">.</span><span class="n">rstrip</span><span class="p">(</span><span class="s2">&quot;,</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">json_string</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;</span><span class="se">}}</span><span class="s2">&quot;</span>
+
+        <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">json_string</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__get_comments</span><span class="p">(</span><span class="n">smt_definition</span><span class="p">,</span> <span class="n">submethod</span><span class="p">):</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">smt_definition</span><span class="p">[</span><span class="s1">&#39;HxMetEd_Submethods&#39;</span><span class="p">][</span><span class="s1">&#39;-533725162&#39;</span><span class="p">],</span> <span class="n">orient</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">)</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;1-533725161&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">submethod</span><span class="p">]</span>
+        <span class="n">submethod_comment</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="s1">&#39;1-533725170&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="n">parameter_comments</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">()</span>
+        <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="s1">&#39;-533725169&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">orient</span><span class="o">=</span><span class="s2">&quot;index&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">df</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="n">parameter_comments</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">rename</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;1-533725167&quot;</span><span class="p">:</span><span class="s2">&quot;comment&quot;</span><span class="p">,</span> <span class="s2">&quot;1-533725168&quot;</span><span class="p">:</span><span class="s2">&quot;parameter&quot;</span><span class="p">})[[</span><span class="s2">&quot;parameter&quot;</span><span class="p">,</span> <span class="s2">&quot;comment&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+        
+        <span class="k">return</span> <span class="n">submethod_comment</span><span class="p">,</span> <span class="n">parameter_comments</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__generate_init</span><span class="p">():</span>
+        <span class="c1"># get output directory for resources</span>
+        <span class="n">output_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s2">&quot;venus_resources&quot;</span><span class="p">)</span>
+
+        <span class="c1"># loop over all submethod libraries</span>
+        <span class="n">init_code</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">pathlist</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">output_directory</span><span class="p">)</span><span class="o">.</span><span class="n">rglob</span><span class="p">(</span><span class="s1">&#39;*.py&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">pathlist</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span> <span class="o">==</span> <span class="s2">&quot;__liquid_classes__&quot;</span><span class="p">:</span>
+                <span class="n">init_code</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;from .</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2"> import LiquidClasses</span><span class="se">\n</span><span class="s2">&quot;</span> 
+
+            <span class="k">if</span> <span class="s2">&quot;__layout__&quot;</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">:</span>
+                <span class="n">layout_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;__layout__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">init_code</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;from .</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2"> import </span><span class="si">{</span><span class="n">layout_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}{</span><span class="n">layout_name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+
+            <span class="k">if</span> <span class="s2">&quot;__smt__&quot;</span> <span class="ow">in</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="p">:</span>
+                <span class="n">smt_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;__smt__&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+                <span class="n">init_code</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot;from .</span><span class="si">{</span><span class="n">path</span><span class="o">.</span><span class="n">stem</span><span class="si">}</span><span class="s2"> import </span><span class="si">{</span><span class="n">smt_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}{</span><span class="n">smt_name</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span><span class="si">}</span><span class="s2"> </span><span class="se">\n</span><span class="s2">&quot;</span>
+
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_directory</span><span class="p">,</span> <span class="s2">&quot;__init__.py&quot;</span><span class="p">),</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">init_code</span><span class="p">)</span>
+    
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__hex_converter</span><span class="p">(</span><span class="n">match</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">match</span><span class="o">.</span><span class="n">group</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="mi">16</span><span class="p">))</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__gen_valid_identifier</span><span class="p">(</span><span class="n">seq</span><span class="p">):</span>
+        <span class="c1"># get an iterator</span>
+        <span class="n">itr</span> <span class="o">=</span> <span class="nb">iter</span><span class="p">(</span><span class="n">seq</span><span class="p">)</span>
+        <span class="c1"># pull characters until we get a legal one for first in identifer</span>
+        <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">itr</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span> <span class="ow">or</span> <span class="n">ch</span><span class="o">.</span><span class="n">isalpha</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="n">ch</span>
+                <span class="k">break</span>
+        <span class="c1"># pull remaining characters and yield legal ones for identifier</span>
+        <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">itr</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">ch</span> <span class="o">==</span> <span class="s1">&#39;_&#39;</span> <span class="ow">or</span> <span class="n">ch</span><span class="o">.</span><span class="n">isalpha</span><span class="p">()</span> <span class="ow">or</span> <span class="n">ch</span><span class="o">.</span><span class="n">isdigit</span><span class="p">():</span>
+                <span class="k">yield</span> <span class="n">ch</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">__sanitize_identifier</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">__gen_valid_identifier</span><span class="p">(</span><span class="n">name</span><span class="p">))</span></div>
+
+        
+</pre></div>
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../index.html">pyVenus</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">pyVenus</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation overview</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>document.getElementById('searchbox').style.display = "block"</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, Benjamin Wohl.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 5.3.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

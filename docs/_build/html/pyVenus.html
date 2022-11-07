@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>pyVenus package &mdash; pyVenus  documentation</title>
+      <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="./" id="documentation_options" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/sphinx_highlight.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="pyVenus" href="modules.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+            <a href="index.html" class="icon icon-home"> pyVenus
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">pyVenus</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">pyVenus package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyVenus.connection">pyVenus.connection module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyVenus.connection.Connection"><code class="docutils literal notranslate"><span class="pre">Connection</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyVenus.data_types">pyVenus.data_types module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyVenus.data_types.Array"><code class="docutils literal notranslate"><span class="pre">Array</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyVenus.data_types.Device"><code class="docutils literal notranslate"><span class="pre">Device</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyVenus.data_types.Liquidclass"><code class="docutils literal notranslate"><span class="pre">Liquidclass</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyVenus.data_types.Sequence"><code class="docutils literal notranslate"><span class="pre">Sequence</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pyVenus.data_types.Variable"><code class="docutils literal notranslate"><span class="pre">Variable</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyVenus.helpers">pyVenus.helpers module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyVenus.helpers.Helpers"><code class="docutils literal notranslate"><span class="pre">Helpers</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyVenus.resources">pyVenus.resources module</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#pyVenus.resources.Resources"><code class="docutils literal notranslate"><span class="pre">Resources</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#module-pyVenus">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">pyVenus</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">pyVenus</a></li>
+      <li class="breadcrumb-item active">pyVenus package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/pyVenus.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="pyvenus-package">
+<h1>pyVenus package<a class="headerlink" href="#pyvenus-package" title="Permalink to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this heading"></a></h2>
+</section>
+<section id="module-pyVenus.connection">
+<span id="pyvenus-connection-module"></span><h2>pyVenus.connection module<a class="headerlink" href="#module-pyVenus.connection" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyVenus.connection.Connection">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyVenus.connection.</span></span><span class="sig-name descname"><span class="pre">Connection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">run_environment</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'C:\\Program</span> <span class="pre">Files</span> <span class="pre">(x86)\\HAMILTON\\Bin\\HxRun.exe'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start_minimized</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/connection.html#Connection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.connection.Connection" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Connection class that starts the Venus run environment and takes care of data exchange to python environment</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.connection.Connection.close">
+<span class="sig-name descname"><span class="pre">close</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/connection.html#Connection.close"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.connection.Connection.close" title="Permalink to this definition"></a></dt>
+<dd><p>Close connection and shut down run environment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.connection.Connection.execute">
+<span class="sig-name descname"><span class="pre">execute</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">HSLcode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">definitions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/pyVenus/connection.html#Connection.execute"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.connection.Connection.execute" title="Permalink to this definition"></a></dt>
+<dd><p>Send HSL code and/or variable/object defintions to the Venus environment and execute them</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>HSLcode</strong> (<em>str</em><em>, </em><em>optional</em>) – HSL code to execute. Defaults to “”.</p></li>
+<li><p><strong>definitions</strong> (<em>str</em><em>, </em><em>optional</em>) – Variable or object definitions. Defaults to “”.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Command counter ID for this execution</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyVenus.data_types">
+<span id="pyvenus-data-types-module"></span><h2>pyVenus.data_types module<a class="headerlink" href="#module-pyVenus.data_types" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyVenus.data_types.Array">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyVenus.data_types.</span></span><span class="sig-name descname"><span class="pre">Array</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyVenus.connection.Connection" title="pyVenus.connection.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">list</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Array"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Array" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">list</span></code></p>
+<p>Replicates functionality of Venus arrays in python. Expands basic list type from python.</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Array.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#pyVenus.data_types.Array.name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the name of the array in the Venus environment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Array.pull">
+<span class="sig-name descname"><span class="pre">pull</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Array.pull"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Array.pull" title="Permalink to this definition"></a></dt>
+<dd><p>Pull current state of the array from the Venus environment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Array.push">
+<span class="sig-name descname"><span class="pre">push</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Array.push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Array.push" title="Permalink to this definition"></a></dt>
+<dd><p>Push current state of the array to the Venus environment</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyVenus.data_types.Device">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyVenus.data_types.</span></span><span class="sig-name descname"><span class="pre">Device</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyVenus.connection.Connection" title="pyVenus.connection.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout_file</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'ML_STAR'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">main</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Device"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Device" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Replicate the functionality of a Venus device object in python</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Device.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#pyVenus.data_types.Device.name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the name of the device in the Venus environment</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyVenus.data_types.Liquidclass">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyVenus.data_types.</span></span><span class="sig-name descname"><span class="pre">Liquidclass</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Liquidclass"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Liquidclass" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Python class representing a Venus liquid class</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Liquidclass.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#pyVenus.data_types.Liquidclass.name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the name of the liquid class in the liquid class database</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyVenus.data_types.</span></span><span class="sig-name descname"><span class="pre">Sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyVenus.connection.Connection" title="pyVenus.connection.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">copy</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence"><span class="pre">Sequence</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">deck_sequence</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Replicates functionality of a Venus sequence in python</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.add">
+<span class="sig-name descname"><span class="pre">add</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labware</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">position</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">at_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence"><span class="pre">Sequence</span></a></span></span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.add"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.add" title="Permalink to this definition"></a></dt>
+<dd><p>Add a new item (defined by labware ID and position) to the sequence</p>
+<p>If the ad_index parameter is omitted the new item is appended at the end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labware</strong> (<em>str</em>) – Venus labware ID</p></li>
+<li><p><strong>position</strong> (<em>str</em>) – Position on the labware</p></li>
+<li><p><strong>at_index</strong> (<em>int</em><em>, </em><em>optional</em>) – One-based position index where the item should be added. Defaults to None which will append to the end.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the updated sequence</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence">Sequence</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.clear">
+<span class="sig-name descname"><span class="pre">clear</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence"><span class="pre">Sequence</span></a></span></span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.clear"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.clear" title="Permalink to this definition"></a></dt>
+<dd><p>Remove all items from a sequence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><p>Returns the updated sequence</p>
+</dd>
+<dt class="field-even">Return type</dt>
+<dd class="field-even"><p><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence">Sequence</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.current">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">current</span></span><a class="headerlink" href="#pyVenus.data_types.Sequence.current" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the current position of the sequence (i.e. next available position)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.end">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">end</span></span><a class="headerlink" href="#pyVenus.data_types.Sequence.end" title="Permalink to this definition"></a></dt>
+<dd><p>Get or set the end position of the sequence (i.e. the last position to process)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.from_dataframe">
+<span class="sig-name descname"><span class="pre">from_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dataframe</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">DataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence"><span class="pre">Sequence</span></a></span></span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.from_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.from_dataframe" title="Permalink to this definition"></a></dt>
+<dd><p>Update the content of the sequence with the information from the dataframe</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dataframe</strong> (<em>Pandas.DataFrame</em>) – The dataframe to use for the update. The dataframe needs to contain two columns labelled ‘labware’ and ‘position’</p></li>
+<li><p><strong>append</strong> (<em>Optional</em><em>, </em><em>bool</em>) – Append to the existing sequence (instead of replacing its content)?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the updated sequence</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence">Sequence</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.from_list">
+<span class="sig-name descname"><span class="pre">from_list</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">labware</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">positions</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">list</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">append</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence"><span class="pre">Sequence</span></a></span></span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.from_list"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.from_list" title="Permalink to this definition"></a></dt>
+<dd><p>Update the content of the sequence to the give lists of labware and positions</p>
+<p>If the two lists do not have the same length then the shorter one is recycled to the full length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>labware</strong> (<em>list</em>) – List of Venus labware IDs</p></li>
+<li><p><strong>positions</strong> (<em>list</em>) – List of position IDs on the specified labware IDs</p></li>
+<li><p><strong>append</strong> (<em>Optional</em><em>, </em><em>bool</em>) – Append to the existing sequence (instead of replacing its content)?</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the updated the sequence</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence">Sequence</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.get_dataframe">
+<span class="sig-name descname"><span class="pre">get_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_position_data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">DataFrame</span></span></span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.get_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.get_dataframe" title="Permalink to this definition"></a></dt>
+<dd><p>Returns the current content of the sequence as a pandas dataframe</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include_position_data</strong> (<em>bool</em><em>, </em><em>optional</em>) – Include for each item in the sequence the x,y,z deck coordinate and rotational angle? Defaults to False.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#pyVenus.data_types.Sequence.name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the name of the sequence in the Venus environment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.pull">
+<span class="sig-name descname"><span class="pre">pull</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.pull"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.pull" title="Permalink to this definition"></a></dt>
+<dd><p>Pull the current state of the sequence to the Venus environment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.push">
+<span class="sig-name descname"><span class="pre">push</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.push" title="Permalink to this definition"></a></dt>
+<dd><p>Push the current state of the sequence to the Venus environment</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.remaining">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">remaining</span></span><a class="headerlink" href="#pyVenus.data_types.Sequence.remaining" title="Permalink to this definition"></a></dt>
+<dd><p>Get the remaining positions in the sequence (end - (current - 1))</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.remove">
+<span class="sig-name descname"><span class="pre">remove</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">at_index</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence"><span class="pre">Sequence</span></a></span></span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.remove"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.remove" title="Permalink to this definition"></a></dt>
+<dd><p>Remove an item from the sequence at the specified index (one-based)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>at_index</strong> (<em>int</em>) – One-based index of the position to remove</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the updated sequence</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence">Sequence</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.set_current">
+<span class="sig-name descname"><span class="pre">set_current</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">current</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence"><span class="pre">Sequence</span></a></span></span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.set_current"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.set_current" title="Permalink to this definition"></a></dt>
+<dd><p>Update the current position of the sequence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>current</strong> (<em>int</em>) – New value for current position</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the updated sequence</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence">Sequence</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.set_end">
+<span class="sig-name descname"><span class="pre">set_end</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">end</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence"><span class="pre">Sequence</span></a></span></span><a class="reference internal" href="_modules/pyVenus/data_types.html#Sequence.set_end"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Sequence.set_end" title="Permalink to this definition"></a></dt>
+<dd><p>Update the end position of the sequence</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>end</strong> (<em>int</em>) – New value for end position</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Returns the updated sequence</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#pyVenus.data_types.Sequence" title="pyVenus.data_types.Sequence">Sequence</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Sequence.total">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">total</span></span><a class="headerlink" href="#pyVenus.data_types.Sequence.total" title="Permalink to this definition"></a></dt>
+<dd><p>Get the total number of positions in the sequence (regardless of current and end position)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="pyVenus.data_types.Variable">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyVenus.data_types.</span></span><span class="sig-name descname"><span class="pre">Variable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">con</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#pyVenus.connection.Connection" title="pyVenus.connection.Connection"><span class="pre">Connection</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">value</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">float</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Variable"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Variable" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Replicates functionality of basic Venus variables (i.e. string, integer, float) in python</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Variable.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#pyVenus.data_types.Variable.name" title="Permalink to this definition"></a></dt>
+<dd><p>Get the name of the variable in the Venus environment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Variable.pull">
+<span class="sig-name descname"><span class="pre">pull</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Variable.pull"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Variable.pull" title="Permalink to this definition"></a></dt>
+<dd><p>Pull the current state of the variable from the Venus environment</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.data_types.Variable.push">
+<span class="sig-name descname"><span class="pre">push</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/pyVenus/data_types.html#Variable.push"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.data_types.Variable.push" title="Permalink to this definition"></a></dt>
+<dd><p>Push the current state of the variable to the Venus environment</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="pyVenus.data_types.Variable.value">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">value</span></span><a class="headerlink" href="#pyVenus.data_types.Variable.value" title="Permalink to this definition"></a></dt>
+<dd><p>Get and set the value of the variable</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyVenus.helpers">
+<span id="pyvenus-helpers-module"></span><h2>pyVenus.helpers module<a class="headerlink" href="#module-pyVenus.helpers" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyVenus.helpers.Helpers">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyVenus.helpers.</span></span><span class="sig-name descname"><span class="pre">Helpers</span></span><a class="reference internal" href="_modules/pyVenus/helpers.html#Helpers"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.helpers.Helpers" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Various helper functions for making the method setup easier</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.helpers.Helpers.get_well_map">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">get_well_map</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sorting_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'column-by-column'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">list</span></span></span><a class="reference internal" href="_modules/pyVenus/helpers.html#Helpers.get_well_map"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.helpers.Helpers.get_well_map" title="Permalink to this definition"></a></dt>
+<dd><p>Generate a list of alphanumeric well IDs for the specified plate type and sorting (e.g. [A1, B2, etc.])</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>plate_type</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – Plate type (6,12,24,48,96,384,1536)</p></li>
+<li><p><strong>sorting_mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Mode of traversing the plate (‘column-by-column’ or ‘row-by-row’). Defaults to “column-by-column”.</p></li>
+<li><p><strong>zero_padding</strong> (<em>bool</em><em>, </em><em>optional</em>) – Pad numeric part with a zero (e.g. A1 to A01). Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>List of well IDs</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.helpers.Helpers.numeric_to_alphanumeric">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">numeric_to_alphanumeric</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">well_number</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">sorting_mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'column-by-column'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_padding</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">str</span></span></span><a class="reference internal" href="_modules/pyVenus/helpers.html#Helpers.numeric_to_alphanumeric"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.helpers.Helpers.numeric_to_alphanumeric" title="Permalink to this definition"></a></dt>
+<dd><p>Convert a well number to a alphanumeric well ID (e.g. 1 to A1 / 96 to H12)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>well_number</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – Well number to convert</p></li>
+<li><p><strong>plate_type</strong> (<em>Union</em><em>[</em><em>int</em><em>, </em><em>str</em><em>]</em>) – Plate type (6,12,24,48,96,384,1536)</p></li>
+<li><p><strong>sorting_mode</strong> (<em>str</em><em>, </em><em>optional</em>) – Mode of traversing the plate (‘column-by-column’ or ‘row-by-row’). Defaults to “column-by-column”.</p></li>
+<li><p><strong>zero_padding</strong> (<em>bool</em><em>, </em><em>optional</em>) – Pad numeric part with a zero (e.g. A1 to A01). Defaults to False.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>Alphanumeric well ID (e.g. A1)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>str</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyVenus.resources">
+<span id="pyvenus-resources-module"></span><h2>pyVenus.resources module<a class="headerlink" href="#module-pyVenus.resources" title="Permalink to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="pyVenus.resources.Resources">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">pyVenus.resources.</span></span><span class="sig-name descname"><span class="pre">Resources</span></span><a class="reference internal" href="_modules/pyVenus/resources.html#Resources"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.resources.Resources" title="Permalink to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Static class with functions to generate python classes from Venus resources</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.resources.Resources.read_layout">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyVenus/resources.html#Resources.read_layout"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.resources.Resources.read_layout" title="Permalink to this definition"></a></dt>
+<dd><p>Reads in a Venus layout file (<a href="#id1"><span class="problematic" id="id2">*</span></a>.lay) and converts it to a python class.</p>
+<p>The generated python class is located in /venus_resources/ and will be named the same as original layout file prefixed with __layout__.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>layout</strong> (<em>str</em>) – Relative or absolute path to the layout file</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.resources.Resources.read_liquid_classes">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_liquid_classes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">include_1ml_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_5ml_channels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_96head</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_384head</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_washstations</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_default</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_custom</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">database</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'C:\\Program</span> <span class="pre">Files</span> <span class="pre">(x86)\\HAMILTON\\Config\\ML_STARLiquids.mdb'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyVenus/resources.html#Resources.read_liquid_classes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.resources.Resources.read_liquid_classes" title="Permalink to this definition"></a></dt>
+<dd><p>Reads in the default Venus liquid class database and converts it to a python class.</p>
+<p>It is possible to restrict the list of liquid classes to those fitting the system configuration.
+The generated python class is located at /venus_resources/__liquid_classes__.py</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>include_1ml_channels</strong> (<em>bool</em><em>, </em><em>optional</em>) – Load liquid classes for 1 mL channels. Defaults to True.</p></li>
+<li><p><strong>include_5ml_channels</strong> (<em>bool</em><em>, </em><em>optional</em>) – Load liquid classes for 5 mL channels. Defaults to False.</p></li>
+<li><p><strong>include_96head</strong> (<em>bool</em><em>, </em><em>optional</em>) – Load liquid classes for the 96 multiprobe head. Defaults to True.</p></li>
+<li><p><strong>include_384head</strong> (<em>bool</em><em>, </em><em>optional</em>) – Load liquid classes for the 384 multiprobe head. Defaults to False.</p></li>
+<li><p><strong>include_washstations</strong> (<em>bool</em><em>, </em><em>optional</em>) – Load liquid classes for the wash stations. Defaults to False.</p></li>
+<li><p><strong>include_default</strong> (<em>bool</em><em>, </em><em>optional</em>) – Load default liquid classes (all LCs that ship with Venus). Defaults to True.</p></li>
+<li><p><strong>include_custom</strong> (<em>bool</em><em>, </em><em>optional</em>) – Load user created liquid classes. Defaults to True.</p></li>
+<li><p><strong>database</strong> (<em>str</em><em>, </em><em>optional</em>) – Path to a non-standard liquid class database file. Defaults to r’C:Program Files (x86)HAMILTONConfigML_STARLiquids.mdb’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="pyVenus.resources.Resources.read_submethods">
+<em class="property"><span class="pre">classmethod</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">read_submethods</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">directory</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/pyVenus/resources.html#Resources.read_submethods"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#pyVenus.resources.Resources.read_submethods" title="Permalink to this definition"></a></dt>
+<dd><p>Reads in all the submethod files at the specified folder and converts them to python classes.</p>
+<p>An empty string for the directory parameter (default) loads from /smt/</p>
+<p>All python classes are generated in venus_resources/ and are given the same name as the original smt file, prefixed with __smt__</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>directory</strong> (<em>str</em><em>, </em><em>optional</em>) – The path to directory with smt files. Defaults to “”.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-pyVenus">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-pyVenus" title="Permalink to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="modules.html" class="btn btn-neutral float-left" title="pyVenus" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022, Benjamin Wohl.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
