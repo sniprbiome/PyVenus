@@ -27,7 +27,6 @@ function StrEscape(variable strString) variable {
    StrReplace(strString, "\'", "\\\\\'");
 
    return(strString);
-
 }
 
 
@@ -64,7 +63,7 @@ function JSONarray_element(variable & strJSON, variable value) void {
    if(GetType(value) == "f")
       strJSON = strJSON + "\n" + FStr(value) + ",";
    if(GetType(value) == "s")
-      strJSON = strJSON + "\n\"" + value + "\",";
+      strJSON = strJSON + "\n\"" + StrEscape(value) + "\",";
 }
 
 function JSONarray_end(variable & strJSON) void {
@@ -258,6 +257,7 @@ method main()
       addJSON_variable(___JSON___, err.GetId(), "___ERROR_ID___");
       ___ERROR_DESCRIPTION___ = err.GetDescription();
       StrReplace(___ERROR_DESCRIPTION___, "\n", " ");
+      StrReplace(___ERROR_DESCRIPTION___, "\r", " ");
       addJSON_variable(___JSON___, ___ERROR_DESCRIPTION___, "___ERROR_DESCRIPTION___");
       
       addJSON_array(___JSON___, err.GetData(), "___ERROR_DATA___");
@@ -270,4 +270,4 @@ method main()
    }
       
 }
-// $$author=BenjaminWohl$$valid=0$$time=2022-10-28 23:32$$checksum=86d41a79$$length=089$$
+// $$author=BenjaminWohl$$valid=0$$time=2022-11-07 14:17$$checksum=0519d1be$$length=089$$
