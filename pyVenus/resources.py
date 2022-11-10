@@ -192,6 +192,8 @@ class Resources:
         pathlist = Path(directory).rglob('*.hsi')
         submethods = []
         for path in pathlist:
+            skip_this_submethod = False
+            
             # ignore temp files
             if path.stem.startswith("~"):
                 continue
@@ -275,14 +277,29 @@ class Resources:
 
                     # throw an error on currently unsupported data types
                     if parameters[-1]["hsl_type"] == "sequence" and parameters[-1]["is_array"]:
-                        raise Exception("Arrays of sequences are currently not yet supported!")
-                    if parameters[-1]["hsl_type"] in ["file", "timer", "event", "object", "resource"]:
-                        raise Exception("HSL datatype '" + parameters[-1]["hsl_type"] + "' is not yet supported!")
-                    if parameters[-1]["hsl_type"] != "variable" and parameters[-1]["default_value"] is not None:
-                        raise Exception("Default values are currently only supported for variables!")
-                    if parameters[-1]["direction"] != "in" and parameters[-1]["default_value"] is not None:
-                        raise Exception("Default values are currently only supported for input variables!")
+                        warnings.warn(f"Error in {path.stem}.smt ({f.group(1)}): Arrays of sequences are currently not yet supported!")
+                        skip_this_submethod = True
+                        break
 
+                    if parameters[-1]["hsl_type"] in ["file", "timer", "event", "object", "resource"]:
+                        warnings.warn(f"Error in {path.stem}.smt ({f.group(1)}): HSL datatype '{parameters[-1]['hsl_type']}' is not yet supported! Submethod is skipped", stacklevel=2)
+                        skip_this_submethod = True
+                        break
+                        
+                    if parameters[-1]["hsl_type"] != "variable" and parameters[-1]["default_value"] is not None:
+                        warnings.warn(f"Error in {path.stem}.smt ({f.group(1)}): Default values are currently only supported for variables!")
+                        skip_this_submethod = True
+                        break
+
+                    if parameters[-1]["direction"] != "in" and parameters[-1]["default_value"] is not None:
+                        warnings.warn(f"Error in {path.stem}.smt ({f.group(1)}): Default values are currently only supported for input variables!")
+                        skip_this_submethod = True
+                        break
+
+                # jump to next submethod if error
+                if skip_this_submethod:
+                    continue
+                
                 # sort so all parameters with default values are listed at the end
                 parameters = [e for e in parameters if e['default_value'] is None] + [e for e in parameters if e['default_value'] is not None]               
 
@@ -293,7 +310,7 @@ class Resources:
                     "parameters": parameters,
                     "comment": submethod_comment
                 })
-
+            
             #add to list of SMT files
             submethods.append({
                 "name": Resources.__sanitize_identifier(path.stem.replace(" ", "_")),
