@@ -24,7 +24,7 @@ class {{ smt.name[0]|upper}}{{smt.name[1:]|lower }}:
                 , {{ p.name }}: {{ p.py_type }}
             {%- endif -%}
         {% endfor -%}):
-        """Python function generated from submethod '{{ f.name }}' in '{{ smt.name }}.smt'
+        r"""Python function generated from submethod '{{ f.name }}' in '{{ smt.name }}.smt'
 
         {{ f.comment }}
 
