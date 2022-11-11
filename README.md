@@ -3,6 +3,7 @@
 - [pyVenus](#pyvenus)
   - [Introduction](#introduction)
   - [Basic concepts](#basic-concepts)
+  - [Getting started](#getting-started)
   - [Basic example](#basic-example)
   - [Installation](#installation)
     - [Package installation](#package-installation)
@@ -49,6 +50,13 @@ While anything else, like your method logic, data handling, etc. can be done in 
 
 The beauty is that you do not need to know how pyVenus works in the background, but you simply setup submethod libraries in Venus and, after code generation, treat them like regular Python classes & functions. 
 
+## Getting started
+There are a few different resources to get you started:
+
+ - This readme file walks you through all the relevant information
+ - The example methods in this repository
+ - The full API reference: [https://sniprbiome.github.io/pyVenus](https://sniprbiome.github.io/pyVenus)
+
 ## Basic example
 
 Assume you have the following simple submethod in a library that transfers buffer to a target:
@@ -77,10 +85,12 @@ In both cases a prerequisite is to have Python (>= 3.9) and Venus (tested with V
 
 ### Package installation
 Before installing pyVenus I would recommend setting up a virtual environment. Create a new folder and run the following commands:
+
     python -m venv .venv
     ".venv/Scripts/activate.bat"
 
 After this you can install pyVenus using pip:
+
     pip install -e "git+https://github.com/sniprbiome/pyVenus#egg=pyVenus"
 
 ### Clone repository with example methods
