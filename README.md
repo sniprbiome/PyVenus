@@ -54,7 +54,7 @@ The beauty is that you do not need to know how pyVenus works in the background, 
 There are a few different resources to get you started:
 
  - This readme file walks you through all the relevant information
- - The example methods in this repository
+ - The [example methods](https://github.com/sniprbiome/pyVenus/blob/main/example_method.py) in this repository
  - The full API reference: [https://sniprbiome.github.io/pyVenus](https://sniprbiome.github.io/pyVenus)
 
 ## Basic example
