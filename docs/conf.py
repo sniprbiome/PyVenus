@@ -34,6 +34,6 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 html_theme = 'sphinx_rtd_theme'
 html_static_path = ['_static']
 
-autodoc_default_options = {
-    'special-members': '__init__'
-}
+# enable documentation of __init__() functions
+autoclass_content = 'both'
+
