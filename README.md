@@ -5,6 +5,8 @@
   - [Basic concepts](#basic-concepts)
   - [Basic example](#basic-example)
   - [Installation](#installation)
+    - [Package installation](#package-installation)
+    - [Clone repository with example methods](#clone-repository-with-example-methods)
   - [Example method](#example-method)
     - [Library import](#library-import)
     - [Initiate objects](#initiate-objects)
@@ -69,9 +71,21 @@ As you can see pyVenus is build to work well with IDEs like Visual Studio Code o
 
 ## Installation
 
-As pyVenus is an early release it has not yet been build to be a proper Python package. The best is currently to clone/download the full repository to your harddrive and then replace the example methods with your own code.
+pyVenus is not yet published to PyPI (coming soon...), so the best way to install it currently is by doing a pip install directly from the git repository. This will install it as a package into your virtual environment. If you want to run the example methods you can also clone the full repository. 
 
-Of course you need to have Venus and Python installed on your computer. 
+In both cases a prerequisite is to have Python (>= 3.9) and Venus (tested with Venus 4) installed. 
+
+### Package installation
+Before installing pyVenus I would recommend setting up a virtual environment. Create a new folder and run the following commands:
+    python -m venv .venv
+    ".venv/Scripts/activate.bat"
+
+After this you can install pyVenus using pip:
+    pip install -e "git+https://github.com/sniprbiome/pyVenus#egg=pyVenus"
+
+### Clone repository with example methods
+
+Clone/download the full repository to your harddrive (e.g. using GitHub Desktop).
 
 pyVenus has a few dependencies that need to be installed and this is best done in a virtual environment. Here is an example using venv, but other solutions would work as well. 
 
