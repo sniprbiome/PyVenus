@@ -1,4 +1,5 @@
 # pyVenus
+*Version: 1.0.0*
 
 - [pyVenus](#pyvenus)
   - [Introduction](#introduction)
