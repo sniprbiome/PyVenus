@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='pyVenus',
-    version='1.1.0',    
+    version='1.0.0',    
     description='A python interface to the Venus environment, used to program Hamilton liquid handlers',
     url='https://github.com/sniprbiome/pyVenus',
     author='Benjamin Wohl',
