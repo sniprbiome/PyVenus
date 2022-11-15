@@ -1,0 +1,5 @@
+recursive-include pyVenus *.chm
+recursive-include pyVenus *.chw
+recursive-include pyVenus *.hsl
+recursive-include pyVenus *.j2
+recursive-include pyVenus *.stp
