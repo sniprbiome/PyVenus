@@ -1,0 +1,20 @@
+
+// this ALWAYS GENERATED file contains the sub-method library header
+// Generated at 22/10/2022 21:53:48
+
+#pragma once
+#ifndef HSL_RUNTIME
+namespace CHANNELS1ML_8 {
+function _InitLibrary() { }
+function _ExitLibrary() { }
+function aspirate( device & ML_STAR, sequence & positions, variable volume, variable liquid_class, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable trouch_off_height, variable pLLD_sensitivity, variable max_height_difference, variable aspiration_mode, variable mix_cycles, variable mix_position, variable mix_volume ) void { }
+function dispense( device & ML_STAR, sequence & positions, variable volume, variable dispense_remaining, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable touch_off_height, variable side_touch, variable minimize_z_height, variable mix_cycles, variable mix_position, variable mix_volume ) void { }
+function tip_eject( device & ML_STAR, sequence & positions, variable default_waste, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void { }
+function tip_pickup( device & ML_STAR, sequence & positions, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void { }
+} // namespace
+#endif
+
+#ifdef HSL_RUNTIME
+#include __filename__ ".hsi"
+#endif
+// $$author=BenjaminWohl$$valid=0$$time=2022-10-22 21:53$$checksum=14f2cf97$$length=089$$

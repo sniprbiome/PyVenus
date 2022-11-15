@@ -1,0 +1,18 @@
+
+// this ALWAYS GENERATED file contains the sub-method library header
+// Generated at 05/11/2022 22:00:06
+
+#pragma once
+#ifndef HSL_RUNTIME
+namespace PIPETTING {
+function _InitLibrary() { }
+function _ExitLibrary() { }
+function add_buffer( device & star_device, sequence source, sequence & target, sequence & tips, variable volume ) void { }
+function input_to_dilution( device & ML_STAR, sequence source_positions, sequence target_positions, sequence & tip_positions, variable volume, variable & number_of_transfers ) void { }
+} // namespace
+#endif
+
+#ifdef HSL_RUNTIME
+#include __filename__ ".hsi"
+#endif
+// $$author=BenjaminWohl$$valid=0$$time=2022-11-05 22:00$$checksum=86584054$$length=089$$

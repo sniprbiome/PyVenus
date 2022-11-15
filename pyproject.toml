@@ -31,6 +31,10 @@ example = ["openpyxl"]
 homepage = "https://github.com/sniprbiome/pyVenus"
 documentation = "https://sniprbiome.github.io/pyVenus/"
 
+[project.scripts]
+pyvenus-setup-example-method = "pyVenus.scripts:setup_example_method"
+pyvenus-init = "pyVenus.scripts:init"
+
 [tool.bumpver]
 current_version = "1.0.0"
 version_pattern = "MAJOR.MINOR.PATCH[PYTAGNUM]"
