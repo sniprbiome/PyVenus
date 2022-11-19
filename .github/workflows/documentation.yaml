@@ -12,7 +12,7 @@ jobs:
           pip install -r requirements.txt
       - name: Sphinx update API
         run: |
-          sphinx-apidoc -f -o docs PyVenus
+          sphinx-apidoc -f -o docs src/PyVenus
       - name: Sphinx build
         run: |
           sphinx-build docs _build
