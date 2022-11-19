@@ -1,5 +1,5 @@
 # import libraries
-from pyVenus import Connection,Variable,Sequence,Device,Helpers
+from PyVenus import Connection,Variable,Sequence,Device,Helpers
 import pandas as pd
 
 # import generated code

@@ -1,6 +1,6 @@
-# pyVenus
+# PyVenus
 
-- [pyVenus](#pyvenus)
+- [PyVenus](#pyvenus)
   - [Introduction](#introduction)
   - [Basic concepts](#basic-concepts)
   - [Getting started](#getting-started)
@@ -30,11 +30,11 @@
 
 ## Introduction
 
-pyVenus is developed as an interface between the Hamilton Venus software and Python. If you don't have a Hamilton liquid handler and are not familiar with Venus this might not be for you :) 
+PyVenus is developed as an interface between the Hamilton Venus software and Python. If you don't have a Hamilton liquid handler and are not familiar with Venus this might not be for you :) 
 
 **The following assumes that you have a basic understanding of Venus and using submethod libraries.**
 
-Both Python and Venus have their strength and weaknesses and pyVenus is trying to create synergy between them. The basic idea is that you can exploit the strength of Venus when it comes to anything relating to controlling your liquid handler:
+Both Python and Venus have their strength and weaknesses and PyVenus is trying to create synergy between them. The basic idea is that you can exploit the strength of Venus when it comes to anything relating to controlling your liquid handler:
 
 - Setup a decklayout and define sequences
 - Define liquid classes
@@ -45,59 +45,59 @@ While anything else, like your method logic, data handling, etc. can be done in 
 ## Basic concepts
 
 1. The first step is to define one or more submethod libraries in Venus. This could be simple (or more complex) pipetting functions, but also simple wrappers for any functionality in Venus. 
-2. pyVenus parses these libraries and generates corresponding Python classes.
+2. PyVenus parses these libraries and generates corresponding Python classes.
 3. These classes allow you to call the Venus submethods as if they were native Python code. 
 
-The beauty is that you do not need to know how pyVenus works in the background, but you simply setup submethod libraries in Venus and, after code generation, treat them like regular Python classes & functions. 
+The beauty is that you do not need to know how PyVenus works in the background, but you simply setup submethod libraries in Venus and, after code generation, treat them like regular Python classes & functions. 
 
 ## Getting started
 There are a few different resources to get you started:
 
  - This readme file walks you through all the relevant information
- - The [example methods](https://github.com/sniprbiome/pyVenus/blob/main/example_method.py) in this repository
- - The full API reference: [https://sniprbiome.github.io/pyVenus](https://sniprbiome.github.io/pyVenus)
+ - The [example methods](https://github.com/sniprbiome/PyVenus/blob/main/example_method.py) in this repository
+ - The full API reference: [https://sniprbiome.github.io/PyVenus](https://sniprbiome.github.io/PyVenus)
 
 ## Basic example
 
 Assume you have the following simple submethod in a library that transfers buffer to a target:
 
-![](/pyVenus/images/submethod_example1.png)
+![](/PyVenus/images/submethod_example1.png)
 
 The submethod has a number of input and output parameters as shown here:
 
-![](/pyVenus/images/submethod_example2.png)
+![](/PyVenus/images/submethod_example2.png)
 
-pyVenus generates a python class from the submethod library that has a function of the same name as the submethod:
+PyVenus generates a python class from the submethod library that has a function of the same name as the submethod:
 
-![](/pyVenus/images/smt_class_example1.png)
+![](/PyVenus/images/smt_class_example1.png)
 
 The different data types of Venus are implemented through [corresponding python classes](#data-types).
 
-As you can see pyVenus is build to work well with IDEs like Visual Studio Code or PyCharm, giving you all the relevant information through IntelliSense as you type your code.
+As you can see PyVenus is build to work well with IDEs like Visual Studio Code or PyCharm, giving you all the relevant information through IntelliSense as you type your code.
 
-![](/pyVenus/images/example_intellisense.gif)
+![](/PyVenus/images/example_intellisense.gif)
 
 ## Installation
 
-pyVenus is not yet published to PyPI (coming soon...), so the best way to install it currently is by doing a pip install directly from the git repository. This will install it as a package into your virtual environment. If you want to run the example methods you can also clone the full repository. 
+PyVenus is not yet published to PyPI (coming soon...), so the best way to install it currently is by doing a pip install directly from the git repository. This will install it as a package into your virtual environment. If you want to run the example methods you can also clone the full repository. 
 
 In both cases a prerequisite is to have Python (>= 3.9) and Venus (tested with Venus 4) installed. 
 
 ### Package installation
-Before installing pyVenus I would recommend setting up a virtual environment. Create a new folder and run the following commands:
+Before installing PyVenus I would recommend setting up a virtual environment. Create a new folder and run the following commands:
 
     python -m venv .venv
     ".venv/Scripts/activate.bat"
 
-After this you can install pyVenus using pip:
+After this you can install PyVenus using pip:
 
-    pip install -e "git+https://github.com/sniprbiome/pyVenus#egg=pyVenus"
+    pip install -e "git+https://github.com/sniprbiome/PyVenus#egg=PyVenus"
 
 ### Clone repository with example methods
 
 Clone/download the full repository to your harddrive (e.g. using GitHub Desktop).
 
-pyVenus has a few dependencies that need to be installed and this is best done in a virtual environment. Here is an example using venv, but other solutions would work as well. 
+PyVenus has a few dependencies that need to be installed and this is best done in a virtual environment. Here is an example using venv, but other solutions would work as well. 
 
 Run the following commands in the terminal to install all dependencies. 
 
@@ -113,22 +113,22 @@ Run this command in the same terminal window:
 
 After this you should see a new folder called ```venus_resources``` and you are ready to start the example method. 
 
-As explained above pyVenus works best when used together with an IDE like [VS code](https://code.visualstudio.com/) or [PyCharm](https://www.jetbrains.com/pycharm/). 
+As explained above PyVenus works best when used together with an IDE like [VS code](https://code.visualstudio.com/) or [PyCharm](https://www.jetbrains.com/pycharm/). 
 
 ## Example method
 
-Let's have a step-by-step look at the example method (```example_method.py```) that comes with pyVenus.
+Let's have a step-by-step look at the example method (```example_method.py```) that comes with PyVenus.
 
 ### Library import
 
-First we import the required functionality from pyVenus as well as the pandas library ([used for an example at the end](#working-with-sequences))
+First we import the required functionality from PyVenus as well as the pandas library ([used for an example at the end](#working-with-sequences))
 
 ```python
-from pyVenus import Connection,Variable,Sequence,Device,Helpers
+from PyVenus import Connection,Variable,Sequence,Device,Helpers
 import pandas as pd
 ```
 
-Next all the python classes generated by pyVenus are imported. To update these resources run ``update_resources.py`` ([more on that later](#updating-generated-code)).
+Next all the python classes generated by PyVenus are imported. To update these resources run ``update_resources.py`` ([more on that later](#updating-generated-code)).
 
 ```python
 from venus_resources import Example_layout as lay
@@ -140,12 +140,12 @@ from venus_resources import Pipetting
 
 - **Example_layout** is a representation of the Venus deck layout (```example_layout.lay```) and gives easy access to deck sequence and labware item names. 
 - **LiquidClasses** gives access to the liquid class names extracted from the database.
-- **Ml_star**, **Channels1ml_8**, and **Pipetting** are submethod library examples that ship with pyVenus.
+- **Ml_star**, **Channels1ml_8**, and **Pipetting** are submethod library examples that ship with PyVenus.
 
 Both the liquid and deck layout classes are not meant for executing any code, but simple are helpers to access information from these files in your method. For example, instead of writing out the name of a liquid class you can simply include a reference to it via the liquid class object, removing the need for guesswork or copying strings in-between Venus and Python. 
 It also allows for easy searching via Intellisense, as shown in the example below.
 
-![](/pyVenus/images/example_intellisenseLC.gif)
+![](/PyVenus/images/example_intellisenseLC.gif)
 
 ### Initiate objects
 
@@ -181,11 +181,11 @@ hitpicking_dispense = Sequence(con, name=lay.Sequences.plate_hitpicking, deck_se
 waste_ch = Sequence(con, lay.Sequences.Waste, deck_sequence=True)
 ```
 
-It is important to understand that pyVenus itself does not implement any of the functions present in Venus (e.g. aspiration). Instead functions from Venus are made available by creating submethod libraries, which can then be called in Python using pyVenus. 
+It is important to understand that PyVenus itself does not implement any of the functions present in Venus (e.g. aspiration). Instead functions from Venus are made available by creating submethod libraries, which can then be called in Python using PyVenus. 
 
-pyVenus ships with a few example libraries that examplify the usage. One is the ```ml_star.smt``` submethod library, which currently only contains one submethod (```initialize```), which is a simple wrapper for the Initialize command for the STAR. 
+PyVenus ships with a few example libraries that examplify the usage. One is the ```ml_star.smt``` submethod library, which currently only contains one submethod (```initialize```), which is a simple wrapper for the Initialize command for the STAR. 
 
-![](/pyVenus/images/smt_class_example2.png)
+![](/PyVenus/images/smt_class_example2.png)
 
 In the future we can add additional functions related to the STAR, like enabling aspiration monitoring (MAD).
 
@@ -211,7 +211,7 @@ plate_dilution.current = 1
 
 It is important to note these functions have many more parameters (screenshot below), thus giving access to all the functionality of Venus single steps involved. The reason we can use only a small set of parameters is because for most of the parameters a default value was definined in Venus as [explained later](#defining-default-values).
 
-![](/pyVenus/images/aspiration_step_example.png)
+![](/PyVenus/images/aspiration_step_example.png)
 
 A different approach is to define a submethod that is setup to do a trough-to-plate transfer and call this directly. I envision this as the preferred approach, i.e. defining the functionality you need in Venus in submethods. 
 
@@ -222,11 +222,11 @@ smt_pip.add_buffer(star_device, buffer, plate_dilution, tips_1000F, 100)
 ### Output parameters
 It is of course also possible to define output parameters on submethods and use them to return data from Venus to Python. This simple submethods transfers multiple 96-well plates into a single plate and returns the number of plates transferred as an output parameter. 
 
-![](/pyVenus/images/output_example_1.png)
+![](/PyVenus/images/output_example_1.png)
 
-![](/pyVenus/images/output_example_2.png)
+![](/PyVenus/images/output_example_2.png)
 
-To receive a value back from Venus you need to define it as one of the pyVenus data types (Sequence, Variable, Array), that mirror the corresponding data types in Venus. 
+To receive a value back from Venus you need to define it as one of the PyVenus data types (Sequence, Variable, Array), that mirror the corresponding data types in Venus. 
 
 ```python
 number_of_transfers = Variable(con)
@@ -243,7 +243,7 @@ If both lists are not of the same length the shorter one is recycled as illustra
  - For a sequence of A1 in three different plates: ["plate1", "plate2", "plate3"], ["A1"]
  - For a sequence of A1 through C1 on one plate: ["plate1"], ["A1", "B1", "C1"]
 
-pyVenus comes with some helpers to easily generate list of positions fitting with common plate formats: ```Helpers.get_well_map()```
+PyVenus comes with some helpers to easily generate list of positions fitting with common plate formats: ```Helpers.get_well_map()```
 Labware IDs valid for the current deck layout can easily be retrieved via the deck layout class.
 
 As shown below, the sequences can just be initiated inline with the call to the pipetting submethod:
@@ -272,9 +272,9 @@ Both the ```.from_list()```and ```.from_dataframe()``` method support the option
 
 A common problem with hitpicking applications is that the input file will not be sorted for pipetting. This can easily be seen with the sequence generated above:
 
-![](/pyVenus/images/example_hitpicking1.gif)
+![](/PyVenus/images/example_hitpicking1.gif)
 
-This can easily be solved in pyVenus by combining the power of pandas dataframes with sequences. Using method chaining the required sequence can be generated in one easy-to-read code block:
+This can easily be solved in PyVenus by combining the power of pandas dataframes with sequences. Using method chaining the required sequence can be generated in one easy-to-read code block:
 
  - An empty sequence is initiated
  - All positions from the worklist file are added
@@ -292,13 +292,13 @@ hitpicking_aspirate = Sequence(con)
 ) 
 ```
 
-![](/pyVenus/images/example_hitpicking2.gif)
+![](/PyVenus/images/example_hitpicking2.gif)
 
 The pandas library includes a multitude of functions to manipule dataframes. By using the same basic steps all of these functions are available for manipulating sequences. 
 
 ### Close connection
 
-The final step of a pyVenus method should be the ```.close()``` command, which shuts down the Hamilton Run Environment. 
+The final step of a PyVenus method should be the ```.close()``` command, which shuts down the Hamilton Run Environment. 
 
 ```python
 con.close()
@@ -311,7 +311,7 @@ Venus has the following main data types:
  - Device (the ML_STAR device for the robot or the HxFan device for the HEPA filter)
  - Variable
  - Sequence
- - Array of Variables (simply called Array in pyVenus)
+ - Array of Variables (simply called Array in PyVenus)
  - Array of Sequences
 
 All of these (except for Array of Sequences, which is currently not available) are implemented in Python through corresponding classes. This neccessary for supplying the correct information to Venus and to make it possibel to define output parameters in Python. 
@@ -331,7 +331,7 @@ Lastly, the ```main``` parameter should only be True for the main robot device.
 hepa_device = Device(con, path_and_filename_of_deck_layout, "HxFan", False)
 ```
 
-In principle, pyVenus should also work for a Nimbus or Vantage where the robot device will have a different name, but this has not been tested yet.
+In principle, PyVenus should also work for a Nimbus or Vantage where the robot device will have a different name, but this has not been tested yet.
 
 ### Sequence
 
@@ -343,7 +343,7 @@ More information on how to work with sequences can be found in the discussion of
 
 A variable works just like a standard Python variable. The difference is that it has to be initiated like a class (```var = Variable(starting_value)```) and its value has be set using the value property (```var.value = new_value```)
 
-Using the ```Variable``` class from pyVenus is only required when working with output parameters. Otherwise, simply specifying the value or passing a normal Python variable also works. All three examples below give the same result:
+Using the ```Variable``` class from PyVenus is only required when working with output parameters. Otherwise, simply specifying the value or passing a normal Python variable also works. All three examples below give the same result:
 
 ```python
 smt_ch.aspirate(star_device, buffer, 100, lc.lcHighVolumeFilter_Water_DispenseSurface_Empty, increment_sequence=0)
@@ -357,7 +357,7 @@ smt_ch.aspirate(star_device, buffer, volume, lc.lcHighVolumeFilter_Water_Dispens
 
 ### Array
 
-The Array class in pyVenus extends the build in functionality of lists. This means that once initialized it can be treated like any other list in Python. 
+The Array class in PyVenus extends the build in functionality of lists. This means that once initialized it can be treated like any other list in Python. 
 
 ```python
 test = Array(con, [1,2,3,4])
@@ -372,26 +372,26 @@ print(test)
 
 ## Defining default values
 
-Through pyVenus it is possible to define default values for parameters in submethods. This makes your code more readable because in Python you only need to specify the parameters where you deviate from the default values.
+Through PyVenus it is possible to define default values for parameters in submethods. This makes your code more readable because in Python you only need to specify the parameters where you deviate from the default values.
 
 Currently this is only possible for a ```Variable``` of type ```Input```
 
 All that needs to be done is to include ```{{default:value_to_use}}``` in the description of the parameter as shown below. String values need to be enclosed in quotes. 
 
-![](/pyVenus/images/example_default_values.png)
+![](/PyVenus/images/example_default_values.png)
 
 This is translated to default values in the method definition in Python:
 
-![](/pyVenus/images/example_default_values2.png)
+![](/PyVenus/images/example_default_values2.png)
 
 ## Updating generated code
 
-Whenever a change is made to something in Venus (e.g. submethod library, deck layout, new liquid class) the code generated by pyVenus needs to be updated. 
+Whenever a change is made to something in Venus (e.g. submethod library, deck layout, new liquid class) the code generated by PyVenus needs to be updated. 
 
-For each of the different resource types exists a method in the ```Resources``` class. pyVenus includes an example in ```update_resources.py```. 
+For each of the different resource types exists a method in the ```Resources``` class. PyVenus includes an example in ```update_resources.py```. 
 
 ```python
-from pyVenus import Resources
+from PyVenus import Resources
 
 Resources.read_layout("example_layout.lay")
 Resources.read_liquid_classes(True,False,True,False,False, include_custom=False)
@@ -406,12 +406,12 @@ This will have to be customized to your method and system configuration:
 
 By default the ```.read_submethods()``` function will convert all submethod libraries found at ```./smt/```. But you can specify a path through an optional parameter if you want to convert submethod libraries in other locations. 
 
-In many cases this makes it easy to use existing drivers for Hamilton or third-party devices in pyVenus. Many of those include a submethod library. As an example the Hamilton pH module has a submethod library in this driver folder (```C:\Program Files (x86)\HAMILTON\Library\Hamilton pH Module```).
+In many cases this makes it easy to use existing drivers for Hamilton or third-party devices in PyVenus. Many of those include a submethod library. As an example the Hamilton pH module has a submethod library in this driver folder (```C:\Program Files (x86)\HAMILTON\Library\Hamilton pH Module```).
 
 The example below (see also ```example_ph_module.py```) shows how to process the submethod library, and use it to initialize the pH module. 
 
 ```python
-from pyVenus import Resources, Connection, Device, Variable
+from PyVenus import Resources, Connection, Device, Variable
 
 Resources.read_submethods(r"C:\Program Files (x86)\HAMILTON\Library\Hamilton pH Module")
 
@@ -435,15 +435,15 @@ con.close()
 
 ## How does it work
 
-When a method is designed in the graphical interface of Venus an underlying method is generated in HSL (Hamilton Standard Language). pyVenus works by passing new HSL code to an already running method and letting it execute it on the fly. Since HSL underlies the Venus environment it gives you the same capabilities as the graphical interface. 
+When a method is designed in the graphical interface of Venus an underlying method is generated in HSL (Hamilton Standard Language). PyVenus works by passing new HSL code to an already running method and letting it execute it on the fly. Since HSL underlies the Venus environment it gives you the same capabilities as the graphical interface. 
 
-The core module of pyVenus (the ```Connection``` class) takes care sending HSL code to the Venus environment and receiving results formatted in JSON. 
+The core module of PyVenus (the ```Connection``` class) takes care sending HSL code to the Venus environment and receiving results formatted in JSON. 
 
-![](/pyVenus/images/pyvenus_schematic.png)
+![](/PyVenus/images/pyvenus_schematic.png)
 
-But, lets face it nobody wants to clutter up their Python code with snipets of HSL code. Instead pyVenus uses generated Python classes as an abstraction layer to the HSL commands
+But, lets face it nobody wants to clutter up their Python code with snipets of HSL code. Instead PyVenus uses generated Python classes as an abstraction layer to the HSL commands
 
-![](/pyVenus/images/pyvenus_schematic2.png)
+![](/PyVenus/images/pyvenus_schematic2.png)
 
 ## Current status
 
