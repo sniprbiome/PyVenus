@@ -1,7 +1,7 @@
-pyVenus
+PyVenus
 =======
 
 .. toctree::
    :maxdepth: 4
 
-   pyVenus
+   PyVenus

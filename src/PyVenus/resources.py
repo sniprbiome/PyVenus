@@ -64,7 +64,7 @@ class Resources:
 
         # setup template environement
         env = Environment(
-            loader=PackageLoader('pyVenus', 'templates'),
+            loader=PackageLoader('PyVenus', 'templates'),
             autoescape=select_autoescape(['html', 'xml'])
         )
         template = env.get_template('deck_layout.py.j2')
@@ -157,7 +157,7 @@ class Resources:
 
         # setup template environement
         env = Environment(
-            loader=PackageLoader('pyVenus', 'templates'),
+            loader=PackageLoader('PyVenus', 'templates'),
             autoescape=select_autoescape(['html', 'xml'])
         )
         template = env.get_template('liquid_classes.py.j2')
@@ -321,7 +321,7 @@ class Resources:
 
         # setup template environement
         env = Environment(
-            loader=PackageLoader('pyVenus', 'templates'),
+            loader=PackageLoader('PyVenus', 'templates'),
             autoescape=select_autoescape(['html', 'xml'])
         )
         template = env.get_template('submethods.py.j2')

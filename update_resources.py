@@ -1,4 +1,4 @@
-from pyVenus import Resources
+from PyVenus import Resources
 
 Resources.read_layout("example_layout.lay")
 Resources.read_submethods()

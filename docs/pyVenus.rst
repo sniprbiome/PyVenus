@@ -1,37 +1,37 @@
-pyVenus package
+PyVenus package
 ===============
 
 Submodules
 ----------
 
-pyVenus.connection module
+PyVenus.connection module
 -------------------------
 
-.. automodule:: pyVenus.connection
+.. automodule:: PyVenus.connection
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyVenus.data\_types module
+PyVenus.data\_types module
 --------------------------
 
-.. automodule:: pyVenus.data_types
+.. automodule:: PyVenus.data_types
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyVenus.helpers module
+PyVenus.helpers module
 ----------------------
 
-.. automodule:: pyVenus.helpers
+.. automodule:: PyVenus.helpers
    :members:
    :undoc-members:
    :show-inheritance:
 
-pyVenus.resources module
+PyVenus.resources module
 ------------------------
 
-.. automodule:: pyVenus.resources
+.. automodule:: PyVenus.resources
    :members:
    :undoc-members:
    :show-inheritance:
@@ -39,7 +39,7 @@ pyVenus.resources module
 Module contents
 ---------------
 
-.. automodule:: pyVenus
+.. automodule:: PyVenus
    :members:
    :undoc-members:
    :show-inheritance:

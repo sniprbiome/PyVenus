@@ -1,0 +1,6 @@
+device ML_STAR("C:\\Program Files (x86)\\HAMILTON\\Methods\\SNIPR Biome\\MPN_assay\\MPN_assay.lay", "ML_STAR", hslTrue);
+function __EvalExpr__()
+{
+
+}
+// $$author=BenjaminWohl$$valid=0$$time=2022-11-10 21:18$$checksum=0a488b1d$$length=091$$

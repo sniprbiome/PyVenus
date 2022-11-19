@@ -1,0 +1,6 @@
+
+function __EvalExpr__()
+{
+__DEVICE__ = ML_STAR;
+}
+// $$author=BenjaminWohl$$valid=0$$time=2022-11-10 21:18$$checksum=47284907$$length=091$$
