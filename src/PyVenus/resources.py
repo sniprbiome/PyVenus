@@ -24,34 +24,31 @@ class Resources:
         Args:
             layout (str): Relative or absolute path to the layout file
         """        
-        # get output directory for resources
-        output_directory = os.path.join(sys.path[0], "venus_resources")
-        os.makedirs(output_directory, exist_ok=True)
-
         # make sure we are working with an absolute path
         layout = os.path.abspath(layout)
 
-        # generate a safe and readable layout name
-        layout_name = cls.__sanitize_identifier(os.path.splitext(os.path.split(layout)[1])[0].lower().replace(" ","_"))
+        # get path of original layout and for generated files
+        layout_path_original = os.path.dirname(layout)
+        layout_path_generated = os.path.join(sys.path[0], "venus_resources")
+        os.makedirs(layout_path_generated, exist_ok=True)    
 
-        # set filenames and paths
-        layout_ascii = os.path.join(output_directory, os.path.splitext(os.path.split(layout)[1])[0] + ".txt")
-        layout_py = os.path.join(output_directory, "__layout__" + layout_name + ".py")
+        # get the layout name (both original and sanitized)
+        layout_name_original = os.path.splitext(os.path.split(layout)[1])[0]
+        layout_name_generated = "__layout__" + cls.__sanitize_identifier(layout_name_original.lower().replace(" ","_"))
 
         # create a copy of original deck layout
-        shutil.copyfile(layout, layout_ascii)
+        shutil.copyfile(
+            os.path.join(layout_path_original, layout_name_original + ".lay"), 
+            os.path.join(layout_path_generated, layout_name_generated + ".lay"))
+        shutil.copyfile(
+            os.path.join(layout_path_original, layout_name_original + ".res"), 
+            os.path.join(layout_path_generated, layout_name_generated + ".res"))
 
         # convert deck layout from binary to ascii
-        process = subprocess.Popen([
-            "C:\\Program Files (x86)\\HAMILTON\\Bin\\HxCfgFilConverter.exe",
-            "/t",
-            layout_ascii],
-            stdout=subprocess.PIPE,
-            universal_newlines=True)
-        process.communicate()
+        cls.__convert_to_ascii(os.path.join(layout_path_generated, layout_name_generated + ".lay"))
 
         # read deck layout file
-        with open(layout_ascii, 'r') as f:
+        with open(os.path.join(layout_path_generated, layout_name_generated + ".lay"), 'r') as f:
             content = f.read()
         
         # extract names of all the deck sequences
@@ -70,12 +67,12 @@ class Resources:
         template = env.get_template('deck_layout.py.j2')
 
         # write python definition to file
-        with open(layout_py, 'w') as f:
-            f.write(str(template.render(layout_file=layout, layout_name=layout_name, sequences=sequences, labware=labware)))
+        with open(os.path.join(layout_path_generated, layout_name_generated + ".py"), 'w') as f:
+            f.write(str(template.render(layout_file=layout, layout_name=layout_name_generated, sequences=sequences, labware=labware)))
 
-        # cleanup
-        os.remove(layout_ascii)
-
+        # log output
+        print("Generated: " + os.path.join(layout_path_generated, layout_name_generated + ".py"))
+        
         # generate __init__.py
         cls.__generate_init()
 
@@ -166,6 +163,9 @@ class Resources:
         with open(database_py, 'w') as f:
             f.write(str(template.render(liquid_classes=liquid_classes)))
 
+        # log output
+        print("Generated: " + database_py)
+
         # generate __init__.py
         cls.__generate_init()
 
@@ -199,14 +199,35 @@ class Resources:
             if path.stem.startswith("~"):
                 continue
 
+            # make copy of all files in resource folder
+            shutil.copy(
+                os.path.join(path.parent, path.stem + ".hs_"),
+                os.path.join(output_directory, path.stem + ".hs_")
+            )
+            shutil.copy(
+                os.path.join(path.parent, path.stem + ".hsi"),
+                os.path.join(output_directory, path.stem + ".hsi")
+            )
+            shutil.copy(
+                os.path.join(path.parent, path.stem + ".smt"),
+                os.path.join(output_directory, path.stem + ".smt")
+            )
+            shutil.copy(
+                os.path.join(path.parent, path.stem + ".stp"),
+                os.path.join(output_directory, path.stem + ".stp")
+            )
+
+            # convert binary files to ascii
+            cls.__convert_to_ascii(os.path.join(output_directory, path.stem + ".smt"))
+            cls.__convert_to_ascii(os.path.join(output_directory, path.stem + ".stp"))
+
             # read file content
             file = str(path.resolve())
             with open(file, 'r') as f:
                 content = f.read()
 
             # get comments of submethod and its parameters
-            smt_definition = cls.__parse_hxcfg(os.path.join(path.parent, path.stem + ".smt"))
-
+            smt_definition = cls.__parse_hxcfg(os.path.join(output_directory, path.stem + ".smt"))
 
             # setup regex expressions
             pattern_function = re.compile(r"\/\/ {{{ \d+ \"([\w\d_]+)\" \"Begin\"\nfunction \1\( ([\w\d\s&,\[\]]*) \)\s(\w+)\s{\n\/\/ }} \"\"\n[\w\d\s;\[\]\n]*\/\/ {{ \d+ \"\1\" \"InitLocals\"\n([\w\s\d\(\)&,\[\]{}\/\";=\.]*?)\n?\/\/ }} \"\"")
@@ -332,33 +353,16 @@ class Resources:
                 output = template.render(submethods=[smt]).encode("utf-8")
                 f.write(output)
 
+            print("Generated: " + os.path.join(output_directory,"__smt__" + smt['name'] + ".py").lower())
+
         # generate __init__.py
         cls.__generate_init()
 
-    @staticmethod
-    def __parse_hxcfg(file):
-        # get output directory for resources
-        output_directory = os.path.join(sys.path[0], "venus_resources")
-        os.makedirs(output_directory, exist_ok=True)
-
-        # make a copy of the file
-        file_ascii = os.path.join(output_directory, os.path.splitext(os.path.split(file)[1])[0] + ".txt")
-        shutil.copy(file, file_ascii)
-
-        # convert .smt from binary to ascii
-        process = subprocess.Popen([
-            "C:\\Program Files (x86)\\HAMILTON\\Bin\\HxCfgFilConverter.exe",
-            "/t",
-            file_ascii],
-            stdout=subprocess.PIPE,
-            universal_newlines=True)
-        process.communicate()
-
+    @classmethod
+    def __parse_hxcfg(cls, file):
         # read file content
-        with open(file_ascii, 'r',) as f:
+        with open(file, 'r',) as f:
             content = f.read()
-
-        os.remove(file_ascii)
 
         # some special characters (e.g. µ) are not converted correctly but left as hex codes.
         content = re.sub(r"\\0x([A-Za-z0-9]{2})", Resources.__hex_converter, content)
@@ -461,4 +465,13 @@ class Resources:
     def __sanitize_identifier(cls, name):
         return ''.join(cls.__gen_valid_identifier(name))
 
-        
+    
+    @staticmethod
+    def __convert_to_ascii(file):
+        process = subprocess.Popen([
+            "C:\\Program Files (x86)\\HAMILTON\\Bin\\HxCfgFilConverter.exe",
+            "/t",
+            file],
+            stdout=subprocess.PIPE,
+            universal_newlines=True)
+        process.communicate()
