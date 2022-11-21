@@ -28,5 +28,6 @@ def pyvenus_setup():
     if dir is not None:
         shutil.copytree(
             os.path.join(os.path.abspath(os.path.dirname(__file__)), "setup_files", dir),
-            os.getcwd()
+            os.getcwd(),
+            dirs_exist_ok=True
         )
