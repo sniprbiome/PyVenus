@@ -244,7 +244,7 @@ method main()
    {
       variable ___ERROR_DESCRIPTION___;
 
-      Trace("An error occured. Returning error information to pyVenus");
+      Trace("An error occured. Returning error information to PyVenus");
 
       // set global error flag
       ___ERROR___ = 1;
