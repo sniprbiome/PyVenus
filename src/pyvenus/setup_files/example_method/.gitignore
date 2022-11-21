@@ -1,7 +1,4 @@
 # PyVenus specific
-PyVenus/HSL/fromSystem/
-PyVenus/HSL/toSystem/
-venus_resources/
 ~*.hsi
 ~*.hsl
 ~*.tmp

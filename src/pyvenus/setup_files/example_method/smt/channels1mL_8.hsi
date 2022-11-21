@@ -1,0 +1,119 @@
+// {{{ 2 "IncludeGuard" "PragmaOnce"
+#pragma once
+// }} ""
+/* {{ 2 "LibraryInsertLine" "" */ // }} ""
+// {{ 2 "TemplateIncludeBlock" ""
+#include "HSLMETEDLib.hs_"
+#include "HSLMECCLib.hs_"
+#include "HSLPTLLib.hsl"
+// }} ""
+// {{{ 2 "LibraryNamespace" "Begin"
+namespace CHANNELS1ML_8 {
+// }} ""
+/* {{ 2 "VariableInsertLine" "" */ // }} ""
+// {{{ 2 "SubmethodForwardDeclaration" ""
+function aspirate( device & ML_STAR, sequence & positions, variable volume, variable liquid_class, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable trouch_off_height, variable pLLD_sensitivity, variable max_height_difference, variable aspiration_mode, variable mix_cycles, variable mix_position, variable mix_volume ) void ;
+function dispense( device & ML_STAR, sequence & positions, variable volume, variable dispense_remaining, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable touch_off_height, variable side_touch, variable minimize_z_height, variable mix_cycles, variable mix_position, variable mix_volume ) void ;
+function tip_eject( device & ML_STAR, sequence & positions, variable default_waste, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void ;
+function tip_pickup( device & ML_STAR, sequence & positions, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void ;
+// }} ""
+function _InitLibrary() {
+// {{ 2 "AutoInitBlock" ""
+PTL::SetWashingStateDefault("RinseTime1", 5);
+PTL::SetWashingStateDefault("SoakTime1", 5);
+PTL::SetWashingStateDefault("FlowRate1", 11);
+PTL::SetWashingStateDefault("RinseTime2", 0);
+PTL::SetWashingStateDefault("SoakTime2", 0);
+PTL::SetWashingStateDefault("FlowRate2", 11);
+PTL::SetWashingStateDefault("DrainingTime", 10);
+PTL::SetWashingStateDefault("StartWashLiquid", 0);
+PTL::SetLoadingStateDefault("RecoveryOptionContinue", hslTrue);
+PTL::SetLoadingStateDefault("RecoveryOptionExclude", hslTrue);
+PTL::SetLoadingStateDefault("RecoveryOptionDefault", 0);
+PTL::SetLoadingStateDefault("KitLotCheckEnabled", hslFalse);
+// }} ""
+}
+function _ExitLibrary() {
+// {{ 2 "AutoExitBlock" ""
+// }} ""
+}
+// {{{ 5 "tip_pickup" "Begin"
+function tip_pickup( device & ML_STAR, sequence & positions, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void {
+// }} ""
+// {{ 5 "tip_pickup" "InitLocals"
+// }} ""
+// {{ 12 1 0 "37cced4c_b4ad_478e_bce5233f5576ab7c" "ML_STAR:{541143FA-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143FA_7FA2_11D3_AD85_0004ACB1DCB2("37cced4c_b4ad_478e_bce5233f5576ab7c"); // TipPickUp
+}
+// }} ""
+// {{{ 5 "tip_pickup" "End"
+}
+// }} ""
+// {{{ 5 "tip_eject" "Begin"
+function tip_eject( device & ML_STAR, sequence & positions, variable default_waste, variable increment_sequence, variable channel_pattern, variable sequence_use_mode ) void {
+// }} ""
+// {{ 5 "tip_eject" "InitLocals"
+// }} ""
+// {{ 10 1 0 "5d4747da_5264_4788_a42e68c52106e51f" "ML_STAR:{541143FC-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143FC_7FA2_11D3_AD85_0004ACB1DCB2("5d4747da_5264_4788_a42e68c52106e51f"); // TipEject
+}
+// }} ""
+// {{{ 5 "tip_eject" "End"
+}
+// }} ""
+// {{{ 5 "aspirate" "Begin"
+function aspirate( device & ML_STAR, sequence & positions, variable volume, variable liquid_class, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable trouch_off_height, variable pLLD_sensitivity, variable max_height_difference, variable aspiration_mode, variable mix_cycles, variable mix_position, variable mix_volume ) void {
+// }} ""
+// {{ 5 "aspirate" "InitLocals"
+// }} ""
+// {{ 1 1 0 "e6c2654c_5795_4187_aa5ebe70b91af660" "ML_STAR:{541143F5-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143F5_7FA2_11D3_AD85_0004ACB1DCB2("e6c2654c_5795_4187_aa5ebe70b91af660"); // Aspirate
+}
+// }} ""
+// {{{ 5 "aspirate" "End"
+}
+// }} ""
+// {{{ 5 "dispense" "Begin"
+function dispense( device & ML_STAR, sequence & positions, variable volume, variable dispense_remaining, variable increment_sequence, variable liquid_following, variable channel_pattern, variable sequence_use_mode, variable cLLD_sensitivity, variable submerge_depth, variable fixed_height, variable retract_height, variable touch_off, variable touch_off_height, variable side_touch, variable minimize_z_height, variable mix_cycles, variable mix_position, variable mix_volume ) void {
+// }} ""
+private variable dispense_mode;
+// {{ 5 "dispense" "InitLocals"
+// }} ""
+// {{ 3 1 0 "ee4c4666_120d_43c5_acab3eddc1a86846" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
+if (dispense_remaining == 1)
+{
+// }} ""
+// {{ 4 1 0 "b0348ecc_3950_460b_a0a30df55ffa9b37" "{B31F3543-5D80-11d4-A5EB-0050DA737D89}"
+dispense_mode = 9;
+// }} ""
+// {{ 5 1 0 "ee4c4666_120d_43c5_acab3eddc1a86846" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
+}
+else
+{
+// }} ""
+// {{ 6 1 0 "9521444c_e8b3_4238_ab1b2d7134efe73e" "{B31F3543-5D80-11d4-A5EB-0050DA737D89}"
+dispense_mode = 8;
+// }} ""
+// {{ 7 1 0 "ee4c4666_120d_43c5_acab3eddc1a86846" "{B31F3531-5D80-11d4-A5EB-0050DA737D89}"
+}
+// }} ""
+// {{ 8 1 0 "379423f5_9379_4eef_bdf2a71303452827" "ML_STAR:{541143F8-7FA2-11D3-AD85-0004ACB1DCB2}"
+{
+	variable arrRetValues[];
+	arrRetValues = ML_STAR._541143F8_7FA2_11D3_AD85_0004ACB1DCB2("379423f5_9379_4eef_bdf2a71303452827"); // Dispense
+}
+// }} ""
+// {{{ 5 "dispense" "End"
+}
+// }} ""
+/* {{ 2 "SubmethodInsertLine" "" */ // }} ""
+// {{{ 2 "LibraryNamespace" "End"
+} // library namespace
+// }} ""
+// $$author=BenjaminWohl$$valid=0$$time=2022-10-22 21:53$$checksum=6add6ad0$$length=091$$
