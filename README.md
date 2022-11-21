@@ -7,7 +7,7 @@
   - [Basic example](#basic-example)
   - [Installation](#installation)
     - [Package installation](#package-installation)
-    - [Clone repository with example methods](#clone-repository-with-example-methods)
+    - [Setup example methods](#setup-example-methods)
   - [Example method](#example-method)
     - [Library import](#library-import)
     - [Initiate objects](#initiate-objects)
@@ -91,19 +91,13 @@ Before installing PyVenus I would recommend setting up a virtual environment. Cr
 
 After this you can install PyVenus using pip:
 
-    pip install -e "git+https://github.com/sniprbiome/PyVenus#egg=PyVenus"
+    pip install pyvenus
 
-### Clone repository with example methods
+### Setup example methods
 
-Clone/download the full repository to your harddrive (e.g. using GitHub Desktop).
+After installing the package with pip (shown above) you can setup the example methods by running this command from the same terminal:
 
-PyVenus has a few dependencies that need to be installed and this is best done in a virtual environment. Here is an example using venv, but other solutions would work as well. 
-
-Run the following commands in the terminal to install all dependencies. 
-
-    python -m venv .venv
-    ".venv/Scripts/activate.bat"
-    pip install -r requirements.txt
+    pyvenus-setup --example-method
 
 To be able to run the example method you need to generate python classes from the example deck layout and submethod libraries. The ```update_resources.py``` script is setup to just that ([more details here](#updating-generated-code)).
 
