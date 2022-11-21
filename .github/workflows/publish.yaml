@@ -12,6 +12,11 @@ jobs:
           MY_KEY: ${{ secrets.PYPI_API_TOKEN }}
         if: "${{ env.MY_KEY != '' }}"
         run: echo "This command is executed if AWS_ACCESS_KEY_ID secret IS NOT empty"
+      - name: test secret2
+        env:
+          MY_KEY: ${{ secrets.PYPI_API_TOKEN }}
+        if: "${{ env.MY_KEY == '' }}"
+        run: echo "This command is executed if AWS_ACCESS_KEY_ID secret IS empty"
       - name: Checkout
         uses: actions/checkout@v3
         with:
