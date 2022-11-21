@@ -54,28 +54,28 @@ The beauty is that you do not need to know how PyVenus works in the background, 
 There are a few different resources to get you started:
 
  - This readme file walks you through all the relevant information
- - The [example methods](https://github.com/sniprbiome/PyVenus/blob/main/example_method.py) in this repository
+ - The [example methods](https://github.com/sniprbiome/src/pyvenus/blob/main/example_method.py) in this repository
  - The full API reference: [https://sniprbiome.github.io/PyVenus](https://sniprbiome.github.io/PyVenus)
 
 ## Basic example
 
 Assume you have the following simple submethod in a library that transfers buffer to a target:
 
-![](/PyVenus/images/submethod_example1.png)
+![](/src/pyvenus/images/submethod_example1.png)
 
 The submethod has a number of input and output parameters as shown here:
 
-![](/PyVenus/images/submethod_example2.png)
+![](/src/pyvenus/images/submethod_example2.png)
 
 PyVenus generates a python class from the submethod library that has a function of the same name as the submethod:
 
-![](/PyVenus/images/smt_class_example1.png)
+![](/src/pyvenus/images/smt_class_example1.png)
 
 The different data types of Venus are implemented through [corresponding python classes](#data-types).
 
 As you can see PyVenus is build to work well with IDEs like Visual Studio Code or PyCharm, giving you all the relevant information through IntelliSense as you type your code.
 
-![](/PyVenus/images/example_intellisense.gif)
+![](/src/pyvenus/images/example_intellisense.gif)
 
 ## Installation
 
@@ -145,7 +145,7 @@ from venus_resources import Pipetting
 Both the liquid and deck layout classes are not meant for executing any code, but simple are helpers to access information from these files in your method. For example, instead of writing out the name of a liquid class you can simply include a reference to it via the liquid class object, removing the need for guesswork or copying strings in-between Venus and Python. 
 It also allows for easy searching via Intellisense, as shown in the example below.
 
-![](/PyVenus/images/example_intellisenseLC.gif)
+![](/src/pyvenus/images/example_intellisenseLC.gif)
 
 ### Initiate objects
 
@@ -185,7 +185,7 @@ It is important to understand that PyVenus itself does not implement any of the 
 
 PyVenus ships with a few example libraries that examplify the usage. One is the ```ml_star.smt``` submethod library, which currently only contains one submethod (```initialize```), which is a simple wrapper for the Initialize command for the STAR. 
 
-![](/PyVenus/images/smt_class_example2.png)
+![](/src/pyvenus/images/smt_class_example2.png)
 
 In the future we can add additional functions related to the STAR, like enabling aspiration monitoring (MAD).
 
@@ -211,7 +211,7 @@ plate_dilution.current = 1
 
 It is important to note these functions have many more parameters (screenshot below), thus giving access to all the functionality of Venus single steps involved. The reason we can use only a small set of parameters is because for most of the parameters a default value was definined in Venus as [explained later](#defining-default-values).
 
-![](/PyVenus/images/aspiration_step_example.png)
+![](/src/pyvenus/images/aspiration_step_example.png)
 
 A different approach is to define a submethod that is setup to do a trough-to-plate transfer and call this directly. I envision this as the preferred approach, i.e. defining the functionality you need in Venus in submethods. 
 
@@ -222,9 +222,9 @@ smt_pip.add_buffer(star_device, buffer, plate_dilution, tips_1000F, 100)
 ### Output parameters
 It is of course also possible to define output parameters on submethods and use them to return data from Venus to Python. This simple submethods transfers multiple 96-well plates into a single plate and returns the number of plates transferred as an output parameter. 
 
-![](/PyVenus/images/output_example_1.png)
+![](/src/pyvenus/images/output_example_1.png)
 
-![](/PyVenus/images/output_example_2.png)
+![](/src/pyvenus/images/output_example_2.png)
 
 To receive a value back from Venus you need to define it as one of the PyVenus data types (Sequence, Variable, Array), that mirror the corresponding data types in Venus. 
 
@@ -272,7 +272,7 @@ Both the ```.from_list()```and ```.from_dataframe()``` method support the option
 
 A common problem with hitpicking applications is that the input file will not be sorted for pipetting. This can easily be seen with the sequence generated above:
 
-![](/PyVenus/images/example_hitpicking1.gif)
+![](/src/pyvenus/images/example_hitpicking1.gif)
 
 This can easily be solved in PyVenus by combining the power of pandas dataframes with sequences. Using method chaining the required sequence can be generated in one easy-to-read code block:
 
@@ -292,7 +292,7 @@ hitpicking_aspirate = Sequence(con)
 ) 
 ```
 
-![](/PyVenus/images/example_hitpicking2.gif)
+![](/src/pyvenus/images/example_hitpicking2.gif)
 
 The pandas library includes a multitude of functions to manipule dataframes. By using the same basic steps all of these functions are available for manipulating sequences. 
 
@@ -378,11 +378,11 @@ Currently this is only possible for a ```Variable``` of type ```Input```
 
 All that needs to be done is to include ```{{default:value_to_use}}``` in the description of the parameter as shown below. String values need to be enclosed in quotes. 
 
-![](/PyVenus/images/example_default_values.png)
+![](/src/pyvenus/images/example_default_values.png)
 
 This is translated to default values in the method definition in Python:
 
-![](/PyVenus/images/example_default_values2.png)
+![](/src/pyvenus/images/example_default_values2.png)
 
 ## Updating generated code
 
@@ -439,11 +439,11 @@ When a method is designed in the graphical interface of Venus an underlying meth
 
 The core module of PyVenus (the ```Connection``` class) takes care sending HSL code to the Venus environment and receiving results formatted in JSON. 
 
-![](/PyVenus/images/pyvenus_schematic.png)
+![](/src/pyvenus/images/pyvenus_schematic.png)
 
 But, lets face it nobody wants to clutter up their Python code with snipets of HSL code. Instead PyVenus uses generated Python classes as an abstraction layer to the HSL commands
 
-![](/PyVenus/images/pyvenus_schematic2.png)
+![](/src/pyvenus/images/pyvenus_schematic2.png)
 
 ## Current status
 

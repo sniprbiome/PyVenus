@@ -7,16 +7,6 @@ jobs:
   pypi:
     runs-on: ubuntu-latest
     steps:
-      - name: test secret
-        env:
-          MY_KEY: ${{ secrets.PYPI_API_TOKEN }}
-        if: "${{ env.MY_KEY != '' }}"
-        run: echo "This command is executed if AWS_ACCESS_KEY_ID secret IS NOT empty"
-      - name: test secret2
-        env:
-          MY_KEY: ${{ secrets.PYPI_API_TOKEN }}
-        if: "${{ env.MY_KEY == '' }}"
-        run: echo "This command is executed if AWS_ACCESS_KEY_ID secret IS empty"
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -26,4 +16,3 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           password: ${{ secrets.PYPI_API_TOKEN }}
-          #repository_url: https://test.pypi.org/legacy/

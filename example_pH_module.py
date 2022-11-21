@@ -1,5 +1,5 @@
 # import PyVenus
-from PyVenus import Resources, Connection, Device, Variable
+from pyvenus import Resources, Connection, Device, Variable
 
 # generate python class from pH module submethod library
 Resources.read_submethods(r"C:\Program Files (x86)\HAMILTON\Library\Hamilton pH Module")
