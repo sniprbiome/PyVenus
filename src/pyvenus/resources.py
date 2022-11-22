@@ -34,7 +34,8 @@ class Resources:
 
         # get the layout name (both original and sanitized)
         layout_name_original = os.path.splitext(os.path.split(layout)[1])[0]
-        layout_name_generated = "__layout__" + cls.__sanitize_identifier(layout_name_original.lower().replace(" ","_"))
+        layout_name_class = cls.__sanitize_identifier(layout_name_original.lower())
+        layout_name_generated = "__layout__" + layout_name_class
 
         # create a copy of original deck layout
         shutil.copyfile(
@@ -68,7 +69,7 @@ class Resources:
 
         # write python definition to file
         with open(os.path.join(layout_path_generated, layout_name_generated + ".py"), 'w') as f:
-            f.write(str(template.render(layout_file=layout, layout_name=layout_name_generated, sequences=sequences, labware=labware)))
+            f.write(str(template.render(layout_file=layout, layout_name=layout_name_class, sequences=sequences, labware=labware)))
 
         # log output
         print("Generated: " + os.path.join(layout_path_generated, layout_name_generated + ".py"))
