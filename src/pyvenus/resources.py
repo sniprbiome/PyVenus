@@ -36,20 +36,27 @@ class Resources:
         layout_name_original = os.path.splitext(os.path.split(layout)[1])[0]
         layout_name_class = cls.__sanitize_identifier(layout_name_original.lower())
         layout_name_generated = "__layout__" + layout_name_class
+        
+        layout_copy = os.path.join(layout_path_generated, layout_name_generated + ".lay")
+
+        # only proceed if deck layout has been updated
+        if os.path.exists(layout_copy) and os.path.getmtime(layout_copy) >= os.path.getmtime(layout):
+            print("Skipping: " + os.path.join(layout_path_generated, layout_name_generated + ".py"))
+            return
 
         # create a copy of original deck layout
-        shutil.copyfile(
-            os.path.join(layout_path_original, layout_name_original + ".lay"), 
-            os.path.join(layout_path_generated, layout_name_generated + ".lay"))
-        shutil.copyfile(
+        shutil.copy2(
+            layout, 
+            layout_copy)
+        shutil.copy2(
             os.path.join(layout_path_original, layout_name_original + ".res"), 
             os.path.join(layout_path_generated, layout_name_generated + ".res"))
 
         # convert deck layout from binary to ascii
-        cls.__convert_to_ascii(os.path.join(layout_path_generated, layout_name_generated + ".lay"))
+        cls.__convert_to_ascii(layout_copy)
 
         # read deck layout file
-        with open(os.path.join(layout_path_generated, layout_name_generated + ".lay"), 'r') as f:
+        with open(layout_copy, 'r') as f:
             content = f.read()
         
         # extract names of all the deck sequences
@@ -131,6 +138,7 @@ class Resources:
 
         # gather all liquid classes
         liquid_classes = []
+        columns = [column[0] for column in cursor.description]
         for row in cursor.fetchall():
             select = False
 
@@ -149,9 +157,18 @@ class Resources:
                 if row[6] not in selected_types:
                     select = False
 
+            # get dict of liquid parameters
+            liquid_parameters = dict(zip(columns, row))
+            liquid_parameters.pop("LiquidNotes")
+            liquid_parameters.pop("CorrectionCurve")
+            liquid_parameters.pop("DesignHistory")
+            
             # process this row?
             if select:
-                liquid_classes.append(row[1])
+                liquid_classes.append({
+                    "name": row[1],
+                    "liquid_parameters": liquid_parameters
+                })
 
         # setup template environement
         env = Environment(
@@ -200,20 +217,26 @@ class Resources:
             if path.stem.startswith("~"):
                 continue
 
+            # only proceed if smt file has been updated
+            if os.path.exists(os.path.join(output_directory, path.stem + ".smt")):
+                if os.path.getmtime(os.path.join(output_directory, path.stem + ".smt")) >= os.path.getmtime(os.path.join(path.parent, path.stem + ".smt")):
+                    print("Skipping: " + os.path.join(output_directory, path.stem + ".smt"))
+                    continue
+
             # make copy of all files in resource folder
-            shutil.copy(
+            shutil.copy2(
                 os.path.join(path.parent, path.stem + ".hs_"),
                 os.path.join(output_directory, path.stem + ".hs_")
             )
-            shutil.copy(
+            shutil.copy2(
                 os.path.join(path.parent, path.stem + ".hsi"),
                 os.path.join(output_directory, path.stem + ".hsi")
             )
-            shutil.copy(
+            shutil.copy2(
                 os.path.join(path.parent, path.stem + ".smt"),
                 os.path.join(output_directory, path.stem + ".smt")
             )
-            shutil.copy(
+            shutil.copy2(
                 os.path.join(path.parent, path.stem + ".stp"),
                 os.path.join(output_directory, path.stem + ".stp")
             )

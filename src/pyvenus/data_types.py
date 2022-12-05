@@ -532,19 +532,27 @@ class Device:
 class Liquidclass:
     """Python class representing a Venus liquid class
     """    
-    def __init__(self, name: str):
+    def __init__(self, name: str, liquid_parameters: dict):
         """Initialize the liquid class
 
         Args:
             name (str): Name of the liquid class in the liquid class database
+            liquid_parameters (dict): A dictionary containing all the parameters of the liquid class
         """        
         self.__name = name
+        self.__liquid_parameters = liquid_parameters
     
     @property
     def name(self):
         """Get the name of the liquid class in the liquid class database
         """
         return self.__name
+
+    @property
+    def liquid_parameters(self):
+        """Get a dictionary with all liquid parameters
+        """
+        return self.__liquid_parameters
 
     def __str__(self):
         return self.name

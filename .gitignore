@@ -1,6 +1,6 @@
 # PyVenus specific
-PyVenus/HSL/fromSystem/
-PyVenus/HSL/toSystem/
+src/pyvenus/HSL/fromSystem/
+src/pyvenus/HSL/toSystem/
 venus_resources/
 ~*.hsi
 ~*.hsl
