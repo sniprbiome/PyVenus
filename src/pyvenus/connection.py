@@ -61,7 +61,7 @@ class Connection:
             definitions (str, optional): Variable or object definitions. Defaults to "".
         
         Returns:
-            int: Command counter ID for this execution
+            str: JSON string with information returned from Venus
         """
 
         self.__guard()
