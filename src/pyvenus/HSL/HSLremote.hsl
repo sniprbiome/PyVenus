@@ -77,10 +77,12 @@ function JSONwrite(variable strJSON, variable strFile) void {
    strJSON = StrTrimRight(strJSON, ",");
    hdlFile.AddField(1, strJSON, hslString);
    hdlFile.SetDelimiter(hslAsciiText);
-   hdlFile.Open(strFile, hslWrite);
+   hdlFile.Open(strFile + "tmp", hslWrite);
    hdlFile.WriteRecord();
    hdlFile.Close();
    hdlFile.RemoveFields();
+
+   HSLExtensions::File::Rename(strFile + "tmp", strFile, 1);
 }
 
 
@@ -270,4 +272,4 @@ method main()
    }
       
 }
-// $$author=BenjaminWohl$$valid=0$$time=2022-11-21 22:57$$checksum=71866e21$$length=089$$
+// $$author=BenjaminWohl$$valid=0$$time=2022-12-06 16:43$$checksum=57436432$$length=089$$

@@ -74,8 +74,11 @@ class Connection:
         code += HSLcode
         code += "\n}"
 
-        with open(os.path.join(self.__path_HSLremote, "toSystem", str(current_counter) + ".hsl"), "w") as f:
+        command_file = os.path.join(self.__path_HSLremote, "toSystem", str(current_counter) + ".hsl")
+        with open(command_file + "tmp", "w") as f:
             f.write(code)
+
+        os.rename(command_file + "tmp", command_file)
 
         return self.__get_return(current_counter)
 
@@ -106,8 +109,13 @@ class Connection:
         while not os.path.exists(file):
             time.sleep(0.2)
 
-        with open(file, "r") as f:
-            content = f.read()
+        content = None
+        while content is None:
+            try:
+                with open(file, "r") as f:
+                    content = f.read()
+            except:
+                time.sleep(0.1)
 
         ret = json.loads(content)
         if "___ERROR_ID___" in ret:
