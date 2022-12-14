@@ -122,7 +122,7 @@ Let's have a step-by-step look at the example method (```example_method.py```) t
 First we import the required functionality from PyVenus as well as the pandas library ([used for an example at the end](#working-with-sequences))
 
 ```python
-from PyVenus import Connection,Variable,Sequence,Device,Helpers
+from pyvenus import Connection,Variable,Sequence,Device,Helpers
 import pandas as pd
 ```
 
@@ -389,7 +389,7 @@ Whenever a change is made to something in Venus (e.g. submethod library, deck la
 For each of the different resource types exists a method in the ```Resources``` class. PyVenus includes an example in ```update_resources.py```. 
 
 ```python
-from PyVenus import Resources
+from pyvenus import Resources
 
 Resources.read_layout("example_layout.lay")
 Resources.read_liquid_classes(True,False,True,False,False, include_custom=False)
@@ -409,7 +409,7 @@ In many cases this makes it easy to use existing drivers for Hamilton or third-p
 The example below (see also ```example_ph_module.py```) shows how to process the submethod library, and use it to initialize the pH module. 
 
 ```python
-from PyVenus import Resources, Connection, Device, Variable
+from pyvenus import Resources, Connection, Device, Variable
 
 Resources.read_submethods(r"C:\Program Files (x86)\HAMILTON\Library\Hamilton pH Module")
 
