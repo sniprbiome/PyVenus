@@ -1,5 +1,9 @@
 name: Docs
-on: [push, pull_request, workflow_dispatch]
+on:
+  workflow_dispatch:
+    branches: [ main ]
+  push:
+    branches: [ main ]
 jobs:
   docs:
     runs-on: ubuntu-latest
