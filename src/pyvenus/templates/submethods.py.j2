@@ -53,7 +53,7 @@ class {{ smt.name[0]|upper}}{{smt.name[1:]|lower }}:
         parameter_string +=
         {%- if loop.index > 1 %} ", " +{% endif -%}
         {%- if p.pass_mode == "variable" %} {{ p.name }}.name{% endif %}
-        {%- if p.pass_mode == "value" %} (f'"{value}"' if isinstance(value, Union[str, Liquidclass]) else str(value)){% endif %}
+        {%- if p.pass_mode == "value" %} (f'"{value}"' if isinstance(value, str) or isinstance(value, Liquidclass) else str(value)){% endif %}
         {% endfor -%}
 
         # call the HSL function
