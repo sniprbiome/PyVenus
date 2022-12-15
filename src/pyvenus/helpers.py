@@ -1,5 +1,5 @@
 import string, math
-from typing import Union
+from typing import Union, Tuple
 
 class Helpers:
     """Various helper functions for making the method setup easier
@@ -56,7 +56,7 @@ class Helpers:
         return map
 
     @staticmethod
-    def __get_plate_dimensions(plate_type: int) -> tuple[int, int]:
+    def __get_plate_dimensions(plate_type: int) -> Tuple[int, int]:
         """Return the number of rows and column for a specific plate type
 
         Args:
