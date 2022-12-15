@@ -69,7 +69,7 @@ The submethod has a number of input and output parameters as shown here:
 
 PyVenus generates a python class from the submethod library that has a function of the same name as the submethod:
 
-![](https://github.com/sniprbiome/PyVenus/blob/940b8dd05e01e5473287753044ae503fab054e52/src/pyvenus/images/smt_class_example1.png)
+![](https://raw.githubusercontent.com/sniprbiome/PyVenus/940b8dd05e01e5473287753044ae503fab054e52/src/pyvenus/images/smt_class_example1.png)
 
 The different data types of Venus are implemented through [corresponding python classes](#data-types).
 
